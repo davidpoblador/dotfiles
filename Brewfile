@@ -22,9 +22,12 @@ brew "git-lfs"
 brew "git-delta"
 brew "imagemagick"
 brew "jq"
-brew "mdcat"
 brew "qrencode"
 brew "rsync"
+
+# Fancy Stuff
+brew "silicon"
+brew "mdcat"
 
 cask "font-jetbrains-mono-nerd-font"
 cask "kitty"
