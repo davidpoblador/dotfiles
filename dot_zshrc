@@ -1,0 +1,40 @@
+###########################################################
+# Awesome Shell Tools                                     #
+###########################################################
+
+# Mise
+eval "$(mise activate zsh)"
+
+# lsd (ls replacement)
+alias ls='lsd'
+
+# bat (cat replacement)
+alias cat='bat'
+
+# Set up fzf key bindings and fuzzy completion
+eval "$(fzf --zsh)"
+
+# zoxide (cd replacement)
+eval "$(zoxide init zsh)"
+
+# starship
+eval "$(starship init zsh)"
+
+
+###########################################################
+# Other                                                   #
+###########################################################
+if type brew &>/dev/null
+then
+  FPATH="$(brew --prefix)/share/zsh/site-functions:${FPATH}"
+
+  autoload -Uz compinit
+  compinit
+fi
+
+export HOMEBREW_NO_ANALYTICS=1
+export HOMEBREW_NO_ENV_HINTS=1
+
+
+source "$(brew --prefix)/share/google-cloud-sdk/path.zsh.inc"
+source "$(brew --prefix)/share/google-cloud-sdk/completion.zsh.inc"
