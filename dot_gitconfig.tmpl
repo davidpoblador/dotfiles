@@ -1,7 +1,10 @@
+{{- $email := promptString "email" -}}
+{{- $name := promptString "name" -}}
+
 # This is Git's per-user configuration file.
 [user]
-    name = {{ .name | quote }}
-    email = {{ .email | quote }}
+    name = {{ $name | quote }}
+    email = {{ $email | quote }}
 
 [core]
     pager = delta
