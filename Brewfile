@@ -8,6 +8,7 @@ brew "git"
 brew "imagemagick"
 brew "jq"
 brew "mas"
+brew "mise"
 brew "qrencode"
 brew "rsync"
 
