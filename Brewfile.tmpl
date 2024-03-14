@@ -1,39 +1,46 @@
 tap "homebrew/bundle"
+{{ if eq .chezmoi.os "darwin" }}
 tap "homebrew/cask-fonts"
+{{ end }}
+
+{{ if eq .chezmoi.os "darwin" }}
+brew "ffmpeg"
+brew "imagemagick"
+brew "jq"
+brew "llm"
+brew "mas"
+brew "ollama"
+brew "rsync"
+{{ end }}
 
 brew "bat"
 brew "bitwarden-cli"
 brew "chezmoi"
 brew "fd"
-brew "ffmpeg"
 brew "fzf"
 brew "gh"
 brew "git"
 brew "git-delta"
 brew "git-lfs"
-brew "imagemagick"
-brew "jq"
-brew "llm"
 brew "lsd"
-brew "mas"
 brew "mdcat"
 brew "mise"
-brew "ollama"
 brew "pipx"
 brew "qrencode"
 brew "ripgrep"
-brew "rsync"
 brew "silicon"
 brew "starship"
 brew "tig"
 brew "zoxide"
 brew "zsh-completions"
 
+{{ if eq .chezmoi.os "darwin" }}
 cask "font-jetbrains-mono-nerd-font"
 cask "google-cloud-sdk"
 cask "kitty"
-cask "sloth"
+{{ end }}
 
+{{ if eq .chezmoi.os "darwin" }}
 mas "Bitwarden", id: 1352778147
 mas "DaisyDisk", id: 411643860
 mas "GarageBand", id: 682658836
@@ -48,3 +55,4 @@ mas "Pixelmator", id: 407963104
 mas "Slack", id: 803453959
 mas "Tailscale", id: 1475387142
 mas "Xcode", id: 497799835
+{{ end }}
