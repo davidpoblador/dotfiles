@@ -1,7 +1,7 @@
 # This is Git's per-user configuration file.
 [user]
-name = David Poblador i Garcia
-email = david@poblador.com
+    name = {{ .name | quote }}
+    email = {{ .email | quote }}
 
 [core]
     pager = delta
@@ -25,12 +25,13 @@ email = david@poblador.com
     hunk-header-style = file line-number syntax
 
 [init]
-	defaultBranch = main
+    defaultBranch = main
 
 [push]
-	autoSetupRemote = true
+    autoSetupRemote = true
+
 [filter "lfs"]
-	clean = git-lfs clean -- %f
-	smudge = git-lfs smudge -- %f
-	process = git-lfs filter-process
-	required = true
+    clean = git-lfs clean -- %f
+    smudge = git-lfs smudge -- %f
+    process = git-lfs filter-process
+    required = true
