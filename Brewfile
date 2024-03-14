@@ -1,4 +1,5 @@
 tap "homebrew/bundle"
+tap "homebrew/cask-fonts"
 
 brew "chezmoi"
 brew "ffmpeg"
@@ -12,5 +13,5 @@ brew "mise"
 brew "qrencode"
 brew "rsync"
 
+cask "font-jetbrains-mono-nerd-font"
 cask "kitty"
-
