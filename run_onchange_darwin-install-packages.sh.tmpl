@@ -5,12 +5,13 @@ brew bundle --no-lock --file=/dev/stdin << Brewfile
 tap "homebrew/bundle"
 tap "homebrew/cask-fonts"
 
-# Homebrew and Shell Tools
+# Homebrew, Terminal and Shell Tools
 brew "bitwarden-cli"
 brew "chezmoi"
 brew "mas"
 brew "mise"
 brew "zsh-completions"
+cask "kitty"
 
 # System Tools
 brew "ffmpeg"
@@ -62,10 +63,14 @@ brew "the_silver_searcher"
 brew "tlrc"
 brew "zoxide"
 
+# fonts
 cask "font-jetbrains-mono-nerd-font"
-cask "google-cloud-sdk"
-cask "kitty"
 
+# cloud stuff
+brew "awscli"
+cask "google-cloud-sdk"
+
+# AppStore stuff
 mas "Bitwarden", id: 1352778147
 mas "DaisyDisk", id: 411643860
 mas "GarageBand", id: 682658836
