@@ -9,7 +9,9 @@
     diffFilter = delta --color-only --features=interactive
 
 [delta]
-    features = decorations
+    features = side-by-side line-numbers decorations Catppuccin-macchiato
+    hyperlinks = true
+    navigate = true
 
 [delta "interactive"]
     keep-plus-minus-markers = false
@@ -34,3 +36,6 @@
     smudge = git-lfs smudge -- %f
     process = git-lfs filter-process
     required = true
+
+[include]
+    path = macchiato.config
