@@ -48,3 +48,5 @@ source /Users/dpoblador/.config/broot/launcher/bash/br
 
 # Key Overrides
 bindkey \^U backward-kill-line
+
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
