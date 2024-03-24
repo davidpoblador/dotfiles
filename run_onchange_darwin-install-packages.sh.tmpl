@@ -4,6 +4,7 @@
 brew bundle --no-lock --file=/dev/stdin << Brewfile
 tap "homebrew/bundle"
 tap "homebrew/cask-fonts"
+tap "ynqa/tap"
 
 # Homebrew, Terminal and Shell Tools
 brew "bitwarden-cli"
@@ -16,10 +17,12 @@ brew "zsh-syntax-highlighting"
 cask "kitty"
 
 # System Tools
+brew "difftastic"
 brew "ffmpeg"
 brew "fx"
 brew "imagemagick"
 brew "jq"
+brew "ynqa/tap/jnv"
 brew "lazydocker"
 brew "newsboat"
 brew "qrencode"
