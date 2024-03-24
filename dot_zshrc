@@ -52,4 +52,8 @@ source /Users/dpoblador/.config/broot/launcher/bash/br
 # Key Overrides
 bindkey \^U backward-kill-line
 
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+if [[ ! "$PATH" == */opt/homebrew/opt/fzf/bin* ]]; then
+  PATH="${PATH:+${PATH}:}/opt/homebrew/opt/fzf/bin"
+fi
+
+eval "$(fzf --zsh)"
