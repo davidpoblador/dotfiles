@@ -39,15 +39,18 @@ fi
 export HOMEBREW_NO_ANALYTICS=1
 export HOMEBREW_NO_ENV_HINTS=1
 
-source "$(brew --prefix)/share/google-cloud-sdk/path.zsh.inc"
-source "$(brew --prefix)/share/google-cloud-sdk/completion.zsh.inc"
+if test -d "$(brew --prefix)/share/google-cloud-sdk"
+then
+	source "$(brew --prefix)/share/google-cloud-sdk/path.zsh.inc"
+	source "$(brew --prefix)/share/google-cloud-sdk/completion.zsh.inc"
+fi
 
 # Language
 export LANG="en_US.UTF-8"
 export LC_ALL="en_US.UTF-8"
 export LC_CTYPE="en_US.UTF-8"
 
-source /Users/dpoblador/.config/broot/launcher/bash/br
+source ${HOME}/.config/broot/launcher/bash/br
 
 # Key Overrides
 bindkey \^U backward-kill-line
