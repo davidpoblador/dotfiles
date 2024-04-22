@@ -1,9 +1,10 @@
-{{- if eq .chezmoi.os "darwin" -}}
+{{ if eq .chezmoi.os "linux" }}
+{{   if (.chezmoi.kernel.osrelease | lower | contains "microsoft") }}
+
 #!/bin/bash
 
 brew bundle --no-lock --file=/dev/stdin << Brewfile
 tap "homebrew/bundle"
-tap "homebrew/cask-fonts"
 
 # Homebrew, Terminal and Shell Tools
 brew "bitwarden-cli"
@@ -15,7 +16,6 @@ brew "tmux"
 brew "uv"
 brew "zsh-completions"
 brew "zsh-syntax-highlighting"
-cask "kitty"
 
 # System Tools
 brew "d2"
@@ -77,27 +77,9 @@ brew "the_silver_searcher"
 brew "tlrc"
 brew "zoxide"
 
-# fonts
-cask "font-jetbrains-mono-nerd-font"
-
 # cloud stuff
 brew "awscli"
-cask "google-cloud-sdk"
 
-# AppStore stuff
-mas "Bitwarden", id: 1352778147
-mas "DaisyDisk", id: 411643860
-mas "GarageBand", id: 682658836
-mas "iMovie", id: 408981434
-mas "Keynote", id: 409183694
-mas "Kindle Classic", id: 405399194
-mas "Microsoft Remote Desktop", id: 1295203466
-mas "Numbers", id: 409203825
-mas "Pages", id: 409201541
-mas "Photomator", id: 1444636541
-mas "Pixelmator", id: 407963104
-mas "Slack", id: 803453959
-mas "Tailscale", id: 1475387142
-mas "Xcode", id: 497799835
 
-{{ end -}}
+{{   end }}
+{{ end }}
