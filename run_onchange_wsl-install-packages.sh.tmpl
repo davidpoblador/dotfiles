@@ -1,15 +1,13 @@
-{{ if eq .chezmoi.os "linux" }}
-{{   if (.chezmoi.kernel.osrelease | lower | contains "microsoft") }}
-
+{{- if eq .chezmoi.os "linux" -}}
+{{- if (.chezmoi.kernel.osrelease | lower | contains "microsoft") -}}
 #!/bin/bash
 
-brew bundle --no-lock --file=/dev/stdin << Brewfile
+brew bundle --no-lock --file=/dev/stdin << EOF
 tap "homebrew/bundle"
 
 # Homebrew, Terminal and Shell Tools
 brew "bitwarden-cli"
 brew "chezmoi"
-brew "mas"
 brew "mise"
 brew "neovim"
 brew "tmux"
@@ -80,6 +78,6 @@ brew "zoxide"
 # cloud stuff
 brew "awscli"
 
-
-{{   end }}
-{{ end }}
+EOF
+{{  end -}}
+{{ end -}}

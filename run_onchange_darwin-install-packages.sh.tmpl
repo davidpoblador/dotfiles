@@ -1,7 +1,7 @@
 {{- if eq .chezmoi.os "darwin" -}}
 #!/bin/bash
 
-brew bundle --no-lock --file=/dev/stdin << Brewfile
+brew bundle --no-lock --file=/dev/stdin << EOF
 tap "homebrew/bundle"
 tap "homebrew/cask-fonts"
 
@@ -100,4 +100,5 @@ mas "Slack", id: 803453959
 mas "Tailscale", id: 1475387142
 mas "Xcode", id: 497799835
 
+EOF
 {{ end -}}
