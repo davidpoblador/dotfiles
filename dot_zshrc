@@ -60,3 +60,7 @@ if [[ ! "$PATH" == */opt/homebrew/opt/fzf/bin* ]]; then
 fi
 
 eval "$(fzf --zsh)"
+
+if command -v ngrok &>/dev/null; then
+    eval "$(ngrok completion)"
+fi
