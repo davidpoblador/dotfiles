@@ -1,2 +1,9 @@
-# Homebrew environment
-eval "$(/opt/homebrew/bin/brew shellenv)"
+# Homebrew environment setup
+if [[ "$(uname)" == "Darwin" ]]; then
+    # macOS
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+elif [[ "$(uname)" == "Linux" ]]; then
+    # Linux
+    eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+fi
+
