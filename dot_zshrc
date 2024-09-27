@@ -66,3 +66,8 @@ if command -v ngrok &>/dev/null; then
 fi
 
 source $HOME/.config/broot/launcher/bash/br
+
+# SOURCE ZINIT PLUGIN MANAGER
+source "$(brew --prefix zinit)/zinit.zsh"
+autoload -Uz _zinit
+(( ${+_comps} )) && _comps[zinit]=_zinit
