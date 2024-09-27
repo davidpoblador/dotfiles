@@ -12,14 +12,6 @@ export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
 export XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
 export XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
 
-# History configuration
-HISTFILE="${XDG_DATA_HOME}/zsh/history"
-HISTSIZE=10000
-SAVEHIST=10000
-setopt HIST_IGNORE_ALL_DUPS
-setopt HIST_REDUCE_BLANKS
-setopt HIST_VERIFY
-
 ###########################################################
 # Utility Functions                                       #
 ###########################################################
@@ -43,6 +35,28 @@ load_if_exists() {
   fi
 }
 
+# Function to create a directory if it doesn't exist
+ensure_dir_exists() {
+  if [[ ! -d "$1" ]]; then
+    mkdir -p "$1"
+  fi
+}
+
+###########################################################
+# History Configuration                                   #
+###########################################################
+
+HISTDIR="${XDG_DATA_HOME}/zsh"
+HISTFILE="${HISTDIR}/history"
+
+# Ensure history directory exists
+ensure_dir_exists "$HISTDIR"
+
+HISTSIZE=10000
+SAVEHIST=10000
+setopt HIST_IGNORE_ALL_DUPS
+setopt HIST_REDUCE_BLANKS
+setopt HIST_VERIFY
 
 ###########################################################
 # Command-Line Enhancements                               #
@@ -80,7 +94,6 @@ fi
 
 # ngrok completion
 load_if_exists ngrok 'eval "$(ngrok completion)"'
-
 
 ###########################################################
 # Homebrew Setup                                          #
