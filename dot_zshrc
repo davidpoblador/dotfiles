@@ -12,6 +12,7 @@ export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
 export XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
 export XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
 
+
 ###########################################################
 # Utility Functions                                       #
 ###########################################################
@@ -41,6 +42,26 @@ ensure_dir_exists() {
     mkdir -p "$1"
   fi
 }
+
+###########################################################
+# Homebrew Setup                                          #
+###########################################################
+if command_exists brew; then
+  # Store Homebrew prefix
+  BREW_PREFIX=$(brew --prefix)
+
+  # Add Homebrew's zsh completions to FPATH
+  FPATH="${BREW_PREFIX}/share/zsh/site-functions:${FPATH}"
+  
+  # Load completions
+  autoload -Uz compinit
+  compinit
+
+  # Homebrew settings
+  export HOMEBREW_NO_ANALYTICS=1
+  export HOMEBREW_NO_ENV_HINTS=1
+fi
+
 
 ###########################################################
 # History Configuration                                   #
@@ -95,25 +116,8 @@ fi
 # ngrok completion
 load_if_exists ngrok 'eval "$(ngrok completion)"'
 
-###########################################################
-# Homebrew Setup                                          #
-###########################################################
+# GCP completion
 if command_exists brew; then
-  # Store Homebrew prefix
-  BREW_PREFIX=$(brew --prefix)
-
-  # Add Homebrew's zsh completions to FPATH
-  FPATH="${BREW_PREFIX}/share/zsh/site-functions:${FPATH}"
-  
-  # Load completions
-  autoload -Uz compinit
-  compinit
-
-  # Homebrew settings
-  export HOMEBREW_NO_ANALYTICS=1
-  export HOMEBREW_NO_ENV_HINTS=1
-
-  # Google Cloud SDK (if installed via Homebrew)
   GCP_SDK_PATH="${BREW_PREFIX}/share/google-cloud-sdk"
   if [[ -d "$GCP_SDK_PATH" ]]; then
     source "${GCP_SDK_PATH}/path.zsh.inc"
