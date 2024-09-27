@@ -1,68 +1,129 @@
 ###########################################################
-# Awesome Shell Tools                                     #
+# Environment and Language Settings                       #
 ###########################################################
 
-# Mise
-eval "$(mise activate zsh)"
-
-# lsd (ls replacement)
-alias ls='lsd'
-alias l='lsd -l'
-
-# bat (cat replacement)
-alias cat='bat'
-export MANPAGER="sh -c 'col -bx | bat -l man -p'"
-alias -g -- -h='-h 2>&1 | bat --language=help --style=plain'
-alias -g -- --help='--help 2>&1 | bat --language=help --style=plain'
-
-# Set up fzf key bindings and fuzzy completion
-eval "$(fzf --zsh)"
-
-# zoxide (cd replacement)
-eval "$(zoxide init zsh)"
-
-# starship
-eval "$(starship init zsh)"
-
-
-###########################################################
-# Other                                                   #
-###########################################################
-if type brew &>/dev/null
-then
-  FPATH="$(brew --prefix)/share/zsh/site-functions:${FPATH}"
-
-  autoload -Uz compinit
-  compinit
-fi
-
-export HOMEBREW_NO_ANALYTICS=1
-export HOMEBREW_NO_ENV_HINTS=1
-
-if test -d "$(brew --prefix)/share/google-cloud-sdk"
-then
-	source "$(brew --prefix)/share/google-cloud-sdk/path.zsh.inc"
-	source "$(brew --prefix)/share/google-cloud-sdk/completion.zsh.inc"
-fi
-
-# Language
+# Language settings
 export LANG="en_US.UTF-8"
 export LC_ALL="en_US.UTF-8"
 export LC_CTYPE="en_US.UTF-8"
 
-source ${HOME}/.config/broot/launcher/bash/br
+# Use XDG_CONFIG_HOME if set, otherwise default to ${HOME}/.config
+export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+export XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
+export XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
 
-# Key Overrides
+# History configuration
+HISTFILE="${XDG_DATA_HOME}/zsh/history"
+HISTSIZE=10000
+SAVEHIST=10000
+setopt HIST_IGNORE_ALL_DUPS
+setopt HIST_REDUCE_BLANKS
+setopt HIST_VERIFY
+
+###########################################################
+# Utility Functions                                       #
+###########################################################
+
+# Function to safely append a directory to PATH if it's not already included
+add_to_path() {
+  if [[ ":$PATH:" != *":$1:"* ]]; then
+    PATH="$1:${PATH}"
+  fi
+}
+
+# Function to check if a command exists
+command_exists() {
+  command -v "$1" &>/dev/null
+}
+
+# Function to load tools if they exist
+load_if_exists() {
+  if command_exists "$1"; then
+    eval "$2"
+  fi
+}
+
+
+###########################################################
+# Command-Line Enhancements                               #
+###########################################################
+
+# Load awesome shell tools only if they're installed
+
+# Mise
+load_if_exists mise 'eval "$(mise activate zsh)"'
+
+# lsd (ls replacement)
+load_if_exists lsd 'alias ls="lsd" && alias l="lsd -l"'
+
+# bat (cat replacement)
+if command_exists bat; then
+  alias cat='bat'
+  export MANPAGER="sh -c 'col -bx | bat -l man -p'"
+  alias -g -- -h='-h 2>&1 | bat --language=help --style=plain'
+  alias -g -- --help='--help 2>&1 | bat --language=help --style=plain'
+fi
+
+# fzf (fuzzy finder)
+load_if_exists fzf 'eval "$(fzf --zsh)"'
+
+# zoxide (cd replacement)
+load_if_exists zoxide 'eval "$(zoxide init zsh)"'
+
+# starship prompt
+load_if_exists starship 'eval "$(starship init zsh)"'
+
+# broot (terminal file manager)
+if [[ -f "${XDG_CONFIG_HOME}/broot/launcher/bash/br" ]]; then
+  source "${XDG_CONFIG_HOME}/broot/launcher/bash/br"
+fi
+
+# ngrok completion
+load_if_exists ngrok 'eval "$(ngrok completion)"'
+
+
+###########################################################
+# Homebrew Setup                                          #
+###########################################################
+if command_exists brew; then
+  # Store Homebrew prefix
+  BREW_PREFIX=$(brew --prefix)
+
+  # Add Homebrew's zsh completions to FPATH
+  FPATH="${BREW_PREFIX}/share/zsh/site-functions:${FPATH}"
+  
+  # Load completions
+  autoload -Uz compinit
+  compinit
+
+  # Homebrew settings
+  export HOMEBREW_NO_ANALYTICS=1
+  export HOMEBREW_NO_ENV_HINTS=1
+
+  # Google Cloud SDK (if installed via Homebrew)
+  GCP_SDK_PATH="${BREW_PREFIX}/share/google-cloud-sdk"
+  if [[ -d "$GCP_SDK_PATH" ]]; then
+    source "${GCP_SDK_PATH}/path.zsh.inc"
+    source "${GCP_SDK_PATH}/completion.zsh.inc"
+  fi
+fi
+
+
+###########################################################
+# Key Bindings                                            #
+###########################################################
+
+# Custom key overrides
 bindkey \^U backward-kill-line
 
-if [[ ! "$PATH" == */opt/homebrew/opt/fzf/bin* ]]; then
-  PATH="${PATH:+${PATH}:}/opt/homebrew/opt/fzf/bin"
-fi
 
-eval "$(fzf --zsh)"
+###########################################################
+# Final PATH Adjustments                                  #
+###########################################################
 
-if command -v ngrok &>/dev/null; then
-    eval "$(ngrok completion)"
-fi
+# Add local bin directories to PATH
+add_to_path "$HOME/.local/bin"
+add_to_path "$HOME/bin"
 
-source $HOME/.config/broot/launcher/bash/br
+# Remove duplicate PATH entries
+typeset -U PATH
