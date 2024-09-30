@@ -133,6 +133,8 @@ fi
 # Custom key overrides
 bindkey \^U backward-kill-line
 
+# Make sure ESC+backspace treats common separators as word separators
+WORDCHARS='*?_-.[]~=&;!#$%^(){}<>'
 
 ###########################################################
 # Final PATH Adjustments                                  #
