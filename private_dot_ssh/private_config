@@ -1,1 +1,45 @@
-AddKeysToAgent yes
+# Global settings
+Host *
+    # Use the more secure ed25519 key by default
+    IdentityFile ~/.ssh/id_ed25519
+    
+    # Enable multiplexing and socket reuse
+    ControlMaster auto
+    ControlPath ~/.ssh/control:%h:%p:%r
+    ControlPersist 10m
+    
+    # Use more secure ciphers and key exchange algorithms
+    Ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com
+    KexAlgorithms curve25519-sha256@libssh.org,diffie-hellman-group-exchange-sha256
+    
+    # Enable compression for faster transfers
+    Compression yes
+    
+    # Keep the connection alive
+    ServerAliveInterval 60
+    ServerAliveCountMax 5
+    
+    # Use the SFTP subsystem for file transfers
+    # Subsystem sftp /usr/lib/ssh/sftp-server
+    
+    # Disable X11 forwarding for security (unless you need it)
+    ForwardX11 no
+    
+    # Use stronger MAC algorithms
+    MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com
+
+    # Add keys to SSH agent
+    AddKeysToAgent yes
+
+# GitHub configuration
+Host github.com
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519
+
+    AddKeysToAgent yes
+    PreferredAuthentications publickey
+    UpdateHostKeys yes
+    Compression yes
+    TCPKeepAlive yes
+    ServerAliveInterval 60
