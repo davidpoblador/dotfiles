@@ -1,11 +1,16 @@
+User dpoblador
+
 # Global settings
 Host *
+    # Compatibility
+    AddressFamily inet
+
     # Use the more secure ed25519 key by default
     IdentityFile ~/.ssh/id_ed25519
     
     # Enable multiplexing and socket reuse
     ControlMaster auto
-    ControlPath ~/.ssh/control:%h:%p:%r
+    ControlPath /tmp/socket-%r@%h:%p
     ControlPersist 10m
     
     # Use more secure ciphers and key exchange algorithms
@@ -24,12 +29,19 @@ Host *
     
     # Disable X11 forwarding for security (unless you need it)
     ForwardX11 no
+
+    # Enable Agent Forwarding
+    ForwardAgent yes
     
     # Use stronger MAC algorithms
     MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com
 
     # Add keys to SSH agent
     AddKeysToAgent yes
+    UseKeychain yes
+
+    EscapeChar ~
+    Compression yes
 
 # GitHub configuration
 Host github.com
