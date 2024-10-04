@@ -184,10 +184,12 @@ alias md='modal deploy'
 # Python and package management
 alias uvpi='uv pip install'
 alias uvpc='uv pip compile'
+alias uvlu='uv lock --upgrade'
 
 # Misc
 alias c='code .'
 alias z='vi ${HOME}/.zshrc'
+alias bubu='brew update && brew upgrade'
 
 # Chezmoi
 alias cma='chezmoi add'
