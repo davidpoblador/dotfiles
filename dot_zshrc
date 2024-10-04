@@ -176,7 +176,6 @@ gnb() {
 # Directory navigation
 alias ..='cd ..'
 alias ...='cd ../..'
-alias repos='cd ~/repos'
 
 # Modal commands
 alias mr='modal run'
@@ -193,3 +192,12 @@ alias z='vi ${HOME}/.zshrc'
 # Chezmoi
 alias cma='chezmoi add'
 alias cmc='chezmoi cd'
+
+# Repos access
+rep() {
+    if [ $# -eq 0 ]; then
+        cd ~/repos
+    else
+        cd ~/repos/$1
+    fi
+}
