@@ -146,3 +146,50 @@ add_to_path "$HOME/bin"
 
 # Remove duplicate PATH entries
 typeset -U PATH
+
+###########################################################
+# Common Aliases                                          #
+###########################################################
+
+# Git aliases
+alias ga='git add'
+alias gc='git commit -m'
+alias gps='git push'
+alias gpl='git pull'
+alias gs='git status'
+alias gco='git checkout'
+alias gb='git branch'
+
+# Git add all and commit
+gac() {
+    git add .
+    git commit -m "$1"
+}
+
+# Create a new branch from main
+gnb() {
+    git checkout main
+    git pull
+    git checkout -b "$1"
+}
+
+# Directory navigation
+alias ..='cd ..'
+alias ...='cd ../..'
+alias repos='cd ~/repos'
+
+# Modal commands
+alias mr='modal run'
+alias md='modal deploy'
+
+# Python and package management
+alias uvpi='uv pip install'
+alias uvpc='uv pip compile'
+
+# Misc
+alias c='code .'
+alias z='vi ${HOME}/.zshrc'
+
+# Chezmoi
+alias cma='chezmoi add'
+alias cmc='chezmoi cd'
