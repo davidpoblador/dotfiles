@@ -1,4 +1,5 @@
 User dpoblador
+IgnoreUnknown UseKeychain
 
 # Global settings
 Host *
