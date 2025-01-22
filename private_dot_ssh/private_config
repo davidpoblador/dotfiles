@@ -2,6 +2,9 @@ User dpoblador
 IgnoreUnknown UseKeychain
 
 # Global settings
+  Host durian
+    HostName durian
+
 Host *
     # Compatibility
     AddressFamily inet
@@ -42,7 +45,8 @@ Host *
     UseKeychain yes
 
     EscapeChar ~
-    Compression yes
+
+    SetEnv TERM=xterm-256color
 
 # GitHub configuration
 Host github.com
