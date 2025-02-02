@@ -1,13 +1,9 @@
 User dpoblador
 IgnoreUnknown UseKeychain
 
-# Global settings
-  Host durian
-    HostName durian
-
 Host *
     # Compatibility
-    AddressFamily inet
+    AddressFamily any
 
     # Use the more secure ed25519 key by default
     IdentityFile ~/.ssh/id_ed25519
