@@ -164,4 +164,5 @@ vimcmd_visual_symbol = '[](bold fg:color_yellow)'
 [hostname]
 ssh_only = false
 style = "bg:color_orange fg:color_fg0"
-format = "[@](bg:color_orange fg:color_bg1)[$ssh_symbol$hostname ]($style)"
+ssh_symbol = "🌐"
+format = "[@](bg:color_orange fg:color_bg1)[$hostname$ssh_symbol ]($style)"
