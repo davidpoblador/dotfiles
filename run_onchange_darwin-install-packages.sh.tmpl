@@ -2,8 +2,6 @@
 #!/bin/bash
 
 brew bundle --file=/dev/stdin << EOF
-tap "homebrew/bundle"
-tap "homebrew/services"
 tap "buo/cask-upgrade"
 
 # Homebrew, Terminal and Shell Tools
@@ -68,7 +66,6 @@ brew "gping"
 brew "gtop"
 brew "httpie"
 brew "lsd"
-brew "mdcat"
 brew "procs"
 brew "ripgrep"
 brew "silicon"
@@ -85,7 +82,7 @@ brew "awscli"
 cask "google-cloud-sdk"
 
 # docker
-cask "docker"
+cask "docker-desktop"
 brew "docker-completion"
 
 # AppStore stuff
