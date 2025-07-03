@@ -46,7 +46,10 @@ Host *
 
 # GitHub configuration
 Host github.com
-    HostName github.com
+    # There are wifi networks in cafés that do not play well with ssh
+    # HostName github.com
+    Hostname ssh.github.com
+    Port 443
     User git
     IdentityFile ~/.ssh/id_ed25519
 
@@ -56,3 +59,7 @@ Host github.com
     Compression yes
     TCPKeepAlive yes
     ServerAliveInterval 60
+
+Host abc
+    Hostname alltuner-abc
+    User root

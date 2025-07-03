@@ -207,3 +207,7 @@ rep() {
 # UV
 eval "$(uvx --generate-shell-completion zsh)"
 eval "$(uv generate-shell-completion zsh)"
+
+# Completions
+fpath+=~/.zfunc; autoload -Uz compinit; compinit
+zstyle ':completion:*' menu select
