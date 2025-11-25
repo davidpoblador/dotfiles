@@ -140,9 +140,6 @@ WORDCHARS='*?_-.[]~=&;!#$%^(){}<>'
 add_to_path "$HOME/.local/bin"
 add_to_path "$HOME/bin"
 
-# Add Bun to PATH
-add_to_path "$HOME/.cache/.bun/bin"
-
 # Add Antigravity to PATH
 add_to_path "$HOME/.antigravity/antigravity/bin"
 
