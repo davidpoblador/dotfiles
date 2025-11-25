@@ -48,7 +48,7 @@ ensure_dir_exists() {
 ###########################################################
 if command_exists brew; then
   # Store Homebrew prefix
-  BREW_PREFIX=$(brew --prefix)
+  local BREW_PREFIX=$(brew --prefix)
 
   # Add Homebrew's zsh completions to FPATH
   FPATH="${BREW_PREFIX}/share/zsh/site-functions:${FPATH}"
@@ -114,7 +114,7 @@ load_if_exists ngrok 'eval "$(ngrok completion)"'
 
 # GCP completion
 if command_exists brew; then
-  GCP_SDK_PATH="${BREW_PREFIX}/share/google-cloud-sdk"
+  local GCP_SDK_PATH="$(brew --prefix)/share/google-cloud-sdk"
   if [[ -d "$GCP_SDK_PATH" ]]; then
     source "${GCP_SDK_PATH}/path.zsh.inc"
     source "${GCP_SDK_PATH}/completion.zsh.inc"
