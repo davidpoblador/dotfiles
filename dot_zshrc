@@ -206,11 +206,11 @@ rep() {
     fi
 }
 
-# UV
-eval "$(uvx --generate-shell-completion zsh)"
-eval "$(uv generate-shell-completion zsh)"
+###########################################################
+# Completion Setup                                        #
+###########################################################
 
-# Completions
+# Add custom completion directory
 fpath+=~/.zfunc
 
 # Docker completions
@@ -218,6 +218,13 @@ if [[ -d "$HOME/.docker/completions" ]]; then
   fpath=("$HOME/.docker/completions" $fpath)
 fi
 
+# Load completions
 autoload -Uz compinit
 compinit
+
+# Completion styling
 zstyle ':completion:*' menu select
+
+# UV completions
+eval "$(uvx --generate-shell-completion zsh)"
+eval "$(uv generate-shell-completion zsh)"
