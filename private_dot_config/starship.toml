@@ -1,5 +1,10 @@
 "$schema" = 'https://starship.rs/config-schema.json'
 
+# Performance tuning
+scan_timeout = 30        # Milliseconds to scan for git repos
+command_timeout = 500    # Max time for module commands
+follow_symlinks = false  # Important for network filesystems
+
 format = """
 [](color_orange)\
 $os\
@@ -162,7 +167,22 @@ vimcmd_replace_symbol = '[](bold fg:color_purple)'
 vimcmd_visual_symbol = '[](bold fg:color_yellow)'
 
 [hostname]
-ssh_only = false
+ssh_only = true  # Only show hostname when connected via SSH
 style = "bg:color_orange fg:color_fg0"
-ssh_symbol = "🌐"
-format = "[@](bg:color_orange fg:color_bg1)[$hostname$ssh_symbol ]($style)"
+ssh_symbol = " 🌐"
+format = "[@](bg:color_orange fg:color_bg1)[$ssh_symbol$hostname ]($style)"
+trim_at = "."  # Show short hostname (before first dot)
+
+# AWS Cloud Context
+[aws]
+symbol = "☁️ "
+style = "bg:color_bg3"
+format = '[[ $symbol($profile )(\($region\)) ](fg:#83a598 bg:color_bg3)]($style)'
+disabled = false
+
+# Google Cloud Context  
+[gcloud]
+symbol = "☁️ "
+style = "bg:color_bg3"
+format = '[[ $symbol$account(@$domain)(\($region\)) ](fg:#83a598 bg:color_bg3)]($style)'
+disabled = false
