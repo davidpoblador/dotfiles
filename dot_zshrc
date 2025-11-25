@@ -87,14 +87,6 @@ load_if_exists mise 'eval "$(mise activate zsh)"'
 # lsd (ls replacement)
 load_if_exists lsd 'alias ls="lsd" && alias l="lsd -l"'
 
-# bat (cat replacement)
-if command_exists bat; then
-  alias cat='bat'
-  export MANPAGER="sh -c 'col -bx | bat -l man -p'"
-  alias -g -- -h='-h 2>&1 | bat --language=help --style=plain'
-  alias -g -- --help='--help 2>&1 | bat --language=help --style=plain'
-fi
-
 # fzf (fuzzy finder)
 load_if_exists fzf 'eval "$(fzf --zsh)"'
 
