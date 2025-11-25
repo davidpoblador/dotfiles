@@ -79,29 +79,26 @@ setopt HIST_VERIFY
 # Command-Line Enhancements                               #
 ###########################################################
 
-# Load awesome shell tools only if they're installed
-
-# Mise
+# Mise - version manager for dev tools
 load_if_exists mise 'eval "$(mise activate zsh)"'
 
-# lsd (ls replacement)
-load_if_exists lsd 'alias ls="lsd" && alias l="lsd -l"'
+# Auto-update mise tools daily in background (non-blocking)
+if [[ ! -f "${XDG_CACHE_HOME}/mise_last_update" ]] || [[ $(find "${XDG_CACHE_HOME}/mise_last_update" -mtime +1 2>/dev/null) ]]; then
+  (mise upgrade -y >/dev/null 2>&1 && touch "${XDG_CACHE_HOME}/mise_last_update" &)
+fi
 
-# fzf (fuzzy finder)
-load_if_exists fzf 'eval "$(fzf --zsh)"'
+# Modern CLI replacements
+load_if_exists lsd 'alias ls="lsd" && alias l="lsd -l"'      # Better ls with icons
+load_if_exists fzf 'eval "$(fzf --zsh)"'                      # Fuzzy finder for history/files
+load_if_exists zoxide 'eval "$(zoxide init zsh)"'             # Smarter cd with frecency
+load_if_exists starship 'eval "$(starship init zsh)"'         # Fast, customizable prompt
 
-# zoxide (cd replacement)
-load_if_exists zoxide 'eval "$(zoxide init zsh)"'
-
-# starship prompt
-load_if_exists starship 'eval "$(starship init zsh)"'
-
-# broot (terminal file manager)
+# Broot - interactive directory tree navigator
 if [[ -f "${XDG_CONFIG_HOME}/broot/launcher/bash/br" ]]; then
   source "${XDG_CONFIG_HOME}/broot/launcher/bash/br"
 fi
 
-# GCP path setup (completion loaded later)
+# Google Cloud SDK - add to PATH (completions loaded later after compinit)
 if command_exists brew; then
   local GCP_SDK_PATH="$(brew --prefix)/share/google-cloud-sdk"
   if [[ -d "$GCP_SDK_PATH" ]]; then
@@ -114,10 +111,10 @@ fi
 # Key Bindings                                            #
 ###########################################################
 
-# Custom key overrides
+# Ctrl-U: Delete from cursor to beginning of line
 bindkey \^U backward-kill-line
 
-# Make sure ESC+backspace treats common separators as word separators
+# ESC+backspace: Treat special chars as word boundaries
 WORDCHARS='*?_-.[]~=&;!#$%^(){}<>'
 
 ###########################################################
@@ -135,10 +132,10 @@ add_to_path "$HOME/.antigravity/antigravity/bin"
 typeset -U PATH
 
 ###########################################################
-# Common Aliases                                          #
+# Aliases & Custom Functions                              #
 ###########################################################
 
-# Git aliases
+# Git shortcuts
 alias ga='git add'
 alias gc='git commit -m'
 alias gps='git push'
@@ -147,42 +144,22 @@ alias gs='git status'
 alias gco='git checkout'
 alias gb='git branch'
 
-# Git add all and commit
+# Git workflows
 gac() {
     git add .
     git commit -m "$1"
 }
 
-# Create a new branch from main
 gnb() {
     git checkout main
     git pull
     git checkout -b "$1"
 }
 
-# Directory navigation
+# Navigation
 alias ..='cd ..'
 alias ...='cd ../..'
 
-# Modal commands
-alias mr='modal run'
-alias md='modal deploy'
-
-# Python and package management
-alias uvpi='uv pip install'
-alias uvpc='uv pip compile'
-alias uvlu='uv lock --upgrade'
-
-# Misc
-alias c='code .'
-alias z='vi ${HOME}/.zshrc'
-alias bubu='brew update && brew upgrade'
-
-# Chezmoi
-alias cma='chezmoi add'
-alias cmc='chezmoi cd'
-
-# Repos access
 rep() {
     if [ $# -eq 0 ]; then
         cd ~/repos
@@ -191,36 +168,56 @@ rep() {
     fi
 }
 
+# Modal AI platform
+alias mr='modal run'
+alias md='modal deploy'
+
+# Python/UV package manager
+alias uvpi='uv pip install'
+alias uvpc='uv pip compile'
+alias uvlu='uv lock --upgrade'
+
+# Development
+alias c='code .'
+alias z='vi ${HOME}/.zshrc'
+
+# System maintenance
+alias bubu='brew update && brew upgrade'
+
+# Dotfile management
+alias cma='chezmoi add'
+alias cmc='chezmoi cd'
+
 ###########################################################
 # Completion Setup                                        #
 ###########################################################
+# This section configures zsh's powerful tab completion system.
+# Completions are cached daily for faster shell startup.
 
-# Add custom completion directory
+# Add custom completion directories to search path
 fpath+=~/.zfunc
-
-# Docker completions
 if [[ -d "$HOME/.docker/completions" ]]; then
   fpath=("$HOME/.docker/completions" $fpath)
 fi
 
-# Load completions (with caching for speed)
+# Initialize completion system with daily caching
+# This significantly speeds up shell startup by only regenerating once per day
 autoload -Uz compinit
-# Only regenerate compinit cache once per day
 if [[ -n ${ZDOTDIR}/.zcompdump(#qN.mh+24) ]]; then
-  compinit
+  compinit                    # Regenerate cache
 else
-  compinit -C
+  compinit -C                 # Use existing cache
 fi
 
-# Completion styling
+# Completion UI: Enable menu selection for multiple matches
 zstyle ':completion:*' menu select
 
-# Tool completions (loaded after compinit)
+# Tool-specific completions (must load after compinit)
 load_if_exists ngrok 'eval "$(ngrok completion)"'
 eval "$(uvx --generate-shell-completion zsh)"
 eval "$(uv generate-shell-completion zsh)"
 
-# GCP completions
+# Google Cloud SDK completions
 if command_exists brew; then
   local GCP_SDK_PATH="$(brew --prefix)/share/google-cloud-sdk"
   if [[ -d "$GCP_SDK_PATH" ]]; then
