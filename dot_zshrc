@@ -212,5 +212,13 @@ eval "$(uvx --generate-shell-completion zsh)"
 eval "$(uv generate-shell-completion zsh)"
 
 # Completions
-fpath+=~/.zfunc; autoload -Uz compinit; compinit
+fpath+=~/.zfunc
+
+# Docker completions
+if [[ -d "$HOME/.docker/completions" ]]; then
+  fpath=("$HOME/.docker/completions" $fpath)
+fi
+
+autoload -Uz compinit
+compinit
 zstyle ':completion:*' menu select
