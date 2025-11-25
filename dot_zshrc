@@ -52,10 +52,6 @@ if command_exists brew; then
 
   # Add Homebrew's zsh completions to FPATH
   FPATH="${BREW_PREFIX}/share/zsh/site-functions:${FPATH}"
-  
-  # Load completions
-  autoload -Uz compinit
-  compinit
 
   # Homebrew settings
   export HOMEBREW_NO_ANALYTICS=1
