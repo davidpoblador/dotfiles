@@ -1,0 +1,5 @@
+# Antidote plugin configuration
+# Plugins will be lazy-loaded with zsh-defer for faster startup
+
+# zsh-defer must be loaded first (used by antidote for kind:defer)
+romkatv/zsh-defer
