@@ -144,6 +144,9 @@ WORDCHARS='*?_-.[]~=&;!#$%^(){}<>'
 add_to_path "$HOME/.local/bin"
 add_to_path "$HOME/bin"
 
+# Add Bun to PATH
+add_to_path "$HOME/.cache/.bun/bin"
+
 # Remove duplicate PATH entries
 typeset -U PATH
 
