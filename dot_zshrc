@@ -204,13 +204,22 @@ if [[ -d "$HOME/.docker/completions" ]]; then
   fpath=("$HOME/.docker/completions" $fpath)
 fi
 
-# Initialize completion system with daily caching
-# This significantly speeds up shell startup by only regenerating once per day
+# Initialize completion system with optimized caching
+# Only regenerate completion dump once per day for maximum speed
 autoload -Uz compinit
-if [[ -n ${ZDOTDIR}/.zcompdump(#qN.mh+24) ]]; then
-  compinit                    # Regenerate cache
+
+# Check if cache needs regeneration (based on day of year)
+if [[ -n ${XDG_CACHE_HOME}/zsh/zcompdump(#qN.mh+24) ]]; then
+  # Older than 24 hours, regenerate with security check
+  compinit -d "${XDG_CACHE_HOME}/zsh/zcompdump"
 else
-  compinit -C                 # Use existing cache
+  # Use cached version, skip security check for speed
+  compinit -C -d "${XDG_CACHE_HOME}/zsh/zcompdump"
+fi
+
+# Compile the completion dump for even faster loading
+if [[ -s "${XDG_CACHE_HOME}/zsh/zcompdump" && (! -s "${XDG_CACHE_HOME}/zsh/zcompdump.zwc" || "${XDG_CACHE_HOME}/zsh/zcompdump" -nt "${XDG_CACHE_HOME}/zsh/zcompdump.zwc") ]]; then
+  zcompile "${XDG_CACHE_HOME}/zsh/zcompdump"
 fi
 
 # Completion UI: Enable menu selection for multiple matches
