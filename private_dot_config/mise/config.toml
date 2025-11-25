@@ -4,9 +4,11 @@ experimental = true
 idiomatic_version_file_enable_tools = []
 
 [tools]
+awscli = "latest"
 bun = "latest"
 gh = "latest"
 go = "latest"
 mc = "latest"
 node = "latest"
 rust = "latest"
+just = "latest"
