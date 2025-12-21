@@ -142,6 +142,9 @@ add_to_path "$HOME/bin"
 # Add Antigravity to PATH
 add_to_path "$HOME/.antigravity/antigravity/bin"
 
+# Add Bun to PATH
+add_to_path "$HOME/.cache/.bun/bin"
+
 # Remove duplicate PATH entries
 typeset -U PATH
 
@@ -190,6 +193,7 @@ alias md='modal deploy'
 alias uvpi='uv pip install'
 alias uvpc='uv pip compile'
 alias uvlu='uv lock --upgrade'
+alias toad='uvx --from batrachian-toad toad'
 
 # Development
 alias c='code .'
