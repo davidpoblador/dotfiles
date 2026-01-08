@@ -7,48 +7,30 @@
 // custom settings, run the `open default settings` command
 // from the command palette or from `Zed` application menu.
 {
-  "agent": {
-    "default_model": {
-      "provider": "copilot_chat",
-      "model": "claude-sonnet-4.5"
-    },
-    "model_parameters": []
-  },
-  "features": {
-    "edit_prediction_provider": "copilot"
-  },
   "icon_theme": "Catppuccin Macchiato",
   "base_keymap": "VSCode",
   "minimap": { "show": "always" },
   "theme": "Catppuccin Macchiato",
   "telemetry": {
     "diagnostics": false,
-    "metrics": false
+    "metrics": false,
   },
   "ui_font_size": 15,
   "buffer_font_size": 13,
   "buffer_font_family": "JetBrainsMono Nerd Font",
   "languages": {
     "Python": {
-      "language_servers": ["ruff"],
+      "code_actions_on_format": {
+        "source.fixAll.ruff": true,
+        "source.organizeImports.ruff": true,
+      },
+      "language_servers": ["ruff", "ty", "!basedpyright"],
       "format_on_save": "on",
-      "formatter": [
-        {
-          "code_actions": {
-            "source.organizeImports.ruff": true,
-            "source.fixAll.ruff": true
-          }
-        },
-        {
-          "language_server": {
-            "name": "ruff"
-          }
-        }
-      ]
-    }
+      "formatter": [],
+    },
   },
   "file_types": {
     "HTML-Jinja": ["**/*.html.jinja"],
-    "Jinja2": ["**/*.j2"]
-  }
+    "Jinja2": ["**/*.j2"],
+  },
 }
