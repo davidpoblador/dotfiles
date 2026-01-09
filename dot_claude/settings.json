@@ -1,7 +1,8 @@
 {
+  "model": "opus",
   "enabledPlugins": {
     "frontend-design@claude-code-plugins": true,
-    "feature-dev@claude-code-plugins": true
-  },
-  "model": "opus"
+    "feature-dev@claude-code-plugins": true,
+    "code-simplifier@claude-plugins-official": true
+  }
 }
