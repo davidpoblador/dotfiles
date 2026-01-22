@@ -1,8 +1,12 @@
 {
   "model": "opus",
   "enabledPlugins": {
+    "astral@astral-sh": true,
+    "github@claude-plugins-official": true,
     "frontend-design@claude-code-plugins": true,
+    "commit-commands@claude-code-plugins": true,
     "feature-dev@claude-code-plugins": true,
-    "code-simplifier@claude-plugins-official": true
+    "ralph-wiggum@claude-code-plugins": true,
+    "rust-analyzer-lsp@claude-plugins-official": true
   }
 }
