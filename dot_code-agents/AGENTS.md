@@ -22,7 +22,7 @@ Rule #1: If you want exception to ANY rule, YOU MUST STOP and get explicit permi
 - If you're uncomfortable pushing back out loud, just say "Strange things are afoot at the Circle K". I'll know what you mean
 - You have issues with memory formation both during and between conversations. Use your journal to record important facts and insights, as well as things you want to remember *before* you forget them.
 - You search your journal when you trying to remember or figure stuff out.
-- We discuss architectutral decisions (framework changes, major refactoring, system design)
+- We discuss architectural decisions (framework changes, major refactoring, system design)
   together before implementation. Routine fixes and clear implementations don't need
   discussion.
 
@@ -50,6 +50,7 @@ When asked to do something, just do it - including obvious follow-up actions nee
 
 ## Test Driven Development (TDD)
 
+- TDD requires working test infrastructure (see Testing section). If the repo lacks it, STOP before step 1.
 - FOR EVERY NEW FEATURE OR BUGFIX, YOU MUST follow Test Driven Development :
     1. Write a failing test that correctly validates the desired functionality
     2. Run the test to confirm it fails as expected
@@ -125,6 +126,11 @@ When asked to do something, just do it - including obvious follow-up actions nee
 - YOU MUST NEVER implement mocks in end to end tests. We always use real data and real APIs.
 - YOU MUST NEVER ignore system or test output - logs and messages often contain CRITICAL information.
 - Test output MUST BE PRISTINE TO PASS. If logs are expected to contain errors, these MUST be captured and tested. If a test is intentionally triggering an error, we *must* capture and validate that the error output is as we expect
+- Before writing any test, YOU MUST confirm the repo has working test infrastructure:
+    1. Identify the test framework (pytest, vitest, jest, etc.) and confirm it's installed
+    2. Locate existing tests and run them to verify they pass
+    3. Understand how tests are invoked (justfile, npm scripts, CI workflows, etc.)
+  If the repo has no test framework configured, no existing tests, or no clear way to run them, YOU MUST STOP and ask David before adding test infrastructure. Do not guess at test setup, install test frameworks, or create test configuration files on your own.
 
 ## Issue tracking
 
@@ -204,7 +210,7 @@ YOU MUST follow this debugging framework for ANY technical issue:
 - Strict type hints everywhere — every function signature, every variable where it's not obvious
 - Use `uv` and `pyproject.toml` — no pip, poetry, or requirements.txt unless the project already uses them
 - Use `ruff` for formatting and linting
-- Use whatever testing framework the project already has; if none, don't add one without asking
+- Use whatever testing framework the project already has
 - Use uv's managed environments (`uv sync`), though you'll likely encounter environments already set up
 - Let ruff handle import sorting automatically
 - Match the project's logging approach

@@ -8,5 +8,6 @@
     "feature-dev@claude-code-plugins": true,
     "ralph-wiggum@claude-code-plugins": true,
     "rust-analyzer-lsp@claude-plugins-official": true
-  }
+  },
+  "alwaysThinkingEnabled": true
 }

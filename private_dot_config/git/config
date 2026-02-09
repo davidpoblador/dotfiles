@@ -4,7 +4,7 @@
 
 [core]
     pager = delta
-    excludesfile = /Users/dpoblador/.gitignore_global
+    excludesfile = ~/.gitignore_global
 
 [interactive]
     diffFilter = delta --color-only --features=interactive
@@ -44,5 +44,12 @@
 [include]
     path = macchiato.config
 
-[pager]
-    log = less -FRX
+[alias]
+    st = "!f(){ \
+        if [ \"$(git rev-parse --is-bare-repository 2>/dev/null)\" = \"true\" ]; then \
+            echo \"bare repo (no working tree). Try: git worktree list | git branch -vv | git log --oneline -n 20\"; \
+            git worktree list 2>/dev/null || true; \
+        else \
+            git status \"$@\"; \
+        fi; \
+    }; f"
