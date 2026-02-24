@@ -3,6 +3,20 @@
 experimental = true
 idiomatic_version_file_enable_tools = []
 
+[hooks.cd]
+shell = "bash"
+script = """
+if [ -f "uv.lock" ] && [ ! -d ".venv" ]; then
+  echo "mise: uv.lock found without .venv, running uv sync..." >&2
+  uv sync --frozen --quiet &
+fi
+if [ -f "bun.lock" ] && [ ! -d "node_modules" ]; then
+  echo "mise: bun.lock found without node_modules, running bun install..." >&2
+  bun install --frozen-lockfile &
+fi
+wait
+"""
+
 [tools]
 awscli = "latest"
 bun = "latest"

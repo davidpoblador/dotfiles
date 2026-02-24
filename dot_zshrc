@@ -92,7 +92,7 @@ setopt HIST_VERIFY
 ###########################################################
 
 # Load antidote plugin manager
-source /opt/homebrew/opt/antidote/share/antidote/antidote.zsh
+source "${BREW_PREFIX:-$(brew --prefix)}/opt/antidote/share/antidote/antidote.zsh"
 antidote load
 
 # Mise - version manager for dev tools (deferred for speed)

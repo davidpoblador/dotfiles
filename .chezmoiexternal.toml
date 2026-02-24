@@ -1,0 +1,6 @@
+[".config/tmux/plugins/catppuccin/tmux"]
+    type = "archive"
+    url = "https://github.com/catppuccin/tmux/archive/refs/heads/main.tar.gz"
+    exact = true
+    stripComponents = 1
+    refreshPeriod = "168h"

@@ -1,6 +1,6 @@
 [user]
-    name = "David Poblador i Garcia"
-    email = "david@poblador.com"
+    name = {{ .full_name | quote }}
+    email = {{ .email | quote }}
 
 [core]
     pager = delta
