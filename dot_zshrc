@@ -81,8 +81,8 @@ HISTFILE="${HISTDIR}/history"
 # Ensure history directory exists
 ensure_dir_exists "$HISTDIR"
 
-HISTSIZE=10000
-SAVEHIST=10000
+HISTSIZE=50000
+SAVEHIST=50000
 setopt HIST_IGNORE_ALL_DUPS
 setopt HIST_REDUCE_BLANKS
 setopt HIST_VERIFY
