@@ -199,7 +199,7 @@ alias toad='uvx --from batrachian-toad toad'
 
 # Development
 alias c='code .'
-alias z='vi ${HOME}/.zshrc'
+alias z='chezmoi edit ~/.zshrc'
 
 # System maintenance
 alias bubu='brew update && brew upgrade'

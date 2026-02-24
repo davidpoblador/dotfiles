@@ -1,2 +1,10 @@
 theme = Catppuccin Macchiato
+font-family = JetBrainsMono Nerd Font
+font-size = 13
+cursor-style = block
+cursor-style-blink = true
+window-padding-x = 4
+window-padding-y = 4
+shell-integration = zsh
+macos-titlebar-style = tabs
 keybind = shift+enter=text:\n
