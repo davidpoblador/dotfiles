@@ -3,8 +3,10 @@
 experimental = true
 idiomatic_version_file_enable_tools = []
 
-[hooks.cd]
-shell = "bash"
+[settings.python]
+uv_venv_auto = true
+
+[[hooks.cd]]
 script = """
 if [ -f "uv.lock" ] && [ ! -d ".venv" ]; then
   echo "mise: uv.lock found without .venv, running uv sync..." >&2
