@@ -1,13 +1,35 @@
 {
   "model": "opus",
   "enabledPlugins": {
-    "astral@astral-sh": true,
-    "github@claude-plugins-official": true,
     "frontend-design@claude-code-plugins": true,
     "commit-commands@claude-code-plugins": true,
     "feature-dev@claude-code-plugins": true,
-    "ralph-wiggum@claude-code-plugins": true,
-    "rust-analyzer-lsp@claude-plugins-official": true
+    "chrome-devtools-mcp@chrome-devtools-plugins": true,
+    "superpowers@claude-plugins-official": true,
+    "astral@astral-sh": true
   },
-  "alwaysThinkingEnabled": true
+  "alwaysThinkingEnabled": true,
+  "skipDangerousModePermissionPrompt": true,
+  "hooks": {
+    "WorktreeCreate": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/worktree-create.sh"
+          }
+        ]
+      }
+    ],
+    "WorktreeRemove": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/worktree-remove.sh"
+          }
+        ]
+      }
+    ]
+  }
 }
