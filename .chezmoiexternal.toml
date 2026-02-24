@@ -4,3 +4,8 @@
     exact = true
     stripComponents = 1
     refreshPeriod = "168h"
+
+[".vim/colors/catppuccin_macchiato.vim"]
+    type = "file"
+    url = "https://raw.githubusercontent.com/catppuccin/vim/main/colors/catppuccin_macchiato.vim"
+    refreshPeriod = "168h"
