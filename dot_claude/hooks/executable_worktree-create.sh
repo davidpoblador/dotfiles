@@ -90,7 +90,8 @@ fi
 if [ -f "$WORKTREE_DIR/bun.lock" ] || [ -f "$WORKTREE_DIR/bun.lockb" ]; then
 	if command -v bun >/dev/null 2>&1; then
 		log "✓ bun installing..."
-		(cd "$WORKTREE_DIR" && bun install --frozen-lockfile --silent) >$OUT 2>&1 || {
+		BUN_SILENT=$( [ "$OUT" = "/dev/null" ] && echo "--silent" || echo "" )
+		(cd "$WORKTREE_DIR" && bun install --frozen-lockfile $BUN_SILENT) >$OUT 2>&1 || {
 			log "⚠ bun install failed, continuing anyway"
 		}
 		log "✓ bun install done"
