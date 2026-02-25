@@ -7,13 +7,18 @@ WORKTREE_DIR="$CLAUDE_PROJECT_DIR/.claude/worktrees/$NAME"
 BRANCH="worktree-$NAME"
 
 log() { echo "$*" >/dev/tty 2>/dev/null || true; }
+if [ "${HOOK_DEBUG:-0}" = "1" ]; then
+	OUT=/dev/tty
+else
+	OUT=/dev/null
+fi
 
 mkdir -p "$CLAUDE_PROJECT_DIR/.claude/worktrees"
 
 if [ -d "$WORKTREE_DIR" ]; then
 	log "✓ Resuming existing worktree: $NAME"
 else
-	git -C "$CLAUDE_PROJECT_DIR" worktree add "$WORKTREE_DIR" -b "$BRANCH" HEAD >/dev/null 2>&1 || {
+	git -C "$CLAUDE_PROJECT_DIR" worktree add "$WORKTREE_DIR" -b "$BRANCH" HEAD >$OUT 2>&1 || {
 		log "⚠ Failed to create worktree '$NAME' (branch '$BRANCH' may already exist)"
 		log "  Try: git branch -d worktree-$NAME"
 		echo "$WORKTREE_DIR"
@@ -24,7 +29,7 @@ else
 	# --- git submodules (only on creation) ---
 	if [ -f "$CLAUDE_PROJECT_DIR/.gitmodules" ]; then
 		log "✓ Initializing submodules..."
-		if git -C "$WORKTREE_DIR" submodule update --init --recursive --depth 1 >/dev/null 2>&1; then
+		if git -C "$WORKTREE_DIR" submodule update --init --recursive --depth 1 >$OUT 2>&1; then
 			log "✓ Submodules initialized"
 		else
 			log "⚠ Submodule init failed, continuing anyway"
@@ -50,7 +55,7 @@ else
 				log "✓ Cleared core.hooksPath (pre-commit leftover)"
 			fi
 			log "✓ Installing prek hooks..."
-			if (cd "$WORKTREE_DIR" && uv tool run prek install) >/dev/null 2>&1; then
+			if (cd "$WORKTREE_DIR" && uv tool run prek install) >$OUT 2>&1; then
 				log "✓ prek hooks installed"
 			else
 				log "⚠ prek install failed, continuing anyway"
@@ -65,7 +70,7 @@ fi
 if [ -f "$WORKTREE_DIR/uv.lock" ]; then
 	if command -v uv >/dev/null 2>&1; then
 		log "✓ uv syncing..."
-		(cd "$WORKTREE_DIR" && uv sync --frozen --quiet) >/dev/tty 2>&1 || {
+		(cd "$WORKTREE_DIR" && uv sync --frozen --quiet) >$OUT 2>&1 || {
 			log "⚠ uv sync failed, continuing anyway"
 		}
 		log "✓ uv sync done"
@@ -84,7 +89,7 @@ fi
 if [ -f "$WORKTREE_DIR/bun.lock" ] || [ -f "$WORKTREE_DIR/bun.lockb" ]; then
 	if command -v bun >/dev/null 2>&1; then
 		log "✓ bun installing..."
-		(cd "$WORKTREE_DIR" && bun install --frozen-lockfile --silent) >/dev/null 2>&1 || {
+		(cd "$WORKTREE_DIR" && bun install --frozen-lockfile --silent) >$OUT 2>&1 || {
 			log "⚠ bun install failed, continuing anyway"
 		}
 		log "✓ bun install done"
