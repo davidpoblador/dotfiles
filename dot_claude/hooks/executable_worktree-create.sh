@@ -21,6 +21,16 @@ else
 	}
 	log "✓ Created worktree: $NAME"
 
+	# --- git submodules (only on creation) ---
+	if [ -f "$CLAUDE_PROJECT_DIR/.gitmodules" ]; then
+		log "✓ Initializing submodules..."
+		if git -C "$WORKTREE_DIR" submodule update --init --recursive >/dev/null 2>&1; then
+			log "✓ Submodules initialized"
+		else
+			log "⚠ Submodule init failed, continuing anyway"
+		fi
+	fi
+
 	# --- .env copy (only on creation) ---
 	if [ -f "$CLAUDE_PROJECT_DIR/.env" ]; then
 		cp "$CLAUDE_PROJECT_DIR/.env" "$WORKTREE_DIR/.env"
