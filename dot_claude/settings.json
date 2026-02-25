@@ -16,8 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/worktree-create.sh",
-            "timeout": 10
+            "command": "~/.claude/hooks/worktree-create.sh"
           }
         ]
       }
@@ -27,8 +26,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/worktree-remove.sh",
-            "timeout": 5
+            "command": "~/.claude/hooks/worktree-remove.sh"
           }
         ]
       }
