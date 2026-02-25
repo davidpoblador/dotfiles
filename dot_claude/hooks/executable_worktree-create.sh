@@ -70,7 +70,8 @@ fi
 if [ -f "$WORKTREE_DIR/uv.lock" ]; then
 	if command -v uv >/dev/null 2>&1; then
 		log "✓ uv syncing..."
-		(cd "$WORKTREE_DIR" && uv sync --frozen --quiet) >$OUT 2>&1 || {
+		UV_QUIET=$( [ "$OUT" = "/dev/null" ] && echo "--quiet" || echo "" )
+		(cd "$WORKTREE_DIR" && uv sync --frozen $UV_QUIET) >$OUT 2>&1 || {
 			log "⚠ uv sync failed, continuing anyway"
 		}
 		log "✓ uv sync done"
