@@ -24,7 +24,7 @@ else
 	# --- git submodules (only on creation) ---
 	if [ -f "$CLAUDE_PROJECT_DIR/.gitmodules" ]; then
 		log "✓ Initializing submodules..."
-		if git -C "$WORKTREE_DIR" submodule update --init --recursive --depth 1 >/dev/tty 2>&1; then
+		if git -C "$WORKTREE_DIR" submodule update --init --recursive --depth 1 >/dev/null 2>&1; then
 			log "✓ Submodules initialized"
 		else
 			log "⚠ Submodule init failed, continuing anyway"
