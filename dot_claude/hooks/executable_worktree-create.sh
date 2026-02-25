@@ -26,38 +26,25 @@ else
 		cp "$CLAUDE_PROJECT_DIR/.env" "$WORKTREE_DIR/.env"
 		log "✓ Copied .env"
 	fi
-
-	# --- deterministic DEV_PORT (only on creation) ---
-	hash_port() {
-		local hash
-		hash=$(echo -n "$1" | md5sum 2>/dev/null || echo -n "$1" | md5 -q)
-		hash=$(echo "$hash" | tr -d -c '0-9' | head -c 5)
-		echo $(((hash % 4000) + 14000))
-	}
-
-	DEV_PORT=$(hash_port "$BRANCH")
-
-	ENV_LOCAL="$WORKTREE_DIR/.env.local"
 	if [ -f "$CLAUDE_PROJECT_DIR/.env.local" ]; then
-		cp "$CLAUDE_PROJECT_DIR/.env.local" "$ENV_LOCAL"
-		if grep -q '^DEV_PORT=' "$ENV_LOCAL"; then
-			sed -i "s/^DEV_PORT=.*/DEV_PORT=$DEV_PORT/" "$ENV_LOCAL"
-		else
-			echo "DEV_PORT=$DEV_PORT" >>"$ENV_LOCAL"
-		fi
-	else
-		echo "DEV_PORT=$DEV_PORT" >"$ENV_LOCAL"
+		cp "$CLAUDE_PROJECT_DIR/.env.local" "$WORKTREE_DIR/.env.local"
+		log "✓ Copied .env.local"
 	fi
-	log "✓ DEV_PORT=$DEV_PORT set in .env.local"
 
 	# --- prek (only on creation) ---
 	if [ -f "$WORKTREE_DIR/.pre-commit-config.yaml" ]; then
 		if command -v uv >/dev/null 2>&1; then
+			# Remove core.hooksPath if set (leftover from old pre-commit)
+			if git -C "$WORKTREE_DIR" config --get core.hooksPath >/dev/null 2>&1; then
+				git -C "$WORKTREE_DIR" config --local --unset-all core.hooksPath 2>/dev/null || true
+				log "✓ Cleared core.hooksPath (pre-commit leftover)"
+			fi
 			log "✓ Installing prek hooks..."
-			(cd "$WORKTREE_DIR" && uv tool run prek install) >/dev/null 2>&1 || {
+			if (cd "$WORKTREE_DIR" && uv tool run prek install) >/dev/null 2>&1; then
+				log "✓ prek hooks installed"
+			else
 				log "⚠ prek install failed, continuing anyway"
-			}
-			log "✓ prek hooks installed"
+			fi
 		else
 			log "⚠ uv not found in PATH, skipping"
 		fi
@@ -103,6 +90,10 @@ if [ -x "$PROJECT_HOOK" ]; then
 	echo "$INPUT" | "$PROJECT_HOOK" >/dev/null
 	log "✓ Project hook done"
 fi
+
+# Tell Ghostty the worktree is the "cwd" so new panes open there
+ABS_WORKTREE_DIR=$(cd "$WORKTREE_DIR" && pwd -P)
+printf '\e]7;file://%s%s\e\\' "$HOSTNAME" "$ABS_WORKTREE_DIR" >/dev/tty 2>/dev/null || true
 
 # stdout = path only
 echo "$WORKTREE_DIR"
