@@ -81,8 +81,8 @@ HISTFILE="${HISTDIR}/history"
 # Ensure history directory exists
 ensure_dir_exists "$HISTDIR"
 
-HISTSIZE=50000
-SAVEHIST=50000
+HISTSIZE=10000
+SAVEHIST=10000
 setopt HIST_IGNORE_ALL_DUPS
 setopt HIST_REDUCE_BLANKS
 setopt HIST_VERIFY
@@ -179,6 +179,15 @@ gnb() {
 alias ..='cd ..'
 alias ...='cd ../..'
 
+# cd to the main working tree of the current git repo (useful from worktrees)
+cdm() {
+    local git_dir
+    git_dir="$(git rev-parse --git-dir 2>/dev/null)" || { echo "Not in a git repo"; return 1; }
+    # --git-dir is ".git" in main worktree, ".git/worktrees/<name>" in linked worktrees
+    [[ "$git_dir" == ".git" ]] && return 0
+    cd "$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")"
+}
+
 rep() {
     if [ $# -eq 0 ]; then
         cd ~/repos
@@ -199,7 +208,7 @@ alias toad='uvx --from batrachian-toad toad'
 
 # Development
 alias c='code .'
-alias z='chezmoi edit ~/.zshrc'
+alias z='vi ${HOME}/.zshrc'
 
 # System maintenance
 alias bubu='brew update && brew upgrade'
