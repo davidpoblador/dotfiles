@@ -1,41 +1,7 @@
 {
-  "model": "opus",
-  "enabledPlugins": {
-    "frontend-design@claude-code-plugins": true,
-    "commit-commands@claude-code-plugins": true,
-    "feature-dev@claude-code-plugins": true,
-    "chrome-devtools-mcp@chrome-devtools-plugins": true,
-    "superpowers@claude-plugins-official": true,
-    "astral@astral-sh": true
-  },
-  "alwaysThinkingEnabled": true,
-  "skipDangerousModePermissionPrompt": true,
-  "hooks": {
-    "WorktreeCreate": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/worktree-create.sh"
-          }
-        ]
-      }
-    ],
-    "WorktreeRemove": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/worktree-remove.sh"
-          }
-        ]
-      }
-    ]
-  },
   "env": {
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
   },
-  "enableAllProjectMcpServers": true,
   "permissions": {
     "allow": [
       "Skill(frontend-design:frontend-design)",
@@ -189,9 +155,44 @@
     "deny": [],
     "defaultMode": "acceptEdits"
   },
-  "teammateMode": "in-process",
+  "model": "opus",
+  "enableAllProjectMcpServers": true,
+  "hooks": {
+    "WorktreeCreate": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/worktree-create.sh"
+          }
+        ]
+      }
+    ],
+    "WorktreeRemove": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/worktree-remove.sh"
+          }
+        ]
+      }
+    ]
+  },
   "statusLine": {
     "type": "command",
     "command": "~/.claude/statusline-command.sh"
-  }
+  },
+  "enabledPlugins": {
+    "frontend-design@claude-code-plugins": true,
+    "commit-commands@claude-code-plugins": true,
+    "feature-dev@claude-code-plugins": true,
+    "chrome-devtools-mcp@chrome-devtools-plugins": true,
+    "superpowers@claude-plugins-official": true,
+    "astral@astral-sh": true,
+    "rust-analyzer-lsp@claude-plugins-official": true,
+    "context-mode@claude-context-mode": true
+  },
+  "alwaysThinkingEnabled": true,
+  "skipDangerousModePermissionPrompt": true
 }
