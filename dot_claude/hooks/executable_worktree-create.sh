@@ -67,14 +67,14 @@ else
 		fi
 	fi
 
-	# --- .env copy (only on creation) ---
+	# --- .env symlink (only on creation) ---
 	if [ -f "$CLAUDE_PROJECT_DIR/.env" ]; then
-		cp "$CLAUDE_PROJECT_DIR/.env" "$WORKTREE_DIR/.env"
-		log "✓ Copied .env"
+		ln -sf "$CLAUDE_PROJECT_DIR/.env" "$WORKTREE_DIR/.env"
+		log "✓ Symlinked .env"
 	fi
 	if [ -f "$CLAUDE_PROJECT_DIR/.env.local" ]; then
-		cp "$CLAUDE_PROJECT_DIR/.env.local" "$WORKTREE_DIR/.env.local"
-		log "✓ Copied .env.local"
+		ln -sf "$CLAUDE_PROJECT_DIR/.env.local" "$WORKTREE_DIR/.env.local"
+		log "✓ Symlinked .env.local"
 	fi
 
 	# --- prek (only on creation) ---
