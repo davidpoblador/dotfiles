@@ -4,38 +4,36 @@ set -euo pipefail
 INPUT=$(cat)
 
 LOGFILE="/tmp/worktree.log"
-echo "" >> "$LOGFILE"
-echo "=== WorktreeRemove $(date) ===" >> "$LOGFILE"
-echo "RAW_INPUT=$INPUT" >> "$LOGFILE"
 
 # WorktreeRemove payload has worktree_path (not name)
 NAME=$(echo "$INPUT" | jq -r '.worktree_path // empty' | xargs basename 2>/dev/null || true)
 if [ -z "$NAME" ]; then
-	echo "ERROR: Could not extract worktree name from input" >> "$LOGFILE"
+	echo "[$(date '+%H:%M:%S')] [remove] ERROR: Could not extract worktree name" >> "$LOGFILE"
 	exit 0
 fi
 
 WORKTREE_DIR="$CLAUDE_PROJECT_DIR/.claude/worktrees/$NAME"
 BRANCH="worktree-$NAME"
 
-log() { echo "[$(date '+%H:%M:%S')] [remove] $*" | tee -a "$LOGFILE" >/dev/tty 2>/dev/null || true; }
+log() { echo "$(date '+%Y-%m-%d %H:%M:%S') [remove] $*" | tee -a "$LOGFILE" >/dev/tty 2>/dev/null || true; }
 if [ "${HOOK_DEBUG:-0}" = "1" ]; then
 	OUT=/dev/tty
 else
 	OUT=/dev/null
 fi
-echo "NAME=$NAME WORKTREE_DIR=$WORKTREE_DIR BRANCH=$BRANCH" >> "$LOGFILE"
-echo "CLAUDE_PROJECT_DIR=$CLAUDE_PROJECT_DIR" >> "$LOGFILE"
+
+echo "" >> "$LOGFILE"
+log "--- WorktreeRemove: $NAME (branch: $BRANCH) ---"
+echo "  payload: $INPUT" >> "$LOGFILE"
 
 # --- remove the worktree ---
 if [ -d "$WORKTREE_DIR" ]; then
-	log "✓ Removing worktree: $NAME"
 	git -C "$CLAUDE_PROJECT_DIR" worktree remove --force "$WORKTREE_DIR" >$OUT 2>&1 || {
 		log "⚠ git worktree remove failed, cleaning up manually"
 		rm -rf "$WORKTREE_DIR"
 		git -C "$CLAUDE_PROJECT_DIR" worktree prune >$OUT 2>&1 || true
 	}
-	log "✓ Worktree removed"
+	log "✓ Removed worktree: $NAME"
 else
 	log "⚠ Worktree directory not found: $WORKTREE_DIR"
 	git -C "$CLAUDE_PROJECT_DIR" worktree prune >$OUT 2>&1 || true

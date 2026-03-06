@@ -7,16 +7,16 @@ WORKTREE_DIR="$CLAUDE_PROJECT_DIR/.claude/worktrees/$NAME"
 BRANCH="worktree-$NAME"
 
 LOGFILE="/tmp/worktree.log"
-log() { echo "[$(date '+%H:%M:%S')] [create] $*" | tee -a "$LOGFILE" >/dev/tty 2>/dev/null || true; }
+log() { echo "$(date '+%Y-%m-%d %H:%M:%S') [create] $*" | tee -a "$LOGFILE" >/dev/tty 2>/dev/null || true; }
 if [ "${HOOK_DEBUG:-0}" = "1" ]; then
 	OUT=/dev/tty
 else
 	OUT=/dev/null
 fi
+
 echo "" >> "$LOGFILE"
-echo "=== WorktreeCreate $(date) ===" >> "$LOGFILE"
-echo "NAME=$NAME WORKTREE_DIR=$WORKTREE_DIR BRANCH=$BRANCH" >> "$LOGFILE"
-echo "CLAUDE_PROJECT_DIR=$CLAUDE_PROJECT_DIR" >> "$LOGFILE"
+log "--- WorktreeCreate: $NAME (branch: $BRANCH) ---"
+echo "  payload: $INPUT" >> "$LOGFILE"
 
 mkdir -p "$CLAUDE_PROJECT_DIR/.claude/worktrees"
 
