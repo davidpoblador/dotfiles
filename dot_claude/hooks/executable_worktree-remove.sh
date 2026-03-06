@@ -75,11 +75,35 @@ if [ -d "$WORKTREES_DIR" ]; then
 		wt_branch="worktree-$wt_name"
 		# Skip the one we just removed
 		[ "$wt_name" = "$NAME" ] && continue
-		# Only stale if it was pushed (has upstream) but remote branch is now gone
 		has_upstream=$(git -C "$CLAUDE_PROJECT_DIR" for-each-ref --format='%(upstream)' "refs/heads/$wt_branch" 2>/dev/null)
-		[ -z "$has_upstream" ] && continue
-		if ! git -C "$CLAUDE_PROJECT_DIR" show-ref --verify --quiet "refs/remotes/origin/$wt_branch" 2>/dev/null; then
-			log "✓ Cleaning stale worktree: $wt_name (remote branch gone)"
+		should_clean=false
+		reason=""
+
+		if [ -n "$has_upstream" ]; then
+			# Pushed but remote branch is now gone (e.g., PR merged and branch deleted)
+			if ! git -C "$CLAUDE_PROJECT_DIR" show-ref --verify --quiet "refs/remotes/origin/$wt_branch" 2>/dev/null; then
+				should_clean=true
+				reason="remote branch gone"
+			fi
+		else
+			# Never pushed — check if older than 24h with no unique commits
+			wt_created=$(git -C "$CLAUDE_PROJECT_DIR" reflog show --format='%ct' "$wt_branch" 2>/dev/null | tail -1)
+			wt_created=${wt_created:-0}
+			now=$(date +%s)
+			age_hours=$(( (now - wt_created) / 3600 ))
+			if [ "$age_hours" -ge 24 ]; then
+				unique_commits=$(git -C "$CLAUDE_PROJECT_DIR" rev-list --count "$DEFAULT_BRANCH".."$wt_branch" 2>/dev/null || echo 0)
+				if [ "$unique_commits" -eq 0 ]; then
+					should_clean=true
+					reason="no upstream, no unique commits, ${age_hours}h old"
+				else
+					log "⏭ Keeping stale worktree: $wt_name (${age_hours}h old but has $unique_commits unpushed commit(s))"
+				fi
+			fi
+		fi
+
+		if [ "$should_clean" = true ]; then
+			log "✓ Cleaning stale worktree: $wt_name ($reason)"
 			git -C "$CLAUDE_PROJECT_DIR" worktree remove --force "$wt_dir" >$OUT 2>&1 || {
 				rm -rf "$wt_dir"
 				git -C "$CLAUDE_PROJECT_DIR" worktree prune >$OUT 2>&1 || true
