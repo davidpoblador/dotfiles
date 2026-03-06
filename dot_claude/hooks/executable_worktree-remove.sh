@@ -30,7 +30,7 @@ echo "CLAUDE_PROJECT_DIR=$CLAUDE_PROJECT_DIR" >> "$LOGFILE"
 # --- remove the worktree ---
 if [ -d "$WORKTREE_DIR" ]; then
 	log "✓ Removing worktree: $NAME"
-	git -C "$CLAUDE_PROJECT_DIR" worktree remove --force --force "$WORKTREE_DIR" >$OUT 2>&1 || {
+	git -C "$CLAUDE_PROJECT_DIR" worktree remove --force "$WORKTREE_DIR" >$OUT 2>&1 || {
 		log "⚠ git worktree remove failed, cleaning up manually"
 		rm -rf "$WORKTREE_DIR"
 		git -C "$CLAUDE_PROJECT_DIR" worktree prune >$OUT 2>&1 || true
