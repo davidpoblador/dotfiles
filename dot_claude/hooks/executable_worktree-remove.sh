@@ -2,16 +2,30 @@
 set -euo pipefail
 
 INPUT=$(cat)
-NAME=$(echo "$INPUT" | jq -r '.name')
+
+LOGFILE="/tmp/worktree.log"
+echo "" >> "$LOGFILE"
+echo "=== WorktreeRemove $(date) ===" >> "$LOGFILE"
+echo "RAW_INPUT=$INPUT" >> "$LOGFILE"
+
+# WorktreeRemove payload has worktree_path (not name)
+NAME=$(echo "$INPUT" | jq -r '.worktree_path // empty' | xargs basename 2>/dev/null || true)
+if [ -z "$NAME" ]; then
+	echo "ERROR: Could not extract worktree name from input" >> "$LOGFILE"
+	exit 0
+fi
+
 WORKTREE_DIR="$CLAUDE_PROJECT_DIR/.claude/worktrees/$NAME"
 BRANCH="worktree-$NAME"
 
-log() { echo "$*" >/dev/tty 2>/dev/null || true; }
+log() { echo "[$(date '+%H:%M:%S')] [remove] $*" | tee -a "$LOGFILE" >/dev/tty 2>/dev/null || true; }
 if [ "${HOOK_DEBUG:-0}" = "1" ]; then
 	OUT=/dev/tty
 else
 	OUT=/dev/null
 fi
+echo "NAME=$NAME WORKTREE_DIR=$WORKTREE_DIR BRANCH=$BRANCH" >> "$LOGFILE"
+echo "CLAUDE_PROJECT_DIR=$CLAUDE_PROJECT_DIR" >> "$LOGFILE"
 
 # --- remove the worktree ---
 if [ -d "$WORKTREE_DIR" ]; then

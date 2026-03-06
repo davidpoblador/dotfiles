@@ -6,12 +6,17 @@ NAME=$(echo "$INPUT" | jq -r '.name')
 WORKTREE_DIR="$CLAUDE_PROJECT_DIR/.claude/worktrees/$NAME"
 BRANCH="worktree-$NAME"
 
-log() { echo "$*" >/dev/tty 2>/dev/null || true; }
+LOGFILE="/tmp/worktree.log"
+log() { echo "[$(date '+%H:%M:%S')] [create] $*" | tee -a "$LOGFILE" >/dev/tty 2>/dev/null || true; }
 if [ "${HOOK_DEBUG:-0}" = "1" ]; then
 	OUT=/dev/tty
 else
 	OUT=/dev/null
 fi
+echo "" >> "$LOGFILE"
+echo "=== WorktreeCreate $(date) ===" >> "$LOGFILE"
+echo "NAME=$NAME WORKTREE_DIR=$WORKTREE_DIR BRANCH=$BRANCH" >> "$LOGFILE"
+echo "CLAUDE_PROJECT_DIR=$CLAUDE_PROJECT_DIR" >> "$LOGFILE"
 
 mkdir -p "$CLAUDE_PROJECT_DIR/.claude/worktrees"
 
