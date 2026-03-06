@@ -3,7 +3,7 @@ set -euo pipefail
 
 INPUT=$(cat)
 
-LOGFILE="/tmp/worktree.log"
+LOGFILE="/tmp/worktree-$(date '+%Y-%m-%d').log"
 
 # WorktreeRemove payload has worktree_path (not name)
 NAME=$(echo "$INPUT" | jq -r '.worktree_path // empty' | xargs basename 2>/dev/null || true)

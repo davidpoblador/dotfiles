@@ -6,7 +6,7 @@ NAME=$(echo "$INPUT" | jq -r '.name')
 WORKTREE_DIR="$CLAUDE_PROJECT_DIR/.claude/worktrees/$NAME"
 BRANCH="worktree-$NAME"
 
-LOGFILE="/tmp/worktree.log"
+LOGFILE="/tmp/worktree-$(date '+%Y-%m-%d').log"
 log() { echo "$(date '+%Y-%m-%d %H:%M:%S') [create] $*" | tee -a "$LOGFILE" >/dev/tty 2>/dev/null || true; }
 if [ "${HOOK_DEBUG:-0}" = "1" ]; then
 	OUT=/dev/tty
@@ -187,6 +187,9 @@ if [ -d "$CLAUDE_PROJECT_DIR/.claude/worktrees" ]; then
 		fi
 	done
 fi
+
+# --- clean up old log files (keep 7 days) ---
+find /tmp -maxdepth 1 -name 'worktree-*.log' -mtime +7 -delete 2>/dev/null || true
 
 # Tell Ghostty the worktree is the "cwd" so new panes open there
 ABS_WORKTREE_DIR=$(cd "$WORKTREE_DIR" && pwd -P)
