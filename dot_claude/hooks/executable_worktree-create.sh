@@ -39,6 +39,9 @@ if [ -n "$DEFAULT_BRANCH" ]; then
 	git -C "$CLAUDE_PROJECT_DIR" update-ref "refs/heads/$DEFAULT_BRANCH" "refs/remotes/origin/$DEFAULT_BRANCH" 2>$OUT || {
 		log "⚠ update-ref failed, continuing with local $DEFAULT_BRANCH"
 	}
+	# Reset the index to match the new HEAD (update-ref only moves the ref,
+	# leaving a stale index that shows phantom staged changes)
+	git -C "$CLAUDE_PROJECT_DIR" reset --quiet >$OUT 2>&1 || true
 	BASE_REF="$DEFAULT_BRANCH"
 	log "✓ $DEFAULT_BRANCH is up to date"
 else

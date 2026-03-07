@@ -60,6 +60,7 @@ fi
 if [ -n "$DEFAULT_BRANCH" ]; then
 	git -C "$CLAUDE_PROJECT_DIR" fetch origin "$DEFAULT_BRANCH" >$OUT 2>&1 && \
 	git -C "$CLAUDE_PROJECT_DIR" update-ref "refs/heads/$DEFAULT_BRANCH" "refs/remotes/origin/$DEFAULT_BRANCH" >$OUT 2>&1 && \
+	git -C "$CLAUDE_PROJECT_DIR" reset --quiet >$OUT 2>&1 && \
 	log "✓ Updated $DEFAULT_BRANCH to latest" || \
 	log "⚠ Could not update $DEFAULT_BRANCH"
 fi
