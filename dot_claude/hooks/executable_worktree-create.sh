@@ -33,15 +33,27 @@ fi
 
 if [ -n "$DEFAULT_BRANCH" ]; then
 	log "✓ Fetching origin and updating $DEFAULT_BRANCH..."
+	# Check if working tree is clean BEFORE moving the ref
+	WAS_CLEAN=false
+	if git -C "$CLAUDE_PROJECT_DIR" diff --quiet 2>/dev/null && \
+	   git -C "$CLAUDE_PROJECT_DIR" diff --cached --quiet 2>/dev/null; then
+		WAS_CLEAN=true
+	fi
 	git -C "$CLAUDE_PROJECT_DIR" fetch origin "$DEFAULT_BRANCH" >$OUT 2>&1 || {
 		log "⚠ fetch failed, continuing with local $DEFAULT_BRANCH"
 	}
 	git -C "$CLAUDE_PROJECT_DIR" update-ref "refs/heads/$DEFAULT_BRANCH" "refs/remotes/origin/$DEFAULT_BRANCH" 2>$OUT || {
 		log "⚠ update-ref failed, continuing with local $DEFAULT_BRANCH"
 	}
-	# Reset the index to match the new HEAD (update-ref only moves the ref,
-	# leaving a stale index that shows phantom staged changes)
-	git -C "$CLAUDE_PROJECT_DIR" reset --quiet >$OUT 2>&1 || true
+	# update-ref moves the ref but leaves the index + working tree stale.
+	# Only --hard reset if the tree was clean before we touched anything,
+	# so we never discard real uncommitted work.
+	if [ "$WAS_CLEAN" = true ]; then
+		git -C "$CLAUDE_PROJECT_DIR" reset --hard --quiet >$OUT 2>&1 || true
+	else
+		git -C "$CLAUDE_PROJECT_DIR" reset --quiet >$OUT 2>&1 || true
+		log "⚠ Working tree had local changes, preserved them (index reset only)"
+	fi
 	BASE_REF="$DEFAULT_BRANCH"
 	log "✓ $DEFAULT_BRANCH is up to date"
 else

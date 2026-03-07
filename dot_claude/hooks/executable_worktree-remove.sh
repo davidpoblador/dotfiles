@@ -58,11 +58,26 @@ if [ -z "$DEFAULT_BRANCH" ]; then
 fi
 
 if [ -n "$DEFAULT_BRANCH" ]; then
+	# Check if working tree is clean BEFORE moving the ref
+	WAS_CLEAN=false
+	if git -C "$CLAUDE_PROJECT_DIR" diff --quiet 2>/dev/null && \
+	   git -C "$CLAUDE_PROJECT_DIR" diff --cached --quiet 2>/dev/null; then
+		WAS_CLEAN=true
+	fi
 	git -C "$CLAUDE_PROJECT_DIR" fetch origin "$DEFAULT_BRANCH" >$OUT 2>&1 && \
-	git -C "$CLAUDE_PROJECT_DIR" update-ref "refs/heads/$DEFAULT_BRANCH" "refs/remotes/origin/$DEFAULT_BRANCH" >$OUT 2>&1 && \
-	git -C "$CLAUDE_PROJECT_DIR" reset --quiet >$OUT 2>&1 && \
-	log "✓ Updated $DEFAULT_BRANCH to latest" || \
-	log "⚠ Could not update $DEFAULT_BRANCH"
+	git -C "$CLAUDE_PROJECT_DIR" update-ref "refs/heads/$DEFAULT_BRANCH" "refs/remotes/origin/$DEFAULT_BRANCH" >$OUT 2>&1 || {
+		log "⚠ Could not update $DEFAULT_BRANCH"
+	}
+	# update-ref moves the ref but leaves the index + working tree stale.
+	# Only --hard reset if the tree was clean before we touched anything.
+	if [ "$WAS_CLEAN" = true ]; then
+		git -C "$CLAUDE_PROJECT_DIR" reset --hard --quiet >$OUT 2>&1 && \
+		log "✓ Updated $DEFAULT_BRANCH to latest" || \
+		log "⚠ Could not reset $DEFAULT_BRANCH"
+	else
+		git -C "$CLAUDE_PROJECT_DIR" reset --quiet >$OUT 2>&1 || true
+		log "⚠ Updated $DEFAULT_BRANCH ref but preserved local changes (index reset only)"
+	fi
 fi
 
 # --- opportunistic cleanup: remove stale worktrees whose remote branch is gone ---
