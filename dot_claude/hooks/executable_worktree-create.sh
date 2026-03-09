@@ -203,6 +203,15 @@ if [ -d "$CLAUDE_PROJECT_DIR/.claude/worktrees" ]; then
 	done
 fi
 
+# --- symlink auto-memory so all worktrees share the main repo's memory ---
+SANITIZED_MAIN=$(echo "$CLAUDE_PROJECT_DIR" | sed 's|/|-|g; s|^-||')
+SANITIZED_WT=$(echo "$WORKTREE_DIR" | sed 's|/|-|g; s|^-||')
+MAIN_MEMORY="$HOME/.claude/projects/$SANITIZED_MAIN/memory"
+WT_PROJECT="$HOME/.claude/projects/$SANITIZED_WT"
+mkdir -p "$MAIN_MEMORY" "$WT_PROJECT"
+ln -sfn "$MAIN_MEMORY" "$WT_PROJECT/memory"
+log "✓ Symlinked auto-memory to main repo"
+
 # --- clean up old log files (keep 7 days) ---
 find /tmp -maxdepth 1 -name 'worktree-hooks-*.log' -mtime +7 -delete 2>/dev/null || true
 

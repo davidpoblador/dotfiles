@@ -129,6 +129,14 @@ if [ -d "$WORKTREES_DIR" ]; then
 	done
 fi
 
+# --- clean up worktree's project config dir ---
+SANITIZED_WT=$(echo "$WORKTREE_DIR" | sed 's|/|-|g; s|^-||')
+WT_PROJECT="$HOME/.claude/projects/$SANITIZED_WT"
+if [ -d "$WT_PROJECT" ]; then
+	rm -rf "$WT_PROJECT"
+	log "✓ Removed worktree project config: $SANITIZED_WT"
+fi
+
 # --- project-level hook ---
 PROJECT_HOOK="$CLAUDE_PROJECT_DIR/.hooks/worktree-remove.sh"
 if [ -x "$PROJECT_HOOK" ]; then
