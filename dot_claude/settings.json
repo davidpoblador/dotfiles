@@ -1,6 +1,7 @@
 {
   "env": {
-    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
+    "ENABLE_LSP_TOOL": "1"
   },
   "permissions": {
     "allow": [
@@ -177,6 +178,17 @@
           }
         ]
       }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/agent-browser-session.sh"
+          }
+        ]
+      }
     ]
   },
   "statusLine": {
@@ -188,10 +200,12 @@
     "commit-commands@claude-code-plugins": true,
     "feature-dev@claude-code-plugins": true,
     "chrome-devtools-mcp@chrome-devtools-plugins": true,
-    "superpowers@claude-plugins-official": true,
+    "superpowers@claude-plugins-official": false,
     "astral@astral-sh": true,
     "rust-analyzer-lsp@claude-plugins-official": true,
-    "context-mode@claude-context-mode": true
+    "context-mode@claude-context-mode": true,
+    "typescript-lsp@claude-plugins-official": true,
+    "gopls-lsp@claude-plugins-official": true
   },
   "alwaysThinkingEnabled": true,
   "skipDangerousModePermissionPrompt": true

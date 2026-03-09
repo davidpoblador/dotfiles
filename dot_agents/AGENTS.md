@@ -130,6 +130,7 @@ When asked to do something, just do it - including obvious follow-up actions nee
     1. Identify the test framework (pytest, vitest, jest, etc.) and confirm it's installed
     2. Locate existing tests and run them to verify they pass
     3. Understand how tests are invoked (justfile, npm scripts, CI workflows, etc.)
+
   If the repo has no test framework configured, no existing tests, or no clear way to run them, YOU MUST STOP and ask David before adding test infrastructure. Do not guess at test setup, install test frameworks, or create test configuration files on your own.
 
 ## Issue tracking
@@ -220,8 +221,26 @@ YOU MUST follow this debugging framework for ANY technical issue:
 Use `agent-browser` for web automation. Run `agent-browser --help` for all commands.
 
 Core workflow:
+
 1. `agent-browser open <url>` - Navigate to page
 2. `agent-browser snapshot -i` - Get interactive elements with refs (@e1, @e2)
 3. `agent-browser click @e1` / `fill @e2 "text"` - Interact using refs
 4. Re-snapshot after page changes
 
+## Code Intelligence
+
+Prefer LSP over Grep/Glob/Read for code navigation:
+
+- `goToDefinition` / `goToImplementation` to jump to source
+- `findReferences` to see all usages across the codebase
+- `workspaceSymbol` to find where something is defined
+- `documentSymbol` to list all symbols in a file
+- `hover` for type info without reading the file
+- `incomingCalls` / `outgoingCalls` for call hierarchy
+
+Before renaming or changing a function signature, use
+`findReferences` to find all call sites first.
+
+Use Grep/Glob only for text/pattern searches (comments, strings, config values) where LSP doesn't help.
+
+After writing or editing code, check LSP diagnostics before moving on. Fix any type errors or missing imports immediately.

@@ -130,12 +130,18 @@ if [ -d "$WORKTREES_DIR" ]; then
 fi
 
 # --- clean up worktree's project config dir ---
-SANITIZED_WT=$(echo "$WORKTREE_DIR" | sed 's|/|-|g; s|^-||')
-WT_PROJECT="$HOME/.claude/projects/$SANITIZED_WT"
-if [ -d "$WT_PROJECT" ]; then
-	rm -rf "$WT_PROJECT"
-	log "✓ Removed worktree project config: $SANITIZED_WT"
-fi
+# Find it by matching originalPath in sessions-index.json
+for proj_dir in "$HOME/.claude/projects"/*/; do
+	[ -d "$proj_dir" ] || continue
+	index="$proj_dir/sessions-index.json"
+	[ -f "$index" ] || continue
+	orig=$(jq -r '.originalPath // empty' "$index" 2>/dev/null)
+	if [ "$orig" = "$WORKTREE_DIR" ]; then
+		rm -rf "$proj_dir"
+		log "✓ Removed worktree project config: $(basename "$proj_dir")"
+		break
+	fi
+done
 
 # --- project-level hook ---
 PROJECT_HOOK="$CLAUDE_PROJECT_DIR/.hooks/worktree-remove.sh"

@@ -204,8 +204,10 @@ if [ -d "$CLAUDE_PROJECT_DIR/.claude/worktrees" ]; then
 fi
 
 # --- symlink auto-memory so all worktrees share the main repo's memory ---
-SANITIZED_MAIN=$(echo "$CLAUDE_PROJECT_DIR" | sed 's|/|-|g; s|^-||')
-SANITIZED_WT=$(echo "$WORKTREE_DIR" | sed 's|/|-|g; s|^-||')
+# Claude sanitizes paths: / -> -, . -> - (so /foo/.claude -> -foo--claude)
+sanitize_path() { echo "$1" | sed 's|/|-|g; s|\.|-|g'; }
+SANITIZED_MAIN=$(sanitize_path "$CLAUDE_PROJECT_DIR")
+SANITIZED_WT=$(sanitize_path "$WORKTREE_DIR")
 MAIN_MEMORY="$HOME/.claude/projects/$SANITIZED_MAIN/memory"
 WT_PROJECT="$HOME/.claude/projects/$SANITIZED_WT"
 mkdir -p "$MAIN_MEMORY" "$WT_PROJECT"
