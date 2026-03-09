@@ -130,18 +130,40 @@ if [ -d "$WORKTREES_DIR" ]; then
 fi
 
 # --- clean up worktree's project config dir ---
-# Find it by matching originalPath in sessions-index.json
-for proj_dir in "$HOME/.claude/projects"/*/; do
-	[ -d "$proj_dir" ] || continue
-	index="$proj_dir/sessions-index.json"
-	[ -f "$index" ] || continue
-	orig=$(jq -r '.originalPath // empty' "$index" 2>/dev/null)
-	if [ "$orig" = "$WORKTREE_DIR" ]; then
-		rm -rf "$proj_dir"
-		log "✓ Removed worktree project config: $(basename "$proj_dir")"
-		break
+WT_PROJECT=""
+
+# Try 1: sanitized path (matching Claude's / -> -, . -> - convention)
+sanitize_path() { echo "$1" | sed 's|/|-|g; s|\.|-|g'; }
+SANITIZED_WT=$(sanitize_path "$WORKTREE_DIR")
+[ -d "$HOME/.claude/projects/$SANITIZED_WT" ] && WT_PROJECT="$HOME/.claude/projects/$SANITIZED_WT"
+
+# Try 2: transcript_path from the payload contains the project dir name
+if [ -z "$WT_PROJECT" ]; then
+	TRANSCRIPT=$(echo "$INPUT" | jq -r '.transcript_path // empty')
+	if [ -n "$TRANSCRIPT" ]; then
+		PROJ_FROM_TRANSCRIPT=$(echo "$TRANSCRIPT" | sed 's|.*/.claude/projects/||; s|/.*||')
+		[ -d "$HOME/.claude/projects/$PROJ_FROM_TRANSCRIPT" ] && WT_PROJECT="$HOME/.claude/projects/$PROJ_FROM_TRANSCRIPT"
 	fi
-done
+fi
+
+# Try 3: scan sessions-index.json for matching originalPath
+if [ -z "$WT_PROJECT" ]; then
+	for proj_dir in "$HOME/.claude/projects"/*/; do
+		[ -d "$proj_dir" ] || continue
+		index="$proj_dir/sessions-index.json"
+		[ -f "$index" ] || continue
+		orig=$(jq -r '.originalPath // empty' "$index" 2>/dev/null)
+		if [ "$orig" = "$WORKTREE_DIR" ]; then
+			WT_PROJECT="$proj_dir"
+			break
+		fi
+	done
+fi
+
+if [ -n "$WT_PROJECT" ] && [ -d "$WT_PROJECT" ]; then
+	rm -rf "$WT_PROJECT"
+	log "✓ Removed worktree project config: $(basename "$WT_PROJECT")"
+fi
 
 # --- project-level hook ---
 PROJECT_HOOK="$CLAUDE_PROJECT_DIR/.hooks/worktree-remove.sh"
