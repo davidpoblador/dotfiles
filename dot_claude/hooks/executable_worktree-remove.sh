@@ -28,6 +28,8 @@ echo "  payload: $INPUT" >> "$LOGFILE"
 
 # --- remove the worktree ---
 if [ -d "$WORKTREE_DIR" ]; then
+	# Remove heavy untracked dirs that cause git worktree remove to fail
+	rm -rf "$WORKTREE_DIR/.venv" "$WORKTREE_DIR/node_modules"
 	git -C "$CLAUDE_PROJECT_DIR" worktree remove --force "$WORKTREE_DIR" >$OUT 2>&1 || {
 		log "⚠ git worktree remove failed, cleaning up manually"
 		rm -rf "$WORKTREE_DIR"
@@ -118,6 +120,7 @@ if [ -d "$WORKTREES_DIR" ]; then
 
 		if [ "$should_clean" = true ]; then
 			log "✓ Cleaning stale worktree: $wt_name ($reason)"
+			rm -rf "$wt_dir/.venv" "$wt_dir/node_modules"
 			git -C "$CLAUDE_PROJECT_DIR" worktree remove --force "$wt_dir" >$OUT 2>&1 || {
 				rm -rf "$wt_dir"
 				git -C "$CLAUDE_PROJECT_DIR" worktree prune >$OUT 2>&1 || true
