@@ -26,30 +26,7 @@ echo "" >> "$LOGFILE"
 log "--- WorktreeRemove: $NAME (branch: $BRANCH) ---"
 echo "  payload: $INPUT" >> "$LOGFILE"
 
-# --- remove the worktree ---
-if [ -d "$WORKTREE_DIR" ]; then
-	# Remove heavy untracked dirs that cause git worktree remove to fail
-	rm -rf "$WORKTREE_DIR/.venv" "$WORKTREE_DIR/node_modules"
-	git -C "$CLAUDE_PROJECT_DIR" worktree remove --force "$WORKTREE_DIR" >$OUT 2>&1 || {
-		log "⚠ git worktree remove failed, cleaning up manually"
-		rm -rf "$WORKTREE_DIR"
-		git -C "$CLAUDE_PROJECT_DIR" worktree prune >$OUT 2>&1 || true
-	}
-	log "✓ Removed worktree: $NAME"
-else
-	log "⚠ Worktree directory not found: $WORKTREE_DIR"
-	git -C "$CLAUDE_PROJECT_DIR" worktree prune >$OUT 2>&1 || true
-fi
-
-# --- delete the local branch ---
-if git -C "$CLAUDE_PROJECT_DIR" show-ref --verify --quiet "refs/heads/$BRANCH" 2>/dev/null; then
-	git -C "$CLAUDE_PROJECT_DIR" branch -D "$BRANCH" >$OUT 2>&1 || {
-		log "⚠ Failed to delete branch $BRANCH"
-	}
-	log "✓ Deleted branch: $BRANCH"
-fi
-
-# --- update main ---
+# --- determine default branch and repo slug (needed for safety checks) ---
 DEFAULT_BRANCH=$(git -C "$CLAUDE_PROJECT_DIR" symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@') || true
 if [ -z "$DEFAULT_BRANCH" ]; then
 	if git -C "$CLAUDE_PROJECT_DIR" show-ref --verify --quiet refs/heads/main 2>/dev/null; then
@@ -59,6 +36,52 @@ if [ -z "$DEFAULT_BRANCH" ]; then
 	fi
 fi
 
+REPO_SLUG=$(git -C "$CLAUDE_PROJECT_DIR" remote get-url origin 2>/dev/null | sed 's|.*github\.com[:/]||; s|\.git$||') || true
+
+# --- check if the branch has unmerged work before removing ---
+SAFE_TO_REMOVE=true
+
+if git -C "$CLAUDE_PROJECT_DIR" show-ref --verify --quiet "refs/heads/$BRANCH" 2>/dev/null; then
+	unique_commits=$(git -C "$CLAUDE_PROJECT_DIR" rev-list --count "$DEFAULT_BRANCH".."$BRANCH" 2>/dev/null || echo 0)
+	if [ "$unique_commits" -gt 0 ]; then
+		# Branch has unique commits. Check if a merged PR exists (squash merges produce
+		# different SHAs, so rev-list alone can't detect merged work).
+		merged_pr=$(gh pr list --repo "$REPO_SLUG" --head "$BRANCH" --state merged --json number --jq '.[0].number' 2>/dev/null || true)
+		if [ -n "$merged_pr" ]; then
+			log "✓ Branch $BRANCH has $unique_commits local commit(s) but PR #$merged_pr was merged, safe to remove"
+		else
+			SAFE_TO_REMOVE=false
+			log "⚠ Branch $BRANCH has $unique_commits unmerged commit(s) and no merged PR, preserving worktree"
+		fi
+	fi
+fi
+
+if [ "$SAFE_TO_REMOVE" = true ]; then
+	# --- remove the worktree ---
+	if [ -d "$WORKTREE_DIR" ]; then
+		# Remove heavy untracked dirs that cause git worktree remove to fail
+		rm -rf "$WORKTREE_DIR/.venv" "$WORKTREE_DIR/node_modules"
+		git -C "$CLAUDE_PROJECT_DIR" worktree remove --force "$WORKTREE_DIR" >$OUT 2>&1 || {
+			log "⚠ git worktree remove failed, cleaning up manually"
+			rm -rf "$WORKTREE_DIR"
+			git -C "$CLAUDE_PROJECT_DIR" worktree prune >$OUT 2>&1 || true
+		}
+		log "✓ Removed worktree: $NAME"
+	else
+		log "⚠ Worktree directory not found: $WORKTREE_DIR"
+		git -C "$CLAUDE_PROJECT_DIR" worktree prune >$OUT 2>&1 || true
+	fi
+
+	# --- delete the local branch ---
+	if git -C "$CLAUDE_PROJECT_DIR" show-ref --verify --quiet "refs/heads/$BRANCH" 2>/dev/null; then
+		git -C "$CLAUDE_PROJECT_DIR" branch -D "$BRANCH" >$OUT 2>&1 || {
+			log "⚠ Failed to delete branch $BRANCH"
+		}
+		log "✓ Deleted branch: $BRANCH"
+	fi
+fi
+
+# --- update main ---
 if [ -n "$DEFAULT_BRANCH" ]; then
 	# Check if working tree is clean BEFORE moving the ref
 	WAS_CLEAN=false
@@ -132,40 +155,42 @@ if [ -d "$WORKTREES_DIR" ]; then
 	done
 fi
 
-# --- clean up worktree's project config dir ---
-WT_PROJECT=""
+# --- clean up worktree's project config dir (only if worktree was removed) ---
+if [ "$SAFE_TO_REMOVE" = true ]; then
+	WT_PROJECT=""
 
-# Try 1: sanitized path (matching Claude's / -> -, . -> - convention)
-sanitize_path() { echo "$1" | sed 's|/|-|g; s|\.|-|g'; }
-SANITIZED_WT=$(sanitize_path "$WORKTREE_DIR")
-[ -d "$HOME/.claude/projects/$SANITIZED_WT" ] && WT_PROJECT="$HOME/.claude/projects/$SANITIZED_WT"
+	# Try 1: sanitized path (matching Claude's / -> -, . -> - convention)
+	sanitize_path() { echo "$1" | sed 's|/|-|g; s|\.|-|g'; }
+	SANITIZED_WT=$(sanitize_path "$WORKTREE_DIR")
+	[ -d "$HOME/.claude/projects/$SANITIZED_WT" ] && WT_PROJECT="$HOME/.claude/projects/$SANITIZED_WT"
 
-# Try 2: transcript_path from the payload contains the project dir name
-if [ -z "$WT_PROJECT" ]; then
-	TRANSCRIPT=$(echo "$INPUT" | jq -r '.transcript_path // empty')
-	if [ -n "$TRANSCRIPT" ]; then
-		PROJ_FROM_TRANSCRIPT=$(echo "$TRANSCRIPT" | sed 's|.*/.claude/projects/||; s|/.*||')
-		[ -d "$HOME/.claude/projects/$PROJ_FROM_TRANSCRIPT" ] && WT_PROJECT="$HOME/.claude/projects/$PROJ_FROM_TRANSCRIPT"
-	fi
-fi
-
-# Try 3: scan sessions-index.json for matching originalPath
-if [ -z "$WT_PROJECT" ]; then
-	for proj_dir in "$HOME/.claude/projects"/*/; do
-		[ -d "$proj_dir" ] || continue
-		index="$proj_dir/sessions-index.json"
-		[ -f "$index" ] || continue
-		orig=$(jq -r '.originalPath // empty' "$index" 2>/dev/null)
-		if [ "$orig" = "$WORKTREE_DIR" ]; then
-			WT_PROJECT="$proj_dir"
-			break
+	# Try 2: transcript_path from the payload contains the project dir name
+	if [ -z "$WT_PROJECT" ]; then
+		TRANSCRIPT=$(echo "$INPUT" | jq -r '.transcript_path // empty')
+		if [ -n "$TRANSCRIPT" ]; then
+			PROJ_FROM_TRANSCRIPT=$(echo "$TRANSCRIPT" | sed 's|.*/.claude/projects/||; s|/.*||')
+			[ -d "$HOME/.claude/projects/$PROJ_FROM_TRANSCRIPT" ] && WT_PROJECT="$HOME/.claude/projects/$PROJ_FROM_TRANSCRIPT"
 		fi
-	done
-fi
+	fi
 
-if [ -n "$WT_PROJECT" ] && [ -d "$WT_PROJECT" ]; then
-	rm -rf "$WT_PROJECT"
-	log "✓ Removed worktree project config: $(basename "$WT_PROJECT")"
+	# Try 3: scan sessions-index.json for matching originalPath
+	if [ -z "$WT_PROJECT" ]; then
+		for proj_dir in "$HOME/.claude/projects"/*/; do
+			[ -d "$proj_dir" ] || continue
+			index="$proj_dir/sessions-index.json"
+			[ -f "$index" ] || continue
+			orig=$(jq -r '.originalPath // empty' "$index" 2>/dev/null)
+			if [ "$orig" = "$WORKTREE_DIR" ]; then
+				WT_PROJECT="$proj_dir"
+				break
+			fi
+		done
+	fi
+
+	if [ -n "$WT_PROJECT" ] && [ -d "$WT_PROJECT" ]; then
+		rm -rf "$WT_PROJECT"
+		log "✓ Removed worktree project config: $(basename "$WT_PROJECT")"
+	fi
 fi
 
 # --- project-level hook ---
