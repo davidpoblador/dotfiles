@@ -90,7 +90,17 @@ truncate_to_repo = false
 "Developer" = "󰲋 "
 
 [custom.project]
-command = 'basename "$(cd "$(git rev-parse --git-common-dir)/.." && pwd)"'
+command = '''
+common="$(git rev-parse --git-common-dir 2>/dev/null)"
+repo="$(cd "$common/.." && basename "$PWD")"
+toplevel="$(git rev-parse --show-toplevel)"
+wt="$(basename "$toplevel")"
+if [ "$repo" = "$wt" ]; then
+  echo "$repo"
+else
+  echo "$repo:$wt"
+fi
+'''
 when = 'git rev-parse --is-inside-work-tree 2>/dev/null'
 style = "bg:color_purple"
 format = '[](fg:color_purple)[[ 󰉋 $output ](fg:color_fg0 bg:color_purple)]($style)[](fg:color_purple)'
@@ -107,6 +117,7 @@ ignore_bare_repo = true
 [git_status]
 style = "bg:color_yellow"
 format = '[[($all_status$ahead_behind )](fg:color_fg0 bg:color_yellow)]($style)'
+untracked = "∿"
 
 [nodejs]
 symbol = ""
