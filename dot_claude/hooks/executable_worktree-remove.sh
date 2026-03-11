@@ -26,7 +26,7 @@ echo "" >> "$LOGFILE"
 log "--- WorktreeRemove: $NAME (branch: $BRANCH) ---"
 echo "  payload: $INPUT" >> "$LOGFILE"
 
-# --- determine default branch and repo slug (needed for safety checks) ---
+# --- determine default branch (needed for safety checks) ---
 DEFAULT_BRANCH=$(git -C "$CLAUDE_PROJECT_DIR" symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@') || true
 if [ -z "$DEFAULT_BRANCH" ]; then
 	if git -C "$CLAUDE_PROJECT_DIR" show-ref --verify --quiet refs/heads/main 2>/dev/null; then
@@ -36,7 +36,9 @@ if [ -z "$DEFAULT_BRANCH" ]; then
 	fi
 fi
 
-REPO_SLUG=$(git -C "$CLAUDE_PROJECT_DIR" remote get-url origin 2>/dev/null | sed 's|.*github\.com[:/]||; s|\.git$||') || true
+# Helper: run gh with GIT_DIR so it resolves the repo from git remote config
+# (handles forks, renames, different org names reliably)
+project_gh() { GIT_DIR="$CLAUDE_PROJECT_DIR/.git" gh "$@"; }
 
 # --- check if the branch has unmerged work before removing ---
 SAFE_TO_REMOVE=true
@@ -46,7 +48,7 @@ if git -C "$CLAUDE_PROJECT_DIR" show-ref --verify --quiet "refs/heads/$BRANCH" 2
 	if [ "$unique_commits" -gt 0 ]; then
 		# Branch has unique commits. Check if a merged PR exists (squash merges produce
 		# different SHAs, so rev-list alone can't detect merged work).
-		merged_pr=$(gh pr list --repo "$REPO_SLUG" --head "$BRANCH" --state merged --json number --jq '.[0].number' 2>/dev/null || true)
+		merged_pr=$(project_gh pr list --head "$BRANCH" --state merged --json number --jq '.[0].number' 2>/dev/null || true)
 		if [ -n "$merged_pr" ]; then
 			log "✓ Branch $BRANCH has $unique_commits local commit(s) but PR #$merged_pr was merged, safe to remove"
 		else
@@ -119,10 +121,16 @@ if [ -d "$WORKTREES_DIR" ]; then
 		reason=""
 
 		if [ -n "$has_upstream" ]; then
-			# Pushed but remote branch is now gone (e.g., PR merged and branch deleted)
+			# Pushed but remote branch is now gone. Verify a merged PR exists before
+			# cleaning up (remote branches can be deleted without merging).
 			if ! git -C "$CLAUDE_PROJECT_DIR" show-ref --verify --quiet "refs/remotes/origin/$wt_branch" 2>/dev/null; then
-				should_clean=true
-				reason="remote branch gone"
+				merged_pr=$(project_gh pr list --head "$wt_branch" --state merged --json number --jq '.[0].number' 2>/dev/null || true)
+				if [ -n "$merged_pr" ]; then
+					should_clean=true
+					reason="remote branch gone, PR #$merged_pr merged"
+				else
+					log "⏭ Keeping worktree: $wt_name (remote branch gone but no merged PR found)"
+				fi
 			fi
 		else
 			# Never pushed — check if older than 24h with no unique commits
