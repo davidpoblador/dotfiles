@@ -12,7 +12,14 @@ if [ -z "$NAME" ]; then
 	exit 0
 fi
 
-WORKTREE_DIR="$CLAUDE_PROJECT_DIR/.claude/worktrees/$NAME"
+# Resolve the main repo root (CLAUDE_PROJECT_DIR points to the worktree when
+# Claude runs inside one, but we need the original repo for all operations)
+REPO_ROOT=$(git -C "$CLAUDE_PROJECT_DIR" worktree list --porcelain 2>/dev/null | head -1 | sed 's/^worktree //')
+if [ -z "$REPO_ROOT" ]; then
+	REPO_ROOT="$CLAUDE_PROJECT_DIR"
+fi
+
+WORKTREE_DIR="$REPO_ROOT/.claude/worktrees/$NAME"
 BRANCH="worktree-$NAME"
 
 log() { echo "$(date '+%Y-%m-%d %H:%M:%S') [remove] $*" | tee -a "$LOGFILE" >/dev/tty 2>/dev/null || true; }
@@ -27,24 +34,35 @@ log "--- WorktreeRemove: $NAME (branch: $BRANCH) ---"
 echo "  payload: $INPUT" >> "$LOGFILE"
 
 # --- determine default branch (needed for safety checks) ---
-DEFAULT_BRANCH=$(git -C "$CLAUDE_PROJECT_DIR" symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@') || true
+DEFAULT_BRANCH=$(git -C "$REPO_ROOT" symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@') || true
 if [ -z "$DEFAULT_BRANCH" ]; then
-	if git -C "$CLAUDE_PROJECT_DIR" show-ref --verify --quiet refs/heads/main 2>/dev/null; then
+	if git -C "$REPO_ROOT" show-ref --verify --quiet refs/heads/main 2>/dev/null; then
 		DEFAULT_BRANCH="main"
-	elif git -C "$CLAUDE_PROJECT_DIR" show-ref --verify --quiet refs/heads/master 2>/dev/null; then
+	elif git -C "$REPO_ROOT" show-ref --verify --quiet refs/heads/master 2>/dev/null; then
 		DEFAULT_BRANCH="master"
 	fi
 fi
 
 # Helper: run gh with GIT_DIR so it resolves the repo from git remote config
 # (handles forks, renames, different org names reliably)
-project_gh() { GIT_DIR="$CLAUDE_PROJECT_DIR/.git" gh "$@"; }
+project_gh() { GIT_DIR="$REPO_ROOT/.git" gh "$@"; }
+
+# --- guard: empty repo (no commits) — just clean up the directory ---
+if ! git -C "$REPO_ROOT" rev-parse --verify HEAD >/dev/null 2>&1; then
+	log "⚠ Repository has no commits, skipping branch checks"
+	if [ -d "$WORKTREE_DIR" ]; then
+		rm -rf "$WORKTREE_DIR"
+		git -C "$REPO_ROOT" worktree prune >$OUT 2>&1 || true
+		log "✓ Removed worktree directory: $NAME"
+	fi
+	exit 0
+fi
 
 # --- check if the branch has unmerged work before removing ---
 SAFE_TO_REMOVE=true
 
-if git -C "$CLAUDE_PROJECT_DIR" show-ref --verify --quiet "refs/heads/$BRANCH" 2>/dev/null; then
-	unique_commits=$(git -C "$CLAUDE_PROJECT_DIR" rev-list --count "$DEFAULT_BRANCH".."$BRANCH" 2>/dev/null || echo 0)
+if git -C "$REPO_ROOT" show-ref --verify --quiet "refs/heads/$BRANCH" 2>/dev/null; then
+	unique_commits=$(git -C "$REPO_ROOT" rev-list --count "$DEFAULT_BRANCH".."$BRANCH" 2>/dev/null || echo 0)
 	if [ "$unique_commits" -gt 0 ]; then
 		# Branch has unique commits. Check if a merged PR exists (squash merges produce
 		# different SHAs, so rev-list alone can't detect merged work).
@@ -63,20 +81,20 @@ if [ "$SAFE_TO_REMOVE" = true ]; then
 	if [ -d "$WORKTREE_DIR" ]; then
 		# Remove heavy untracked dirs that cause git worktree remove to fail
 		rm -rf "$WORKTREE_DIR/.venv" "$WORKTREE_DIR/node_modules"
-		git -C "$CLAUDE_PROJECT_DIR" worktree remove --force "$WORKTREE_DIR" >$OUT 2>&1 || {
+		git -C "$REPO_ROOT" worktree remove --force "$WORKTREE_DIR" >$OUT 2>&1 || {
 			log "⚠ git worktree remove failed, cleaning up manually"
 			rm -rf "$WORKTREE_DIR"
-			git -C "$CLAUDE_PROJECT_DIR" worktree prune >$OUT 2>&1 || true
+			git -C "$REPO_ROOT" worktree prune >$OUT 2>&1 || true
 		}
 		log "✓ Removed worktree: $NAME"
 	else
 		log "⚠ Worktree directory not found: $WORKTREE_DIR"
-		git -C "$CLAUDE_PROJECT_DIR" worktree prune >$OUT 2>&1 || true
+		git -C "$REPO_ROOT" worktree prune >$OUT 2>&1 || true
 	fi
 
 	# --- delete the local branch ---
-	if git -C "$CLAUDE_PROJECT_DIR" show-ref --verify --quiet "refs/heads/$BRANCH" 2>/dev/null; then
-		git -C "$CLAUDE_PROJECT_DIR" branch -D "$BRANCH" >$OUT 2>&1 || {
+	if git -C "$REPO_ROOT" show-ref --verify --quiet "refs/heads/$BRANCH" 2>/dev/null; then
+		git -C "$REPO_ROOT" branch -D "$BRANCH" >$OUT 2>&1 || {
 			log "⚠ Failed to delete branch $BRANCH"
 		}
 		log "✓ Deleted branch: $BRANCH"
@@ -87,28 +105,28 @@ fi
 if [ -n "$DEFAULT_BRANCH" ]; then
 	# Check if working tree is clean BEFORE moving the ref
 	WAS_CLEAN=false
-	if git -C "$CLAUDE_PROJECT_DIR" diff --quiet 2>/dev/null && \
-	   git -C "$CLAUDE_PROJECT_DIR" diff --cached --quiet 2>/dev/null; then
+	if git -C "$REPO_ROOT" diff --quiet 2>/dev/null && \
+	   git -C "$REPO_ROOT" diff --cached --quiet 2>/dev/null; then
 		WAS_CLEAN=true
 	fi
-	git -C "$CLAUDE_PROJECT_DIR" fetch origin "$DEFAULT_BRANCH" >$OUT 2>&1 && \
-	git -C "$CLAUDE_PROJECT_DIR" update-ref "refs/heads/$DEFAULT_BRANCH" "refs/remotes/origin/$DEFAULT_BRANCH" >$OUT 2>&1 || {
+	git -C "$REPO_ROOT" fetch origin "$DEFAULT_BRANCH" >$OUT 2>&1 && \
+	git -C "$REPO_ROOT" update-ref "refs/heads/$DEFAULT_BRANCH" "refs/remotes/origin/$DEFAULT_BRANCH" >$OUT 2>&1 || {
 		log "⚠ Could not update $DEFAULT_BRANCH"
 	}
 	# update-ref moves the ref but leaves the index + working tree stale.
 	# Only --hard reset if the tree was clean before we touched anything.
 	if [ "$WAS_CLEAN" = true ]; then
-		git -C "$CLAUDE_PROJECT_DIR" reset --hard --quiet >$OUT 2>&1 && \
+		git -C "$REPO_ROOT" reset --hard --quiet >$OUT 2>&1 && \
 		log "✓ Updated $DEFAULT_BRANCH to latest" || \
 		log "⚠ Could not reset $DEFAULT_BRANCH"
 	else
-		git -C "$CLAUDE_PROJECT_DIR" reset --quiet >$OUT 2>&1 || true
+		git -C "$REPO_ROOT" reset --quiet >$OUT 2>&1 || true
 		log "⚠ Updated $DEFAULT_BRANCH ref but preserved local changes (index reset only)"
 	fi
 fi
 
 # --- opportunistic cleanup: remove stale worktrees whose remote branch is gone ---
-WORKTREES_DIR="$CLAUDE_PROJECT_DIR/.claude/worktrees"
+WORKTREES_DIR="$REPO_ROOT/.claude/worktrees"
 if [ -d "$WORKTREES_DIR" ]; then
 	for wt_dir in "$WORKTREES_DIR"/*/; do
 		[ -d "$wt_dir" ] || continue
@@ -116,14 +134,14 @@ if [ -d "$WORKTREES_DIR" ]; then
 		wt_branch="worktree-$wt_name"
 		# Skip the one we just removed
 		[ "$wt_name" = "$NAME" ] && continue
-		has_upstream=$(git -C "$CLAUDE_PROJECT_DIR" for-each-ref --format='%(upstream)' "refs/heads/$wt_branch" 2>/dev/null)
+		has_upstream=$(git -C "$REPO_ROOT" for-each-ref --format='%(upstream)' "refs/heads/$wt_branch" 2>/dev/null)
 		should_clean=false
 		reason=""
 
 		if [ -n "$has_upstream" ]; then
 			# Pushed but remote branch is now gone. Verify a merged PR exists before
 			# cleaning up (remote branches can be deleted without merging).
-			if ! git -C "$CLAUDE_PROJECT_DIR" show-ref --verify --quiet "refs/remotes/origin/$wt_branch" 2>/dev/null; then
+			if ! git -C "$REPO_ROOT" show-ref --verify --quiet "refs/remotes/origin/$wt_branch" 2>/dev/null; then
 				merged_pr=$(project_gh pr list --head "$wt_branch" --state merged --json number --jq '.[0].number' 2>/dev/null || true)
 				if [ -n "$merged_pr" ]; then
 					should_clean=true
@@ -134,12 +152,12 @@ if [ -d "$WORKTREES_DIR" ]; then
 			fi
 		else
 			# Never pushed — check if older than 24h with no unique commits
-			wt_created=$(git -C "$CLAUDE_PROJECT_DIR" reflog show --format='%ct' "$wt_branch" 2>/dev/null | tail -1)
+			wt_created=$(git -C "$REPO_ROOT" reflog show --format='%ct' "$wt_branch" 2>/dev/null | tail -1)
 			wt_created=${wt_created:-0}
 			now=$(date +%s)
 			age_hours=$(( (now - wt_created) / 3600 ))
 			if [ "$age_hours" -ge 24 ]; then
-				unique_commits=$(git -C "$CLAUDE_PROJECT_DIR" rev-list --count "$DEFAULT_BRANCH".."$wt_branch" 2>/dev/null || echo 0)
+				unique_commits=$(git -C "$REPO_ROOT" rev-list --count "$DEFAULT_BRANCH".."$wt_branch" 2>/dev/null || echo 0)
 				if [ "$unique_commits" -eq 0 ]; then
 					should_clean=true
 					reason="no upstream, no unique commits, ${age_hours}h old"
@@ -152,12 +170,12 @@ if [ -d "$WORKTREES_DIR" ]; then
 		if [ "$should_clean" = true ]; then
 			log "✓ Cleaning stale worktree: $wt_name ($reason)"
 			rm -rf "$wt_dir/.venv" "$wt_dir/node_modules"
-			git -C "$CLAUDE_PROJECT_DIR" worktree remove --force "$wt_dir" >$OUT 2>&1 || {
+			git -C "$REPO_ROOT" worktree remove --force "$wt_dir" >$OUT 2>&1 || {
 				rm -rf "$wt_dir"
-				git -C "$CLAUDE_PROJECT_DIR" worktree prune >$OUT 2>&1 || true
+				git -C "$REPO_ROOT" worktree prune >$OUT 2>&1 || true
 			}
-			if git -C "$CLAUDE_PROJECT_DIR" show-ref --verify --quiet "refs/heads/$wt_branch" 2>/dev/null; then
-				git -C "$CLAUDE_PROJECT_DIR" branch -D "$wt_branch" >$OUT 2>&1 || true
+			if git -C "$REPO_ROOT" show-ref --verify --quiet "refs/heads/$wt_branch" 2>/dev/null; then
+				git -C "$REPO_ROOT" branch -D "$wt_branch" >$OUT 2>&1 || true
 			fi
 		fi
 	done
@@ -202,7 +220,7 @@ if [ "$SAFE_TO_REMOVE" = true ]; then
 fi
 
 # --- project-level hook ---
-PROJECT_HOOK="$CLAUDE_PROJECT_DIR/.hooks/worktree-remove.sh"
+PROJECT_HOOK="$REPO_ROOT/.hooks/worktree-remove.sh"
 if [ -x "$PROJECT_HOOK" ]; then
 	echo "$INPUT" | "$PROJECT_HOOK"
 fi
