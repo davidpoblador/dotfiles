@@ -116,6 +116,7 @@ When asked to do something, just do it - including obvious follow-up actions nee
 - YOU MUST commit frequently throughout the development process, even if your high-level tasks are not yet done. Commit your journal entries.
 - NEVER SKIP, EVADE OR DISABLE A PRE-COMMIT HOOK
 - NEVER use `git add -A` unless you've just done a `git status` - Don't add random test files to the repo.
+- When merging PRs from a worktree, NEVER use `--delete-branch`. It fails because `gh` tries to checkout the default branch locally, which is already checked out in the main worktree. Just use `gh pr merge --squash`. Remote branch cleanup is handled by GitHub's auto-delete setting, and local worktree cleanup is handled by the worktree-create hook.
 
 ## Testing
 

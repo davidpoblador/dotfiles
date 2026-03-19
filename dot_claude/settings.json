@@ -156,7 +156,6 @@
     "deny": [],
     "defaultMode": "acceptEdits"
   },
-  "model": "opus",
   "enableAllProjectMcpServers": true,
   "hooks": {
     "WorktreeCreate": [
@@ -199,14 +198,17 @@
     "frontend-design@claude-code-plugins": true,
     "commit-commands@claude-code-plugins": true,
     "feature-dev@claude-code-plugins": true,
-    "chrome-devtools-mcp@chrome-devtools-plugins": true,
     "superpowers@claude-plugins-official": false,
     "astral@astral-sh": true,
     "rust-analyzer-lsp@claude-plugins-official": true,
     "context-mode@claude-context-mode": true,
     "typescript-lsp@claude-plugins-official": true,
-    "gopls-lsp@claude-plugins-official": true
+    "gopls-lsp@claude-plugins-official": true,
+    "clangd-lsp@claude-plugins-official": true,
+    "swift-lsp@claude-plugins-official": true
   },
   "alwaysThinkingEnabled": true,
-  "skipDangerousModePermissionPrompt": true
+  "showThinkingSummaries": true,
+  "skipDangerousModePermissionPrompt": true,
+  "effortLevel": "high"
 }
