@@ -8,4 +8,5 @@ window-padding-x = 4
 window-padding-y = 4
 shell-integration = zsh
 macos-titlebar-style = tabs
+selection-word-separator = ,│┤┈├┊┆┇┅┋=
 keybind = shift+enter=text:\n
