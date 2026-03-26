@@ -262,3 +262,11 @@ if command_exists brew; then
     zsh-defer source "${GCP_SDK_PATH}/completion.zsh.inc"
   fi
 fi
+
+# Reset Kitty keyboard protocol after Claude Code exits
+# (workaround for Claude not always popping keyboard mode on exit in Ghostty)
+claude() {
+    command claude "$@"
+    printf '\e[<u'
+    stty sane 2>/dev/null
+}
