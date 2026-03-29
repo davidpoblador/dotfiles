@@ -222,7 +222,7 @@ if [ -d "$REPO_ROOT/.claude/worktrees" ]; then
 			fi
 		else
 			# Never pushed — check if older than 24h with no unique commits
-			wt_created=$(git -C "$REPO_ROOT" reflog show --format='%ct' "$stale_branch" 2>/dev/null | tail -1)
+			wt_created=$(git -C "$REPO_ROOT" reflog show --format='%ct' "$stale_branch" 2>/dev/null | tail -1) || true
 			wt_created=${wt_created:-0}
 			now=$(date +%s)
 			age_hours=$(( (now - wt_created) / 3600 ))
