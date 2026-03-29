@@ -195,20 +195,18 @@
     "command": "~/.claude/statusline-command.sh"
   },
   "enabledPlugins": {
-    "frontend-design@claude-code-plugins": true,
-    "commit-commands@claude-code-plugins": true,
-    "feature-dev@claude-code-plugins": true,
-    "superpowers@claude-plugins-official": false,
+    "context-mode@claude-context-mode": true,
     "astral@astral-sh": true,
     "rust-analyzer-lsp@claude-plugins-official": true,
-    "context-mode@claude-context-mode": true,
     "typescript-lsp@claude-plugins-official": true,
     "gopls-lsp@claude-plugins-official": true,
     "clangd-lsp@claude-plugins-official": true,
-    "swift-lsp@claude-plugins-official": true
+    "swift-lsp@claude-plugins-official": true,
+    "frontend-design@claude-plugins-official": true,
+    "commit-commands@claude-plugins-official": true,
+    "feature-dev@claude-plugins-official": true
   },
   "alwaysThinkingEnabled": true,
   "showThinkingSummaries": true,
-  "skipDangerousModePermissionPrompt": true,
-  "effortLevel": "high"
+  "skipDangerousModePermissionPrompt": true
 }

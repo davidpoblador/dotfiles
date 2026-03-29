@@ -8,7 +8,7 @@ window-padding-x = 4
 window-padding-y = 4
 shell-integration = zsh
 macos-titlebar-style = tabs
-selection-word-separator = ,│┤┈├┊┆┇┅┋=
+selection-word-chars = " ,│┤┈├┊┆┇┅┋="
 window-inherit-working-directory = false
 tab-inherit-working-directory = false
 split-inherit-working-directory = true
