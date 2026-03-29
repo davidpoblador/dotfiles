@@ -91,10 +91,38 @@ else
 	# --- git submodules (only on creation) ---
 	if [ -f "$REPO_ROOT/.gitmodules" ]; then
 		log "✓ Initializing submodules..."
-		if git -C "$WORKTREE_DIR" submodule update --init --recursive --depth 1 >$OUT 2>&1; then
-			log "✓ Submodules initialized"
+		# Resolve the real .git/modules dir (works for both main repos and worktrees)
+		GIT_COMMON_DIR=$(git -C "$REPO_ROOT" rev-parse --git-common-dir 2>/dev/null)
+		MODULES_DIR="$GIT_COMMON_DIR/modules"
+
+		# Fast path: if modules are already cloned locally, point submodule URLs
+		# at the local cache to avoid a remote fetch (~1s vs ~10s).
+		if [ -d "$MODULES_DIR" ]; then
+			git -C "$WORKTREE_DIR" submodule init >$OUT 2>&1 || true
+			git -C "$WORKTREE_DIR" submodule foreach --quiet \
+				'mod=$(basename "$sm_path")
+				 local_mod="'"$MODULES_DIR"'/$mod"
+				 if [ -d "$local_mod" ]; then
+				   git -C "$toplevel" config "submodule.$name.url" "file://$local_mod"
+				 fi' >$OUT 2>&1 || true
+			if git -C "$WORKTREE_DIR" -c protocol.file.allow=always submodule update --recursive --depth 1 >$OUT 2>&1; then
+				log "✓ Submodules initialized (from local cache)"
+			else
+				log "⚠ Local cache init failed, falling back to remote..."
+				git -C "$WORKTREE_DIR" submodule deinit --all --force >$OUT 2>&1 || true
+				if git -C "$WORKTREE_DIR" submodule update --init --recursive --depth 1 >$OUT 2>&1; then
+					log "✓ Submodules initialized (from remote)"
+				else
+					log "⚠ Submodule init failed, continuing anyway"
+				fi
+			fi
 		else
-			log "⚠ Submodule init failed, continuing anyway"
+			# No local module cache, clone from remote
+			if git -C "$WORKTREE_DIR" submodule update --init --recursive --depth 1 >$OUT 2>&1; then
+				log "✓ Submodules initialized"
+			else
+				log "⚠ Submodule init failed, continuing anyway"
+			fi
 		fi
 	fi
 
