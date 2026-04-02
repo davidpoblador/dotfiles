@@ -211,6 +211,11 @@ alias toad='uvx --from batrachian-toad toad'
 alias c='code .'
 alias zrc='vi ${HOME}/.zshrc'
 
+# GitHub
+alias ghw='gh repo view --web'
+alias ghp='gh pr list --web'
+alias ghpr='gh pr view --web'
+
 # System maintenance
 alias bubu='brew update && brew upgrade'
 
