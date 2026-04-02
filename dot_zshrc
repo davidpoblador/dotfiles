@@ -211,6 +211,12 @@ alias toad='uvx --from batrachian-toad toad'
 alias c='code .'
 alias zrc='vi ${HOME}/.zshrc'
 
+# Claude Code
+alias ccc='claude'
+alias cccw='claude -w'
+alias cccy='claude --dangerously-skip-permissions'
+alias cccwy='claude --dangerously-skip-permissions -w'
+
 # GitHub
 alias ghw='gh repo view --web'
 alias ghp='gh pr list --web'
