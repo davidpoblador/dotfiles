@@ -1,3 +1,4 @@
+
 theme = Catppuccin Macchiato
 font-family = JetBrainsMono Nerd Font
 font-size = 13
@@ -10,6 +11,6 @@ shell-integration = zsh
 macos-titlebar-style = tabs
 selection-word-chars = " ,│┤┈├┊┆┇┅┋="
 window-inherit-working-directory = false
-tab-inherit-working-directory = false
+tab-inherit-working-directory = true
 split-inherit-working-directory = true
 keybind = shift+enter=text:\n

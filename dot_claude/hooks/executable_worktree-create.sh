@@ -246,6 +246,12 @@ if [ -d "$REPO_ROOT/.claude/worktrees" ]; then
 			if git -C "$REPO_ROOT" show-ref --verify --quiet "refs/heads/$stale_branch" 2>/dev/null; then
 				git -C "$REPO_ROOT" branch -D "$stale_branch" >$OUT 2>&1 || true
 			fi
+			# Guard: clear core.worktree if it pointed at the cleaned worktree
+			configured_wt=$(git -C "$REPO_ROOT" config core.worktree 2>/dev/null || true)
+			if [ "$configured_wt" = "$stale_dir" ] || [ "$configured_wt" = "${stale_dir%/}" ]; then
+				git -C "$REPO_ROOT" config --unset core.worktree >$OUT 2>&1 || true
+				log "✓ Cleared stale core.worktree for $stale_name"
+			fi
 		fi
 	done
 fi

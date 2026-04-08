@@ -92,6 +92,13 @@ if [ "$SAFE_TO_REMOVE" = true ]; then
 		git -C "$REPO_ROOT" worktree prune >$OUT 2>&1 || true
 	fi
 
+	# Guard: if core.worktree points at the removed worktree, unset it
+	configured_wt=$(git -C "$REPO_ROOT" config core.worktree 2>/dev/null || true)
+	if [ "$configured_wt" = "$WORKTREE_DIR" ]; then
+		git -C "$REPO_ROOT" config --unset core.worktree >$OUT 2>&1 || true
+		log "✓ Cleared stale core.worktree"
+	fi
+
 	# --- delete the local branch ---
 	if git -C "$REPO_ROOT" show-ref --verify --quiet "refs/heads/$BRANCH" 2>/dev/null; then
 		git -C "$REPO_ROOT" branch -D "$BRANCH" >$OUT 2>&1 || {
@@ -176,6 +183,12 @@ if [ -d "$WORKTREES_DIR" ]; then
 			}
 			if git -C "$REPO_ROOT" show-ref --verify --quiet "refs/heads/$wt_branch" 2>/dev/null; then
 				git -C "$REPO_ROOT" branch -D "$wt_branch" >$OUT 2>&1 || true
+			fi
+			# Guard: clear core.worktree if it pointed at the cleaned worktree
+			configured_wt=$(git -C "$REPO_ROOT" config core.worktree 2>/dev/null || true)
+			if [ "$configured_wt" = "$wt_dir" ] || [ "$configured_wt" = "${wt_dir%/}" ]; then
+				git -C "$REPO_ROOT" config --unset core.worktree >$OUT 2>&1 || true
+				log "✓ Cleared stale core.worktree for $wt_name"
 			fi
 		fi
 	done
