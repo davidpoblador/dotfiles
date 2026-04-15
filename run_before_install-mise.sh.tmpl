@@ -1,11 +1,11 @@
 {{ if eq .chezmoi.os "linux" -}}
 #!/bin/bash
-# Install mise on Linux if not present (user-space, no sudo).
+# Install or update mise on Linux (user-space, no sudo).
 
-if command -v mise &>/dev/null || [ -f "$HOME/.local/bin/mise" ]; then
-  exit 0
+if [ -f "$HOME/.local/bin/mise" ]; then
+  "$HOME/.local/bin/mise" self-update -y 2>/dev/null || true
+else
+  echo "[mise] Installing..."
+  curl -fsSL https://mise.jdx.dev/install.sh | bash
 fi
-
-echo "[mise] Installing..."
-curl -fsSL https://mise.jdx.dev/install.sh | bash
 {{ end -}}
