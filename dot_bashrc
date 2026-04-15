@@ -31,7 +31,6 @@ HISTFILESIZE=50000
 HISTTIMEFORMAT="%F %T  "
 HISTCONTROL=ignoreboth:erasedups
 shopt -s histappend
-PROMPT_COMMAND="history -a;${PROMPT_COMMAND:+ $PROMPT_COMMAND}"
 
 ###########################################################
 # Tool Initialization (must come after history so         #
