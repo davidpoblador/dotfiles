@@ -1,0 +1,84 @@
+# Production server .bashrc
+
+###########################################################
+# Environment                                             #
+###########################################################
+
+export EDITOR="vim"
+export VISUAL="vim"
+export LANG="en_US.UTF-8"
+
+# Mise (user-space tool manager)
+if [ -f "$HOME/.local/bin/mise" ]; then
+  eval "$("$HOME/.local/bin/mise" activate bash)"
+fi
+
+# Starship prompt
+if command -v starship &>/dev/null; then
+  eval "$(starship init bash)"
+fi
+
+###########################################################
+# History                                                 #
+###########################################################
+
+HISTFILE="$HOME/.bash_history"
+HISTSIZE=50000
+HISTFILESIZE=50000
+HISTTIMEFORMAT="%F %T  "
+HISTCONTROL=ignoreboth:erasedups
+shopt -s histappend
+PROMPT_COMMAND="history -a; history -c; history -r; $PROMPT_COMMAND"
+
+###########################################################
+# Shell Options                                           #
+###########################################################
+
+shopt -s checkwinsize
+shopt -s cdspell
+shopt -s autocd 2>/dev/null
+
+###########################################################
+# Aliases                                                 #
+###########################################################
+
+# Navigation
+alias l='ls -la'
+alias ..='cd ..'
+alias ...='cd ../..'
+
+# Git
+alias ga='git add'
+alias gs='git status'
+alias gpl='git pull'
+alias gco='git checkout'
+alias gb='git branch'
+
+# Docker
+alias dps='docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"'
+alias dcu='docker compose up -d'
+alias dcd='docker compose down'
+alias dcr='docker compose restart'
+alias dcl='docker compose logs -f --tail 100'
+
+# System
+alias ports='ss -tlnp'
+
+###########################################################
+# Functions                                               #
+###########################################################
+
+# Docker logs with follow and tail
+dlogs() {
+    docker logs -f --tail 100 "$1"
+}
+
+# Docker exec into a container
+dexec() {
+    docker exec -it "$1" /bin/sh
+}
+
+# Re-run the install script to pull latest configs
+prod-update() {
+    curl -sS https://raw.githubusercontent.com/davidpoblador/dotfiles/main/prod/install.sh | bash
+}

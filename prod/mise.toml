@@ -1,0 +1,4 @@
+[tools]
+uv = "latest"
+starship = "latest"
+gh = "latest"
