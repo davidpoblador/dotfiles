@@ -7,6 +7,7 @@
 export EDITOR="vim"
 export VISUAL="vim"
 export LANG="en_US.UTF-8"
+export PATH="$HOME/bin:$HOME/.local/bin:$PATH"
 
 # Mise (user-space tool manager)
 if [ -f "$HOME/.local/bin/mise" ]; then
@@ -78,7 +79,7 @@ dexec() {
     docker exec -it "$1" /bin/sh
 }
 
-# Re-run the install script to pull latest configs
+# Pull latest dotfiles and apply
 prod-update() {
-    curl -sS https://raw.githubusercontent.com/davidpoblador/dotfiles/main/prod/install.sh | bash
+    chezmoi update
 }
