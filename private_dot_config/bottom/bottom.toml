@@ -1,0 +1,24 @@
+# Catppuccin Macchiato
+[colors]
+table_header_color = "#cad3f5"
+all_cpu_color = "#cad3f5"
+avg_cpu_color = "#c6a0f6"
+cpu_core_colors = ["#ed8796", "#f5a97f", "#eed49f", "#a6da95", "#8bd5ca", "#8aadf4", "#c6a0f6", "#f5bde6"]
+ram_color = "#a6da95"
+swap_color = "#f5a97f"
+arc_color = "#8bd5ca"
+gpu_core_colors = ["#8aadf4", "#c6a0f6", "#f5bde6", "#ed8796"]
+rx_color = "#a6da95"
+tx_color = "#ed8796"
+widget_title_color = "#cad3f5"
+border_color = "#494d64"
+highlighted_border_color = "#c6a0f6"
+text_color = "#cad3f5"
+graph_color = "#a5adcb"
+cursor_color = "#f4dbd6"
+selected_text_color = "#24273a"
+selected_bg_color = "#c6a0f6"
+high_battery_color = "#a6da95"
+medium_battery_color = "#eed49f"
+low_battery_color = "#ed8796"
+disabled_text_color = "#5b6078"
