@@ -1,10 +1,51 @@
 # Skills are managed by `bunx skills`, not chezmoi. Only the lock file is tracked.
 .agents/skills
 
+# Repo files, not dotfiles
+CLAUDE.md
+README.md
+TODO.md
+prod/
+
+{{- if eq .profile "prod" }}
+# Dev-only files excluded on prod
+.zshrc
+.zprofile
+.zsh_plugins.txt
+.claude/
+.agents/
+.codex/
+.gemini/
+.config/bat/
+.config/broot/
+.config/fzf/
+.config/gh/
+.config/ghostty/
+.config/git/
+.config/lazygit/
+.config/lsd/
+.config/opencode/
+.config/sc-im/
+.config/silicon/
+.config/tmux/
+.config/zed/
+.config/zsh/
+.config/bottom/
+.config/atuin/
+.docker/
+.gitignore_global
+.ssh/
+.vimrc
+private_Library/
+run_onchange_darwin-install-packages.sh
+{{- end }}
+
+{{- if eq .profile "dev" }}
+# Prod-only files excluded on dev
+.bashrc
+{{- end }}
+
 {{- if ne .chezmoi.os "darwin" }}
 private_Library/
-run_onchange_darwin-install-packages.sh.tmpl
-{{- end }}
-{{- if ne .chezmoi.os "linux" }}
-run_onchange_wsl-install-packages.sh.tmpl
+run_onchange_darwin-install-packages.sh
 {{- end }}

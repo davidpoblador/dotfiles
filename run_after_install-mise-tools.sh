@@ -8,8 +8,12 @@ if [[ -f "$STAMP" ]] && [[ -z $(find "$STAMP" -mtime +7 2>/dev/null) ]]; then
 fi
 
 if ! command -v mise &>/dev/null; then
-  echo "[mise] mise not found. Install Homebrew packages first (brew bundle)."
-  exit 0
+  if [ -f "$HOME/.local/bin/mise" ]; then
+    export PATH="$HOME/.local/bin:$PATH"
+  else
+    echo "[mise] mise not found. Install with: curl -fsSL https://mise.jdx.dev/install.sh | bash"
+    exit 0
+  fi
 fi
 
 echo "[mise] Installing tools..."

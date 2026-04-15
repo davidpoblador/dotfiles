@@ -5,6 +5,7 @@ scan_timeout = 30        # Milliseconds to scan for git repos
 command_timeout = 500    # Max time for module commands
 follow_symlinks = false  # Important for network filesystems
 
+{{ if eq .profile "dev" -}}
 format = """
 [](color_orange)\
 $os\
@@ -33,7 +34,25 @@ $line_break\
 $character"""
 
 right_format = """${custom.project}"""
-
+{{ else -}}
+format = """
+[](color_red)\
+$os\
+$hostname\
+[](bg:color_orange fg:color_red)\
+$username\
+[](bg:color_yellow fg:color_orange)\
+$git_branch\
+$git_status\
+[](fg:color_yellow bg:color_aqua)\
+$directory\
+[](fg:color_aqua bg:color_bg1)\
+$time\
+[](fg:color_bg1)\
+ $cmd_duration\
+$line_break\
+$character"""
+{{ end }}
 palette = 'catppuccin_macchiato'
 
 [palettes.catppuccin_macchiato]
@@ -51,8 +70,11 @@ color_yellow = '#eed49f'
 
 [os]
 disabled = false
+{{ if eq .profile "dev" -}}
 style = "bg:color_orange fg:color_fg0"
-
+{{ else -}}
+style = "bg:color_red fg:color_fg0"
+{{ end }}
 [os.symbols]
 Windows = "󰍲"
 Ubuntu = "󰕈"
@@ -76,17 +98,28 @@ RedHatEnterprise = "󱄛"
 
 [username]
 show_always = true
+{{ if eq .profile "dev" -}}
 style_user = "bg:color_orange fg:color_fg0"
 style_root = "bg:color_orange fg:color_fg0"
 format = '[ $user]($style)'
+{{ else -}}
+style_user = "bg:color_orange fg:color_fg0"
+style_root = "bg:color_red fg:color_fg0 bold"
+format = '[ $user ]($style)'
+{{ end }}
 
 [directory]
 style = "bg:color_aqua"
 format = '[[ $path ](bold fg:color_fg0 bg:color_aqua)]($style)'
+{{ if eq .profile "dev" -}}
 truncation_length = 1
+{{ else -}}
+truncation_length = 3
+{{ end -}}
 truncation_symbol = "…/"
 truncate_to_repo = false
 
+{{ if eq .profile "dev" -}}
 [directory.substitutions]
 "Documents" = "󰈙 "
 "Downloads" = " "
@@ -110,6 +143,7 @@ when = 'git rev-parse --is-inside-work-tree 2>/dev/null'
 style = "bg:color_purple"
 format = '[](fg:color_purple)[[ 󰉋 $output ](fg:color_fg0 bg:color_purple)]($style)[](fg:color_purple)'
 shell = ["bash", "--noprofile", "--norc"]
+{{ end -}}
 
 [git_branch]
 symbol = ""
@@ -124,6 +158,7 @@ style = "bg:color_yellow"
 format = '[[($all_status$ahead_behind )](fg:color_fg0 bg:color_yellow)]($style)'
 untracked = "∿"
 
+{{ if eq .profile "dev" -}}
 [nodejs]
 symbol = ""
 style = "bg:color_blue"
@@ -173,6 +208,7 @@ format = '[[ $symbol( $version) ](fg:color_fg0 bg:color_blue)]($style)'
 symbol = ""
 style = "bg:color_bg3"
 format = '[[ $symbol( $context) ](fg:color_fg1 bg:color_bg3)]($style)'
+{{ end }}
 
 [time]
 disabled = false
@@ -180,6 +216,12 @@ time_format = "%R"
 style = "bg:color_bg1"
 format = '[[ $time ](fg:color_fg1 bg:color_bg1)]($style)'
 
+{{ if eq .profile "prod" -}}
+[cmd_duration]
+min_time = 2000
+style = "fg:color_yellow"
+format = '[$duration]($style) '
+{{ end }}
 
 [character]
 disabled = false
@@ -191,12 +233,19 @@ vimcmd_replace_symbol = '[▶](bold fg:color_purple)'
 vimcmd_visual_symbol = '[▶](bold fg:color_yellow)'
 
 [hostname]
-ssh_only = true  # Only show hostname when connected via SSH
+{{ if eq .profile "dev" -}}
+ssh_only = true
 style = "bg:color_orange fg:color_fg0"
 ssh_symbol = "󰖟"
 format = "[@$hostname $ssh_symbol ]($style)"
-trim_at = "."  # Show short hostname (before first dot)
+{{ else -}}
+ssh_only = false
+style = "bg:color_red fg:color_fg0"
+format = "[ $hostname ]($style)"
+{{ end -}}
+trim_at = "."
 
+{{ if eq .profile "dev" -}}
 # AWS Cloud Context
 [aws]
 symbol = "☁️ "
@@ -210,3 +259,4 @@ symbol = "☁️ "
 style = "bg:color_bg3"
 format = '[[ $symbol$account(@$domain)(\($region\)) ](fg:color_fg1 bg:color_bg3)]($style)'
 disabled = false
+{{ end -}}

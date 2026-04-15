@@ -1,6 +1,6 @@
-
 [settings]
 experimental = true
+{{ if eq .profile "dev" -}}
 idiomatic_version_file_enable_tools = []
 
 [[hooks.cd]]
@@ -15,8 +15,9 @@ if [ -f "bun.lock" ] && [ ! -d "node_modules" ]; then
 fi
 wait
 """
-
+{{ end }}
 [tools]
+{{ if eq .profile "dev" -}}
 awscli = "latest"
 bun = "latest"
 gh = "latest"
@@ -35,3 +36,8 @@ actionlint = "latest"
 rust-analyzer = "latest"
 zig = "latest"
 atuin = "latest"
+{{ else -}}
+uv = "latest"
+starship = "latest"
+gh = "latest"
+{{ end -}}
