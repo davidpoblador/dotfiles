@@ -7,6 +7,10 @@ export LANG="en_US.UTF-8"
 export LC_ALL="en_US.UTF-8"
 export LC_CTYPE="en_US.UTF-8"
 
+# Default editor
+export EDITOR="vim"
+export VISUAL="vim"
+
 # Use XDG_CONFIG_HOME if set, otherwise default to ${HOME}/.config
 export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
 export XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
@@ -59,13 +63,10 @@ ensure_dir_exists() {
 # Homebrew Setup                                          #
 ###########################################################
 if command_exists brew; then
-  # Store Homebrew prefix
-  local BREW_PREFIX=$(brew --prefix)
+  BREW_PREFIX=$(brew --prefix)
 
-  # Add Homebrew's zsh completions to FPATH
   FPATH="${BREW_PREFIX}/share/zsh/site-functions:${FPATH}"
 
-  # Homebrew settings
   export HOMEBREW_NO_ANALYTICS=1
   export HOMEBREW_NO_ENV_HINTS=1
 fi
@@ -81,18 +82,22 @@ HISTFILE="${HISTDIR}/history"
 # Ensure history directory exists
 ensure_dir_exists "$HISTDIR"
 
-HISTSIZE=10000
-SAVEHIST=10000
-setopt HIST_IGNORE_ALL_DUPS
-setopt HIST_REDUCE_BLANKS
-setopt HIST_VERIFY
+HISTSIZE=50000
+SAVEHIST=50000
+setopt HIST_IGNORE_ALL_DUPS    # Remove older duplicate when a new entry matches
+setopt HIST_REDUCE_BLANKS      # Strip superfluous whitespace from entries
+setopt HIST_VERIFY             # Show expanded history command before executing
+setopt SHARE_HISTORY           # Sync history across all open terminals in real time
+setopt HIST_EXPIRE_DUPS_FIRST  # When trimming, drop duplicates before unique entries
+setopt HIST_IGNORE_SPACE       # Commands starting with a space are not recorded
+setopt EXTENDED_HISTORY        # Save timestamps and duration for each entry
 
 ###########################################################
 # Command-Line Enhancements                               #
 ###########################################################
 
 # Load antidote plugin manager
-source "${BREW_PREFIX:-$(brew --prefix)}/opt/antidote/share/antidote/antidote.zsh"
+source "${BREW_PREFIX}/opt/antidote/share/antidote/antidote.zsh"
 antidote load
 
 # Mise - version manager for dev tools (deferred for speed)
@@ -116,8 +121,8 @@ if [[ -f "${XDG_CONFIG_HOME}/broot/launcher/bash/br" ]]; then
 fi
 
 # Google Cloud SDK - add to PATH (completions loaded later after compinit)
-if command_exists brew; then
-  local GCP_SDK_PATH="$(brew --prefix)/share/google-cloud-sdk"
+if [[ -n "$BREW_PREFIX" ]]; then
+  GCP_SDK_PATH="${BREW_PREFIX}/share/google-cloud-sdk"
   if [[ -d "$GCP_SDK_PATH" ]]; then
     source "${GCP_SDK_PATH}/path.zsh.inc"
   fi
@@ -131,8 +136,11 @@ fi
 # Ctrl-U: Delete from cursor to beginning of line
 bindkey \^U backward-kill-line
 
-# ESC+backspace: Treat special chars as word boundaries
+# Word boundaries: these characters are part of a word for movement/deletion widgets
 WORDCHARS='*?_-.[]~=&;!#$%^(){}<>'
+
+# Type a directory path to cd into it without typing "cd"
+setopt AUTO_CD
 
 ###########################################################
 # Final PATH Adjustments                                  #
@@ -244,6 +252,7 @@ fi
 # Initialize completion system with optimized caching
 # Only regenerate completion dump once per day for maximum speed
 autoload -Uz compinit
+ensure_dir_exists "${XDG_CACHE_HOME}/zsh"
 
 # Check if cache needs regeneration (based on day of year)
 if [[ -n ${XDG_CACHE_HOME}/zsh/zcompdump(#qN.mh+24) ]]; then
@@ -268,11 +277,8 @@ zsh-defer -c 'eval "$(uvx --generate-shell-completion zsh)"'
 zsh-defer -c 'eval "$(uv generate-shell-completion zsh)"'
 
 # Google Cloud SDK completions (deferred)
-if command_exists brew; then
-  local GCP_SDK_PATH="$(brew --prefix)/share/google-cloud-sdk"
-  if [[ -d "$GCP_SDK_PATH" ]]; then
-    zsh-defer source "${GCP_SDK_PATH}/completion.zsh.inc"
-  fi
+if [[ -n "$GCP_SDK_PATH" && -d "$GCP_SDK_PATH" ]]; then
+  zsh-defer source "${GCP_SDK_PATH}/completion.zsh.inc"
 fi
 
 # Reset Kitty keyboard protocol after Claude Code exits
