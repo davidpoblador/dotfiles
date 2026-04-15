@@ -37,11 +37,11 @@ shopt -s histappend
 # starship can append to PROMPT_COMMAND)                  #
 ###########################################################
 
+# Starship prompt (must init before atuin to avoid bash-preexec conflicts)
+command -v starship &>/dev/null && eval "$(starship init bash --print-full-init)"
+
 # Atuin (shell history search via Ctrl-R)
 command -v atuin &>/dev/null && eval "$(atuin init bash)"
-
-# Starship prompt (must be last, takes over PROMPT_COMMAND)
-command -v starship &>/dev/null && eval "$(starship init bash --print-full-init)"
 
 ###########################################################
 # Shell Options                                           #
