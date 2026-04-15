@@ -236,7 +236,6 @@ alias bubu='brew update && brew upgrade'
 # Agent skills: update all skills and commit the lock file to chezmoi
 skills-update() {
     bunx skills update -g -y
-    npx skills add git@github.com:kepano/obsidian-skills.git -g -y
     chezmoi add ~/.agents/.skill-lock.json
     echo "Lock file updated in chezmoi."
 }
