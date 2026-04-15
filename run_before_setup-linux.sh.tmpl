@@ -7,7 +7,8 @@ if ! command -v zsh &>/dev/null; then
   exit 1
 fi
 
-if [[ "$(basename "$SHELL")" != "zsh" ]]; then
+CURRENT_SHELL=$(getent passwd "$(whoami)" | cut -d: -f7)
+if [[ "$(basename "$CURRENT_SHELL")" != "zsh" ]]; then
   echo "[setup] Setting zsh as default shell..."
   chsh -s "$(which zsh)"
   echo "[setup] Done. Log out and back in, then run chezmoi apply again."
