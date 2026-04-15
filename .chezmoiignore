@@ -21,7 +21,6 @@ prod/
 .config/fzf/
 .config/gh/
 .config/ghostty/
-.config/git/
 .config/lazygit/
 .config/lsd/
 .config/opencode/
@@ -33,9 +32,7 @@ prod/
 .config/bottom/
 .config/atuin/themes/
 .docker/
-.gitignore_global
 .ssh/
-.vimrc
 private_Library/
 run_onchange_darwin-install-packages.sh
 {{- end }}

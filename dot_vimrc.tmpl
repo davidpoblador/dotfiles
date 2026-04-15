@@ -1,5 +1,7 @@
-set termguicolors
 set background=dark
 set t_Co=256
 syntax on
+{{ if eq .profile "dev" -}}
+set termguicolors
 colorscheme catppuccin_macchiato
+{{ end -}}

@@ -3,9 +3,12 @@
     email = {{ .email | quote }}
 
 [core]
+{{ if eq .profile "dev" -}}
     pager = delta
+{{ end -}}
     excludesfile = ~/.gitignore_global
 
+{{ if eq .profile "dev" -}}
 [interactive]
     diffFilter = delta --color-only --features=interactive
 
@@ -35,24 +38,29 @@
 [difftool "difftastic"]
     cmd = difft "$LOCAL" "$REMOTE"
 
+{{ end -}}
 [init]
     defaultBranch = main
 
 [push]
     autoSetupRemote = true
 
+{{ if eq .profile "dev" -}}
 [filter "lfs"]
     clean = git-lfs clean -- %f
     smudge = git-lfs smudge -- %f
     process = git-lfs filter-process
     required = true
 
+{{ end -}}
 [pager]
     log = less -FRX
 
+{{ if eq .profile "dev" -}}
 [include]
     path = macchiato.config
 
+{{ end -}}
 [alias]
     st = "!f(){ \
         if [ \"$(git rev-parse --is-bare-repository 2>/dev/null)\" = \"true\" ]; then \
