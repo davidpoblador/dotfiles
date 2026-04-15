@@ -132,11 +132,11 @@ command_exists lsd || alias l='ls -la'
 
 if (( $+functions[zsh-defer] )); then
   zsh-defer -c 'eval "$(fzf --zsh)"'
-  zsh-defer -c 'eval "$(atuin init zsh)"'
+  zsh-defer -c 'eval "$(atuin init zsh --disable-up-arrow)"'
   zsh-defer -c 'eval "$(zoxide init zsh)"'
 else
   load_if_exists fzf 'eval "$(fzf --zsh)"'
-  load_if_exists atuin 'eval "$(atuin init zsh)"'
+  load_if_exists atuin 'eval "$(atuin init zsh --disable-up-arrow)"'
   load_if_exists zoxide 'eval "$(zoxide init zsh)"'
 fi
 

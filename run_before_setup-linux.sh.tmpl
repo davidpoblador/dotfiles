@@ -8,7 +8,7 @@ if ! command -v zsh &>/dev/null; then
 fi
 
 if [[ "$(basename "$SHELL")" != "zsh" ]]; then
-  echo "ERROR: zsh is not your default shell. Run: sudo chsh -s \$(which zsh) \$(whoami)" >&2
+  echo "ERROR: zsh is not your default shell. Run: chsh -s \$(which zsh)" >&2
   echo "Then log out and back in." >&2
   exit 1
 fi
