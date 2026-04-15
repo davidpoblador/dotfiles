@@ -85,15 +85,13 @@ HISTFILE="${HISTDIR}/history"
 # Ensure history directory exists
 ensure_dir_exists "$HISTDIR"
 
+# Zsh native history kept as fallback (atuin is the primary history tool)
 HISTSIZE=50000
 SAVEHIST=50000
-setopt HIST_IGNORE_ALL_DUPS    # Remove older duplicate when a new entry matches
-setopt HIST_REDUCE_BLANKS      # Strip superfluous whitespace from entries
-setopt HIST_VERIFY             # Show expanded history command before executing
-setopt SHARE_HISTORY           # Sync history across all open terminals in real time
-setopt HIST_EXPIRE_DUPS_FIRST  # When trimming, drop duplicates before unique entries
-setopt HIST_IGNORE_SPACE       # Commands starting with a space are not recorded
-setopt EXTENDED_HISTORY        # Save timestamps and duration for each entry
+setopt HIST_IGNORE_ALL_DUPS
+setopt HIST_REDUCE_BLANKS
+setopt HIST_IGNORE_SPACE
+setopt APPEND_HISTORY
 
 ###########################################################
 # Command-Line Enhancements                               #

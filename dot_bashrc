@@ -25,11 +25,11 @@ export PATH="$HOME/bin:$HOME/.local/bin:$PATH"
 # History                                                 #
 ###########################################################
 
+# Bash native history kept as fallback (atuin is the primary history tool)
 HISTFILE="$HOME/.bash_history"
 HISTSIZE=50000
 HISTFILESIZE=50000
-HISTTIMEFORMAT="%F %T  "
-HISTCONTROL=ignoreboth:erasedups
+HISTCONTROL=ignoreboth
 shopt -s histappend
 
 ###########################################################
