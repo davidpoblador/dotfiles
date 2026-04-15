@@ -1,37 +1,24 @@
 # Production Dotfiles: Scoping
 
+## Scope
+
+User-space shell configuration only. No system administration (apt packages,
+tailscale, docker, etc.). Those are provisioned separately per host.
+
 ## Host inventory
 
 4 production Linux hosts, all Ubuntu 24.04 x86_64, bash shell.
 
-| Host | Packages (manual) | Primary use |
-|---|---|---|
-| host-a | 142 | Docker infra, syncthing |
-| host-b | 142 | Docker infra, syncthing, networking |
-| host-c | 142 | Docker infra, system admin |
-| host-d | 49 | Docker infra, Claude Code, syncthing |
+| Host | Primary use |
+|---|---|
+| host-a | Docker infra, syncthing |
+| host-b | Docker infra, syncthing, networking |
+| host-c | Docker infra, system admin |
+| host-d | Docker infra, Claude Code, syncthing |
 
-host-a/b/c are nearly identical (136 packages in common).
-host-d is a leaner install (49 manual packages) but same workflow pattern.
+## Tools already available (system-level)
 
-## Tools already installed on all hosts
-
-- **git**, **gh** (via apt, versions vary: 2.86-2.89)
-- **tailscale** (via apt repo)
-- **docker** (docker-ce, compose plugin, buildx)
-- **vim**, **curl**, **wget**
-- **python3** 3.12.3
-
-On host-a/b/c only (not host-d): htop, tmux, rsync, screen
-
-## Missing tools (wanted on all)
-
-| Tool | Install method | Why |
-|---|---|---|
-| **uv** | `curl -LsSf https://astral.sh/uv/install.sh \| sh` | Python package management, same as dev |
-| **starship** | `curl -sS https://starship.rs/install.sh \| sh` | Distinctive prod prompt |
-
-gh and tailscale are already present via apt on all hosts. No action needed.
+- git, gh, tailscale, docker (compose, buildx), vim, curl, wget, python3
 
 ## Actual usage patterns (from shell history)
 
@@ -43,39 +30,12 @@ gh and tailscale are already present via apt on all hosts. No action needed.
 | Editing | `vi`, `vim` | Compose files, configs, .env |
 | System | `sudo apt update/upgrade`, `sudo reboot`, `ps aux` | Maintenance |
 | Networking | `tailscale status`, `nc -zv`, `ping`, `dig` | Debugging |
-| Claude Code | `claude --dangerously-skip-permissions` | On host-d |
 
 Notable: `l` is used on every host but is not aliased (fails silently or errors).
 
-## Package drift between hosts
-
-### host-a/b/c differences (from 136 common base)
-
-| Package | host-a | host-b | host-c | Action |
-|---|---|---|---|---|
-| build-essential | yes | no | no | Keep on host-a only (build host) |
-| cmake | yes | no | no | Keep on host-a only |
-| rclone | yes | no | no | Keep on host-a only |
-| reptyr | yes | no | no | Useful everywhere, add to common |
-| iotop | yes | no | no | Useful everywhere, add to common |
-| mosh | no | no | yes | Useful everywhere, add to common |
-| man-db | no | yes | yes | Useful everywhere, add to common |
-| net-tools | no | yes | yes | Useful everywhere, add to common |
-| nano | no | yes | yes | Skip (vim is the editor) |
-
-### host-d unique packages
-
-| Package | Notes |
-|---|---|
-| jq | Useful, add to common |
-| dnsmasq | Host-specific, keep |
-| speedtest-cli | Host-specific, keep |
-| tcpdump | Useful everywhere, add to common |
-| pppoeconf/ppp | Host-specific networking, keep |
-
 ## What to deploy
 
-### 1. Bash config (`.bashrc` / `.bash_aliases`)
+### 1. Bash config (`bashrc`)
 
 - **History**: large size, timestamps, dedup, shared across terminals
 - **EDITOR**: vim
@@ -88,8 +48,9 @@ Notable: `l` is used on every host but is not aliased (fails silently or errors)
   - `dexec <name>` = `docker exec -it <name> /bin/sh`
   - `dcu` / `dcd` = `docker compose up -d` / `docker compose down`
   - `dcr` = `docker compose restart`
+- **`prod-update`**: alias that re-runs the install script to pull latest configs
 
-### 2. Starship prompt (prod-specific config)
+### 2. Starship prompt (`starship.toml`)
 
 Distinct from dev prompt:
 - Red/warm background for hostname (screams "this is production")
@@ -99,61 +60,65 @@ Distinct from dev prompt:
 - No language versions, no docker context, no cloud accounts
 - Compact single-line format
 
-### 3. Common apt packages to sync
+### 3. Mise config (`mise.toml`)
 
+Stripped-down tool list for prod (user-space installs, no sudo):
+
+```toml
+[tools]
+uv = "latest"
 ```
-reptyr mosh man-db net-tools iotop jq tcpdump htop tmux rsync
-```
 
-### 4. Tools via standalone installers
+Add more tools here as needed. Mise itself is installed by the bootstrap script.
 
-| Tool | Install |
-|---|---|
-| uv | Standalone installer, no apt repo needed |
-| starship | Standalone installer, no apt repo needed |
+### 4. Bootstrap script (`install.sh`)
 
-## Repo strategy
+All user-space, no sudo required.
 
-Same repo, separate `prod/` directory. No chezmoi on prod hosts.
+1. Install mise if not present (single curl, user-space binary)
+2. Deploy `bashrc` to `~/.bashrc` (backs up existing)
+3. Deploy `starship.toml` to `~/.config/starship.toml`
+4. Deploy `mise.toml` to `~/.config/mise/config.toml`
+5. Run `mise install` (installs starship, uv, and any other tools in the config)
+6. Print summary of what changed
+
+## Repo layout
+
+Same repo as dev dotfiles, separate `prod/` directory. No chezmoi on prod hosts.
 
 ```
 dotfiles/
-  dot_zshrc                              # dev (existing)
-  private_dot_config/                    # dev (existing)
-  run_onchange_darwin-install-packages.sh.tmpl
+  ...                                    # dev (existing chezmoi files)
   prod/
+    SCOPING.md                           # This file
     install.sh                           # Bootstrap script
     bashrc                               # Production .bashrc
     starship.toml                        # Production starship config
-    packages.txt                         # Common apt packages to sync
+    mise.toml                            # Production mise tool list
 ```
 
-### Bootstrap workflow
+## Bootstrap workflow
 
 ```bash
 # First time on a new prod host (repo is public, no auth needed):
 curl -sS https://raw.githubusercontent.com/davidpoblador/dotfiles/main/prod/install.sh | bash
+
+# Updating later:
+prod-update
 ```
 
-The script would:
-1. Back up existing `.bashrc`
-2. Deploy production `.bashrc`
-3. Install starship if not present
-4. Deploy production `starship.toml`
-5. Install uv if not present
-6. Install common apt packages (with sudo)
-7. Print summary of what changed
+## Out of scope
 
-Updating later:
-```bash
-prod-update   # alias in bashrc that re-runs the install script
-```
+- System packages (apt): managed during host provisioning
+- Docker, tailscale, gh: installed at system level
+- Agent skills: not needed on prod
+- Zsh: bash is sufficient for prod ops
 
 ## Next steps
 
 1. Approve this scope
 2. Build `prod/bashrc` with aliases and history config
 3. Build `prod/starship.toml` with red/production theme
-4. Build `prod/packages.txt` with common packages
+4. Build `prod/mise.toml` with uv
 5. Build `prod/install.sh` bootstrap script
 6. Test on one host, then roll out to the rest
