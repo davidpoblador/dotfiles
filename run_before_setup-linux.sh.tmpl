@@ -8,9 +8,9 @@ if ! command -v zsh &>/dev/null; then
 fi
 
 if [[ "$(basename "$SHELL")" != "zsh" ]]; then
-  echo "ERROR: zsh is not your default shell. Run: chsh -s \$(which zsh)" >&2
-  echo "Then log out and back in." >&2
-  exit 1
+  echo "[setup] Setting zsh as default shell..."
+  chsh -s "$(which zsh)"
+  echo "[setup] Log out and back in for zsh to take effect."
 fi
 
 # Install or update mise (user-space, no sudo)
