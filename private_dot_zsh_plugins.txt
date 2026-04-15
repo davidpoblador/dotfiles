@@ -4,6 +4,9 @@
 # zsh-defer must be loaded first (used by antidote for kind:defer)
 romkatv/zsh-defer
 
+# Fuzzy tab completion powered by fzf
+Aloxaf/fzf-tab kind:defer
+
 # Fish-like autosuggestions from history as you type
 zsh-users/zsh-autosuggestions kind:defer
 
