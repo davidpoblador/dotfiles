@@ -38,6 +38,7 @@ palette = 'catppuccin_macchiato'
 
 [palettes.catppuccin_macchiato]
 color_fg0 = '#24273a'
+color_fg1 = '#cad3f5'
 color_bg1 = '#1e2030'
 color_bg3 = '#494d64'
 color_blue = '#8aadf4'
@@ -171,13 +172,13 @@ format = '[[ $symbol( $version) ](fg:color_fg0 bg:color_blue)]($style)'
 [docker_context]
 symbol = ""
 style = "bg:color_bg3"
-format = '[[ $symbol( $context) ](fg:#83a598 bg:color_bg3)]($style)'
+format = '[[ $symbol( $context) ](fg:color_fg1 bg:color_bg3)]($style)'
 
 [time]
 disabled = false
 time_format = "%R"
 style = "bg:color_bg1"
-format = '[[ $time ](fg:color_fg0 bg:color_bg1)]($style)'
+format = '[[ $time ](fg:color_fg1 bg:color_bg1)]($style)'
 
 
 [character]
@@ -200,12 +201,12 @@ trim_at = "."  # Show short hostname (before first dot)
 [aws]
 symbol = "☁️ "
 style = "bg:color_bg3"
-format = '[[ $symbol($profile )(\($region\)) ](fg:#83a598 bg:color_bg3)]($style)'
+format = '[[ $symbol($profile )(\($region\)) ](fg:color_fg1 bg:color_bg3)]($style)'
 disabled = false
 
-# Google Cloud Context  
+# Google Cloud Context
 [gcloud]
 symbol = "☁️ "
 style = "bg:color_bg3"
-format = '[[ $symbol$account(@$domain)(\($region\)) ](fg:#83a598 bg:color_bg3)]($style)'
+format = '[[ $symbol$account(@$domain)(\($region\)) ](fg:color_fg1 bg:color_bg3)]($style)'
 disabled = false
