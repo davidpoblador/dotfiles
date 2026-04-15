@@ -4,13 +4,14 @@ Personal dotfiles managed with [chezmoi](https://www.chezmoi.io/).
 
 ## Fresh machine setup
 
+### Dev (macOS)
+
 ```bash
 # 1. Install Homebrew
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
-# 2. Install chezmoi and apply dotfiles
-brew install chezmoi
-chezmoi init --apply davidpoblador
+# 2. Bootstrap chezmoi (installs chezmoi, clones repo, applies dotfiles)
+sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply davidpoblador
 
 # 3. Install mise tools (bun, node, go, rust, etc.)
 mise install
@@ -19,11 +20,23 @@ mise install
 bunx skills update -g -y
 ```
 
+Chezmoi will prompt for email and full name on first run. Profile defaults to `dev`.
+
 After step 2, `chezmoi apply` will:
 
 - Install all Homebrew packages (via `run_onchange_darwin-install-packages.sh`)
-- Attempt to update agent skills weekly (via `run_after_update-skills.sh`), or print
-  instructions if `bunx` isn't available yet
+- Install mise tools weekly (via `run_after_install-mise-tools.sh`)
+- Update agent skills weekly (via `run_after_update-skills.sh`)
+
+### Prod (Linux)
+
+```bash
+sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply davidpoblador \
+  --promptString profile=prod
+```
+
+One command. Chezmoi installs mise, which installs starship, uv, and gh. Deploys a
+production `.bashrc` with docker/git aliases and a red-hostname starship prompt.
 
 ## Day-to-day usage
 
@@ -309,7 +322,18 @@ Obsidian skills (installed via Git URL) need manual updates:
 npx skills add git@github.com:kepano/obsidian-skills.git -g -y
 ```
 
+## Profiles
+
+Chezmoi uses a `profile` variable to switch between dev and prod configs:
+
+| Profile | Shell | Starship | Mise tools | Skills |
+|---|---|---|---|---|
+| `dev` (default) | zsh + antidote + plugins | Catppuccin Macchiato, powerline | Full (bun, node, go, rust, etc.) | Yes |
+| `prod` | bash + aliases | Red hostname, compact | Minimal (uv, gh, starship) | No |
+
+The profile is set once during `chezmoi init` and persists in `~/.config/chezmoi/chezmoi.toml`.
+
 ## Platform support
 
-- **macOS** (primary): Full support including App Store apps, casks, fonts
-- **WSL/Linux**: Brew packages only (subset of macOS list)
+- **macOS**: Full dev environment with Homebrew packages, App Store apps, casks, fonts
+- **Linux**: Production config with bash, starship, mise (uv, gh)
