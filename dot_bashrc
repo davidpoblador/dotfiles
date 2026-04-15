@@ -37,11 +37,22 @@ shopt -s histappend
 # starship can append to PROMPT_COMMAND)                  #
 ###########################################################
 
+# Resolve real binary paths (avoids shim overhead on every keypress)
+if [ -f "$HOME/.local/bin/mise" ]; then
+  _starship="$("$HOME/.local/bin/mise" which starship 2>/dev/null)"
+  _atuin="$("$HOME/.local/bin/mise" which atuin 2>/dev/null)"
+else
+  _starship="$(command -v starship 2>/dev/null)"
+  _atuin="$(command -v atuin 2>/dev/null)"
+fi
+
 # Starship prompt (must init before atuin to avoid bash-preexec conflicts)
-command -v starship &>/dev/null && eval "$(starship init bash --print-full-init)"
+[ -n "$_starship" ] && eval "$("$_starship" init bash)"
 
 # Atuin (shell history search via Ctrl-R)
-command -v atuin &>/dev/null && eval "$(atuin init bash)"
+[ -n "$_atuin" ] && eval "$("$_atuin" init bash)"
+
+unset _starship _atuin
 
 ###########################################################
 # Shell Options                                           #
