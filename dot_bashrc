@@ -36,6 +36,11 @@ fi
 # Starship prompt
 if command -v starship &>/dev/null; then
   eval "$(starship init bash)"
+elif [ -f "$HOME/.local/bin/mise" ]; then
+  STARSHIP="$("$HOME/.local/bin/mise" which starship 2>/dev/null)"
+  if [ -n "$STARSHIP" ]; then
+    eval "$("$STARSHIP" init bash)"
+  fi
 fi
 
 ###########################################################
