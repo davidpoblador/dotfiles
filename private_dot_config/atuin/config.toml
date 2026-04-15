@@ -1,0 +1,15 @@
+# Local-only mode: no sync server, all history stays on disk.
+# To enable sync later: atuin register (or atuin login) and remove these lines.
+sync_address = ""
+auto_sync = false
+
+# Search behavior
+search_mode = "fuzzy"
+filter_mode = "global"
+
+# Show command exit status and duration in search results
+show_preview = true
+show_help = false
+
+# Import existing zsh history on first run
+# (atuin import auto detects the shell)

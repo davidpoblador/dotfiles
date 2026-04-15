@@ -111,6 +111,7 @@ fi
 # Modern CLI replacements
 load_if_exists lsd 'alias ls="lsd" && alias l="lsd -l"'      # Better ls with icons (lightweight)
 zsh-defer -c 'eval "$(fzf --zsh)"'                            # Fuzzy finder (deferred)
+zsh-defer -c 'eval "$(atuin init zsh)"'                        # Shell history (deferred, after fzf)
 export _ZO_ECHO=1                                              # Print dir after z jumps
 zsh-defer -c 'eval "$(zoxide init zsh)"'                      # Smarter cd (deferred)
 load_if_exists starship 'eval "$(starship init zsh)"'         # Prompt (must load immediately!)
