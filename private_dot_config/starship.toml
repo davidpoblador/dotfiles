@@ -39,7 +39,7 @@ palette = 'catppuccin_macchiato'
 [palettes.catppuccin_macchiato]
 color_fg0 = '#24273a'
 color_fg1 = '#cad3f5'
-color_bg1 = '#1e2030'
+color_bg1 = '#363a4f'
 color_bg3 = '#494d64'
 color_blue = '#8aadf4'
 color_aqua = '#8bd5ca'
