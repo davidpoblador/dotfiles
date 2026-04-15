@@ -233,6 +233,13 @@ alias ghpr='gh pr view --web'
 # System maintenance
 alias bubu='brew update && brew upgrade'
 
+# Agent skills: update all skills and commit the lock file to chezmoi
+skills-update() {
+    bunx skills update -g -y
+    chezmoi add ~/.agents/.skill-lock.json
+    echo "Lock file updated in chezmoi."
+}
+
 # Dotfile management
 alias cma='chezmoi add'
 alias cmc='chezmoi cd'

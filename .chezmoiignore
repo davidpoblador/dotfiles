@@ -1,3 +1,6 @@
+# Skills are managed by `bunx skills`, not chezmoi. Only the lock file is tracked.
+.agents/skills
+
 {{- if ne .chezmoi.os "darwin" }}
 private_Library/
 run_onchange_darwin-install-packages.sh.tmpl
