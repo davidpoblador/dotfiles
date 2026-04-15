@@ -11,8 +11,9 @@ filter_mode = "global"
 show_preview = true
 show_help = false
 
-# Theme
-theme = "catppuccin-macchiato"
+# Theme (file in ~/.config/atuin/themes/)
+[theme]
+name = "catppuccin-macchiato"
 
 # Import existing zsh history on first run
 # (atuin import auto detects the shell)
