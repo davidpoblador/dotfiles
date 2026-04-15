@@ -1,5 +1,11 @@
 # Production server .bashrc
 
+# Non-interactive shells should not source this file
+case $- in
+    *i*) ;;
+      *) return;;
+esac
+
 ###########################################################
 # Environment                                             #
 ###########################################################
@@ -13,6 +19,9 @@ export PATH="$HOME/bin:$HOME/.local/bin:$PATH"
 if [ -f "$HOME/.local/bin/mise" ]; then
   eval "$("$HOME/.local/bin/mise" activate bash)"
 fi
+
+# Cargo (if installed)
+[ -f "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
 
 # Starship prompt
 if command -v starship &>/dev/null; then
@@ -39,12 +48,26 @@ shopt -s checkwinsize
 shopt -s cdspell
 shopt -s autocd 2>/dev/null
 
+# Better less for non-text files
+[ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
+
+###########################################################
+# Colors                                                  #
+###########################################################
+
+if [ -x /usr/bin/dircolors ]; then
+    test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
+    alias ls='ls --color=auto'
+    alias grep='grep --color=auto'
+fi
+
 ###########################################################
 # Aliases                                                 #
 ###########################################################
 
 # Navigation
 alias l='ls -la'
+alias ll='ls -alF'
 alias ..='cd ..'
 alias ...='cd ../..'
 
@@ -78,3 +101,15 @@ dlogs() {
 dexec() {
     docker exec -it "$1" /bin/sh
 }
+
+###########################################################
+# Completions                                             #
+###########################################################
+
+if ! shopt -oq posix; then
+  if [ -f /usr/share/bash-completion/bash_completion ]; then
+    . /usr/share/bash-completion/bash_completion
+  elif [ -f /etc/bash_completion ]; then
+    . /etc/bash_completion
+  fi
+fi
