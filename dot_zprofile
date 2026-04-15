@@ -1,9 +1,9 @@
-# Homebrew environment setup
-if [[ "$(uname)" == "Darwin" ]]; then
-    # macOS
+# PATH for user-local binaries (chezmoi, mise, etc.)
+[[ -d "$HOME/bin" ]] && export PATH="$HOME/bin:$PATH"
+[[ -d "$HOME/.local/bin" ]] && export PATH="$HOME/.local/bin:$PATH"
+
+# Homebrew (macOS)
+if [[ "$(uname)" == "Darwin" && -x /opt/homebrew/bin/brew ]]; then
     eval "$(/opt/homebrew/bin/brew shellenv)"
-elif [[ "$(uname)" == "Linux" ]]; then
-    # Linux
-    eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 fi
 
