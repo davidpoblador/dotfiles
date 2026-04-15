@@ -8,7 +8,7 @@ if [[ -f "$STAMP" ]] && [[ -z $(find "$STAMP" -mtime +7 2>/dev/null) ]]; then
 fi
 
 if ! command -v bunx &>/dev/null; then
-  echo "[skills] bunx not found, skipping skills update"
+  echo "[skills] bunx not found. Install mise tools (mise install), then run: bunx skills update -g -y"
   exit 0
 fi
 
