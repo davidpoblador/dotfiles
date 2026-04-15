@@ -75,12 +75,12 @@ Mise tools auto-upgrade daily in the background via `.zshrc`.
 |---|---|
 | curl | HTTP client |
 | d2 | Declarative diagramming language |
-| difftastic | Structural diff tool |
 | dive | Docker image layer explorer |
 | duckdb | In-process SQL analytics engine |
 | ffmpeg | Audio/video processing |
 | fx | Terminal JSON viewer |
 | imagemagick | Image manipulation |
+| jless | Read-only JSON viewer with vim keybindings |
 | jq | JSON processor |
 | jnv | Interactive JSON filter with jq |
 | knock | Port-knock client |
@@ -92,6 +92,7 @@ Mise tools auto-upgrade daily in the background via `.zshrc`.
 | sc-im | Terminal spreadsheet editor |
 | shfmt | Shell script formatter |
 | silicon | Code screenshot generator |
+| tokei | Code stats by language |
 | tree | Directory listing |
 | watchexec | File watcher / command runner |
 | wget | HTTP client |
@@ -120,7 +121,9 @@ Mise tools auto-upgrade daily in the background via `.zshrc`.
 |---|---|
 | gh | GitHub CLI |
 | git | Version control |
+| git-absorb | Auto-fixup staged changes into prior commits |
 | git-delta | Syntax-highlighting pager for diffs |
+| difftastic | Structural diff tool (`git difftool`) |
 | git-lfs | Large file storage |
 | lazygit | Git TUI |
 | tig | Git text-mode interface |
