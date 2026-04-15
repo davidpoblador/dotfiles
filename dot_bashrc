@@ -22,16 +22,6 @@ export PATH="$HOME/bin:$HOME/.local/bin:$PATH"
 [ -f "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
 
 ###########################################################
-# Tool Initialization                                     #
-###########################################################
-
-# Atuin (shell history search via Ctrl-R)
-command -v atuin &>/dev/null && eval "$(atuin init bash)"
-
-# Starship prompt
-command -v starship &>/dev/null && eval "$(starship init bash)"
-
-###########################################################
 # History                                                 #
 ###########################################################
 
@@ -41,7 +31,18 @@ HISTFILESIZE=50000
 HISTTIMEFORMAT="%F %T  "
 HISTCONTROL=ignoreboth:erasedups
 shopt -s histappend
-PROMPT_COMMAND="history -a; history -c; history -r; $PROMPT_COMMAND"
+PROMPT_COMMAND="history -a;${PROMPT_COMMAND:+ $PROMPT_COMMAND}"
+
+###########################################################
+# Tool Initialization (must come after history so         #
+# starship can append to PROMPT_COMMAND)                  #
+###########################################################
+
+# Atuin (shell history search via Ctrl-R)
+command -v atuin &>/dev/null && eval "$(atuin init bash)"
+
+# Starship prompt (must be last, takes over PROMPT_COMMAND)
+command -v starship &>/dev/null && eval "$(starship init bash)"
 
 ###########################################################
 # Shell Options                                           #
