@@ -41,7 +41,7 @@ shopt -s histappend
 command -v atuin &>/dev/null && eval "$(atuin init bash)"
 
 # Starship prompt (must be last, takes over PROMPT_COMMAND)
-command -v starship &>/dev/null && eval "$(starship init bash)"
+command -v starship &>/dev/null && eval "$(starship init bash --print-full-init)"
 
 ###########################################################
 # Shell Options                                           #
