@@ -11,6 +11,9 @@ TOOL=$(echo "$INPUT" | jq -r '.tool_name // empty')
 COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // empty')
 [[ "$COMMAND" == *agent-browser* ]] || exit 0
 
+# agent-browser must be installed
+command -v agent-browser >/dev/null 2>&1 || exit 0
+
 # Already has a session name set — don't override
 [[ "$COMMAND" == *AGENT_BROWSER_SESSION_NAME* ]] && exit 0
 [[ "$COMMAND" == *--session-name* ]] && exit 0
