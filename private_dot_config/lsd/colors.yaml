@@ -1,0 +1,39 @@
+# Catppuccin Macchiato
+user: 125
+group: 125
+permission:
+  read: "#a6da95"
+  write: "#ed8796"
+  exec: "#ed8796"
+  exec-sticky: "#f5a97f"
+  no-access: "#494d64"
+  octal: "#c6a0f6"
+  acl: "#8bd5ca"
+  context: "#c6a0f6"
+date:
+  hour-old: "#a6da95"
+  day-old: "#a6da95"
+  older: "#a5adcb"
+size:
+  none: "#494d64"
+  small: "#a6da95"
+  medium: "#eed49f"
+  large: "#f5a97f"
+inode:
+  valid: "#c6a0f6"
+  invalid: "#a5adcb"
+links:
+  valid: "#c6a0f6"
+  invalid: "#a5adcb"
+tree-edge: "#494d64"
+git-status:
+  default: "#494d64"
+  unmodified: "#494d64"
+  ignored: "#494d64"
+  new-in-index: "#a6da95"
+  new-in-workdir: "#a6da95"
+  typechange: "#eed49f"
+  deleted: "#ed8796"
+  renamed: "#8bd5ca"
+  modified: "#eed49f"
+  conflicted: "#ed8796"
