@@ -12,6 +12,7 @@ if [[ "$(basename "$CURRENT_SHELL")" != "zsh" ]]; then
   echo "[setup] Setting zsh as default shell..."
   chsh -s "$(which zsh)"
   echo "[setup] Done. Log out and back in, then run chezmoi apply again."
+  echo "[setup] If using SSH multiplexing, close the shared connection first: ssh -O exit <host>"
   exit 1
 fi
 
