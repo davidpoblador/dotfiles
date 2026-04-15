@@ -78,8 +78,3 @@ dlogs() {
 dexec() {
     docker exec -it "$1" /bin/sh
 }
-
-# Pull latest dotfiles and apply
-prod-update() {
-    chezmoi update
-}
