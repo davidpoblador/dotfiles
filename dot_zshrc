@@ -309,11 +309,11 @@ zstyle ':completion:*' menu select
 
 # Tool-specific completions (deferred when available)
 if (( $+functions[zsh-defer] )); then
-  zsh-defer load_if_exists ngrok 'eval "$(ngrok completion)"'
+  zsh-defer load_if_exists ngrok 'eval "$(ngrok completion zsh)"'
   zsh-defer -c 'eval "$(uvx --generate-shell-completion zsh)"'
   zsh-defer -c 'eval "$(uv generate-shell-completion zsh)"'
 else
-  load_if_exists ngrok 'eval "$(ngrok completion)"'
+  load_if_exists ngrok 'eval "$(ngrok completion zsh)"'
   command_exists uvx && eval "$(uvx --generate-shell-completion zsh)"
   command_exists uv && eval "$(uv generate-shell-completion zsh)"
 fi
