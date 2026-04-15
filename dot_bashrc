@@ -23,9 +23,14 @@ fi
 # Cargo (if installed)
 [ -f "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
 
-# Atuin (shell history)
+# Atuin (shell history, init after mise so it's on PATH)
 if command -v atuin &>/dev/null; then
   eval "$(atuin init bash)"
+elif [ -f "$HOME/.local/bin/mise" ]; then
+  ATUIN="$("$HOME/.local/bin/mise" which atuin 2>/dev/null)"
+  if [ -n "$ATUIN" ]; then
+    eval "$("$ATUIN" init bash)"
+  fi
 fi
 
 # Starship prompt
