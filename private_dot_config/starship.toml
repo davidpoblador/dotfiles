@@ -193,8 +193,8 @@ vimcmd_visual_symbol = '[▶](bold fg:color_yellow)'
 [hostname]
 ssh_only = true  # Only show hostname when connected via SSH
 style = "bg:color_orange fg:color_fg0"
-ssh_symbol = " 🌐"
-format = "[@](bg:color_orange fg:color_bg1)[$ssh_symbol$hostname ]($style)"
+ssh_symbol = "🌐"
+format = "[@$hostname $ssh_symbol ]($style)"
 trim_at = "."  # Show short hostname (before first dot)
 
 # AWS Cloud Context
