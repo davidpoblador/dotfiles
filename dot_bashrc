@@ -15,33 +15,21 @@ export VISUAL="vim"
 export LANG="en_US.UTF-8"
 export PATH="$HOME/bin:$HOME/.local/bin:$PATH"
 
-# Mise (user-space tool manager)
-if [ -f "$HOME/.local/bin/mise" ]; then
-  eval "$("$HOME/.local/bin/mise" activate bash)"
-fi
+# Mise: use shims so all tools are immediately on PATH
+[ -f "$HOME/.local/bin/mise" ] && eval "$("$HOME/.local/bin/mise" activate bash --shims)"
 
-# Cargo (if installed)
+# Cargo
 [ -f "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
 
-# Atuin (shell history, init after mise so it's on PATH)
-if command -v atuin &>/dev/null; then
-  eval "$(atuin init bash)"
-elif [ -f "$HOME/.local/bin/mise" ]; then
-  ATUIN="$("$HOME/.local/bin/mise" which atuin 2>/dev/null)"
-  if [ -n "$ATUIN" ]; then
-    eval "$("$ATUIN" init bash)"
-  fi
-fi
+###########################################################
+# Tool Initialization                                     #
+###########################################################
+
+# Atuin (shell history search via Ctrl-R)
+command -v atuin &>/dev/null && eval "$(atuin init bash)"
 
 # Starship prompt
-if command -v starship &>/dev/null; then
-  eval "$(starship init bash)"
-elif [ -f "$HOME/.local/bin/mise" ]; then
-  STARSHIP="$("$HOME/.local/bin/mise" which starship 2>/dev/null)"
-  if [ -n "$STARSHIP" ]; then
-    eval "$("$STARSHIP" init bash)"
-  fi
-fi
+command -v starship &>/dev/null && eval "$(starship init bash)"
 
 ###########################################################
 # History                                                 #
@@ -63,7 +51,6 @@ shopt -s checkwinsize
 shopt -s cdspell
 shopt -s autocd 2>/dev/null
 
-# Better less for non-text files
 [ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
 
 ###########################################################
@@ -118,24 +105,9 @@ alias ports='ss -tlnp'
 # Functions                                               #
 ###########################################################
 
-# Docker logs with follow and tail
-dlogs() {
-    docker logs -f --tail 100 "$1"
-}
-
-# Docker exec into a container
-dexec() {
-    docker exec -it "$1" /bin/sh
-}
-
-# Navigate to repos directory
-rep() {
-    if [ $# -eq 0 ]; then
-        cd ~/repos
-    else
-        cd ~/repos/$1
-    fi
-}
+dlogs() { docker logs -f --tail 100 "$1"; }
+dexec() { docker exec -it "$1" /bin/sh; }
+rep() { cd ~/repos${1:+/$1}; }
 
 ###########################################################
 # Completions                                             #
