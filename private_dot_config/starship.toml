@@ -37,7 +37,7 @@ right_format = """${custom.project}"""
 palette = 'catppuccin_macchiato'
 
 [palettes.catppuccin_macchiato]
-color_fg0 = '#cad3f5'
+color_fg0 = '#24273a'
 color_bg1 = '#1e2030'
 color_bg3 = '#494d64'
 color_blue = '#8aadf4'
