@@ -17,10 +17,14 @@ wait
 """
 {{ end }}
 [tools]
+gh = "latest"
+atuin = "latest"
+delta = "latest"
+difftastic = "latest"
+git-lfs = "latest"
 {{ if eq .profile "dev" -}}
 awscli = "latest"
 bun = "latest"
-gh = "latest"
 go = "latest"
 mc = "latest"
 node = "latest"
@@ -35,10 +39,7 @@ actionlint = "latest"
 "go:golang.org/x/tools/gopls" = "latest"
 rust-analyzer = "latest"
 zig = "latest"
-atuin = "latest"
 {{ else -}}
 uv = "latest"
 starship = "latest"
-gh = "latest"
-atuin = "latest"
 {{ end -}}
