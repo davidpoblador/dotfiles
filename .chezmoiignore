@@ -9,9 +9,8 @@ prod/
 
 {{- if eq .profile "prod" }}
 # Dev-only files excluded on prod
-.zshrc
-.zprofile
 .zsh_plugins.txt
+.zprofile
 .claude/
 .agents/
 .codex/
@@ -19,7 +18,6 @@ prod/
 .config/bat/
 .config/broot/
 .config/fzf/
-.config/gh/
 .config/ghostty/
 .config/lazygit/
 .config/lsd/
@@ -28,18 +26,12 @@ prod/
 .config/silicon/
 .config/tmux/
 .config/zed/
-.config/zsh/
 .config/bottom/
 .config/atuin/themes/
 .docker/
 .ssh/
 private_Library/
 run_onchange_darwin-install-packages.sh
-{{- end }}
-
-{{- if eq .profile "dev" }}
-# Prod-only files excluded on dev
-.bashrc
 {{- end }}
 
 {{- if ne .chezmoi.os "darwin" }}

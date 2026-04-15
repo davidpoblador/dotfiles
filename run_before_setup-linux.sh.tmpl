@@ -1,0 +1,24 @@
+{{ if eq .chezmoi.os "linux" -}}
+#!/bin/bash
+# Setup Linux environment: install zsh, set as default shell, install/update mise.
+
+# Install zsh if missing
+if ! command -v zsh &>/dev/null; then
+  echo "[setup] Installing zsh..."
+  sudo apt-get install -y zsh
+fi
+
+# Set zsh as default shell if not already
+if [[ "$(basename "$SHELL")" != "zsh" ]]; then
+  echo "[setup] Setting zsh as default shell..."
+  sudo chsh -s "$(which zsh)" "$(whoami)"
+fi
+
+# Install or update mise (user-space, no sudo)
+if [ -f "$HOME/.local/bin/mise" ]; then
+  "$HOME/.local/bin/mise" self-update -y 2>/dev/null || true
+else
+  echo "[mise] Installing..."
+  curl -fsSL https://mise.jdx.dev/install.sh | bash
+fi
+{{ end -}}
