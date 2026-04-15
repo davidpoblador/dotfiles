@@ -1,17 +1,16 @@
 {{ if eq .chezmoi.os "linux" -}}
 #!/bin/bash
-# Setup Linux environment: install zsh, set as default shell, install/update mise.
+# Setup Linux environment: check prerequisites, install/update mise.
 
-# Install zsh if missing
 if ! command -v zsh &>/dev/null; then
-  echo "[setup] Installing zsh..."
-  sudo apt-get install -y zsh
+  echo "ERROR: zsh is not installed. Run: sudo apt-get install -y zsh" >&2
+  exit 1
 fi
 
-# Set zsh as default shell if not already
 if [[ "$(basename "$SHELL")" != "zsh" ]]; then
-  echo "[setup] Setting zsh as default shell..."
-  sudo chsh -s "$(which zsh)" "$(whoami)"
+  echo "ERROR: zsh is not your default shell. Run: sudo chsh -s \$(which zsh) \$(whoami)" >&2
+  echo "Then log out and back in." >&2
+  exit 1
 fi
 
 # Install or update mise (user-space, no sudo)
