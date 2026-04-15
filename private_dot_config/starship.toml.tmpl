@@ -36,10 +36,10 @@ $character"""
 right_format = """${custom.project}"""
 {{ else -}}
 format = """
-[](color_red)\
+[](color_prod_red)\
 $os\
 $hostname\
-[](bg:color_orange fg:color_red)\
+[](bg:color_orange fg:color_prod_red)\
 $username\
 [](bg:color_yellow fg:color_orange)\
 $git_branch\
@@ -48,8 +48,7 @@ $git_status\
 $directory\
 [](fg:color_aqua bg:color_bg1)\
 $time\
-[](fg:color_bg1)\
- $cmd_duration\
+[](fg:color_bg1)\
 $line_break\
 $character"""
 {{ end }}
@@ -66,6 +65,9 @@ color_green = '#a6da95'
 color_orange = '#f5a97f'
 color_purple = '#c6a0f6'
 color_red = '#ed8796'
+{{ if eq .profile "prod" -}}
+color_prod_red = '#e6364d'
+{{ end -}}
 color_yellow = '#eed49f'
 
 [os]
@@ -73,7 +75,7 @@ disabled = false
 {{ if eq .profile "dev" -}}
 style = "bg:color_orange fg:color_fg0"
 {{ else -}}
-style = "bg:color_red fg:color_fg0"
+style = "bg:color_prod_red fg:color_fg0"
 {{ end }}
 [os.symbols]
 Windows = "󰍲"
@@ -104,7 +106,7 @@ style_root = "bg:color_orange fg:color_fg0"
 format = '[ $user]($style)'
 {{ else -}}
 style_user = "bg:color_orange fg:color_fg0"
-style_root = "bg:color_red fg:color_fg0 bold"
+style_root = "bg:color_prod_red fg:color_fg0 bold"
 format = '[ $user ]($style)'
 {{ end }}
 
@@ -240,7 +242,7 @@ ssh_symbol = "󰖟"
 format = "[@$hostname $ssh_symbol ]($style)"
 {{ else -}}
 ssh_only = false
-style = "bg:color_red fg:color_fg0"
+style = "bg:color_prod_red fg:color_fg0"
 format = "[ $hostname ]($style)"
 {{ end -}}
 trim_at = "."

@@ -31,7 +31,7 @@ prod/
 .config/zed/
 .config/zsh/
 .config/bottom/
-.config/atuin/
+.config/atuin/themes/
 .docker/
 .gitignore_global
 .ssh/

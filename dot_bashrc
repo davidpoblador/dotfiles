@@ -23,6 +23,11 @@ fi
 # Cargo (if installed)
 [ -f "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
 
+# Atuin (shell history)
+if command -v atuin &>/dev/null; then
+  eval "$(atuin init bash)"
+fi
+
 # Starship prompt
 if command -v starship &>/dev/null; then
   eval "$(starship init bash)"
@@ -73,8 +78,10 @@ alias ...='cd ../..'
 
 # Git
 alias ga='git add'
-alias gs='git status'
+alias gc='git commit -m'
+alias gps='git push'
 alias gpl='git pull'
+alias gs='git status'
 alias gco='git checkout'
 alias gb='git branch'
 
@@ -84,6 +91,15 @@ alias dcu='docker compose up -d'
 alias dcd='docker compose down'
 alias dcr='docker compose restart'
 alias dcl='docker compose logs -f --tail 100'
+
+# GitHub
+alias ghw='gh repo view --web'
+alias ghp='gh pr list --web'
+alias ghpr='gh pr view --web'
+
+# Claude Code
+alias ccc='claude'
+alias cccy='claude --dangerously-skip-permissions'
 
 # System
 alias ports='ss -tlnp'
@@ -100,6 +116,15 @@ dlogs() {
 # Docker exec into a container
 dexec() {
     docker exec -it "$1" /bin/sh
+}
+
+# Navigate to repos directory
+rep() {
+    if [ $# -eq 0 ]; then
+        cd ~/repos
+    else
+        cd ~/repos/$1
+    fi
 }
 
 ###########################################################
