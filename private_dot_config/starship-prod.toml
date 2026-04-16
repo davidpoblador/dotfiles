@@ -1,0 +1,117 @@
+"$schema" = 'https://starship.rs/config-schema.json'
+
+# Performance tuning
+scan_timeout = 30        # Milliseconds to scan for git repos
+command_timeout = 500    # Max time for module commands
+follow_symlinks = false  # Important for network filesystems
+
+format = """
+[](color_prod_red)\
+$os\
+$hostname\
+[](bg:color_orange fg:color_prod_red)\
+$username\
+[](bg:color_yellow fg:color_orange)\
+$git_branch\
+$git_status\
+[](fg:color_yellow bg:color_aqua)\
+$directory\
+[](fg:color_aqua bg:color_bg1)\
+$time\
+[](fg:color_bg1)\
+$line_break\
+$character"""
+palette = 'catppuccin_macchiato'
+
+[palettes.catppuccin_macchiato]
+color_fg0 = '#24273a'
+color_fg1 = '#cad3f5'
+color_bg1 = '#363a4f'
+color_bg3 = '#494d64'
+color_blue = '#8aadf4'
+color_aqua = '#8bd5ca'
+color_green = '#a6da95'
+color_orange = '#f5a97f'
+color_purple = '#c6a0f6'
+color_red = '#ed8796'
+color_prod_red = '#e6364d'
+color_yellow = '#eed49f'
+
+[os]
+disabled = false
+style = "bg:color_prod_red fg:color_fg0"
+[os.symbols]
+Windows = "󰍲"
+Ubuntu = "󰕈"
+SUSE = ""
+Raspbian = "󰐿"
+Mint = "󰣭"
+Macos = "󰀵"
+Manjaro = ""
+Linux = "󰌽"
+Gentoo = "󰣨"
+Fedora = "󰣛"
+Alpine = ""
+Amazon = ""
+Android = ""
+Arch = "󰣇"
+Artix = "󰣇"
+CentOS = ""
+Debian = "󰣚"
+Redhat = "󱄛"
+RedHatEnterprise = "󱄛"
+
+[username]
+show_always = true
+style_user = "bg:color_orange fg:color_fg0"
+style_root = "bg:color_prod_red fg:color_fg0 bold"
+format = '[ $user ]($style)'
+
+[directory]
+style = "bg:color_aqua"
+format = '[[ $path ](bold fg:color_fg0 bg:color_aqua)]($style)'
+truncation_length = 3
+truncation_symbol = "…/"
+truncate_to_repo = false
+
+
+[git_branch]
+symbol = ""
+style = "bg:color_yellow"
+format = '[[ $symbol $branch ](fg:color_fg0 bg:color_yellow)]($style)'
+truncation_length = 20
+truncation_symbol = "…"
+ignore_bare_repo = true
+
+[git_status]
+style = "bg:color_yellow"
+format = '[[($all_status$ahead_behind )](fg:color_fg0 bg:color_yellow)]($style)'
+untracked = "∿"
+
+
+[time]
+disabled = false
+time_format = "%R"
+style = "bg:color_bg1"
+format = '[[ $time ](fg:color_fg1 bg:color_bg1)]($style)'
+
+[cmd_duration]
+min_time = 2000
+style = "fg:color_yellow"
+format = '[$duration]($style) '
+
+[character]
+disabled = false
+success_symbol = '[▶](bold fg:color_green)'
+error_symbol = '[▶](bold fg:color_red)'
+vimcmd_symbol = '[▶](bold fg:color_green)'
+vimcmd_replace_one_symbol = '[▶](bold fg:color_purple)'
+vimcmd_replace_symbol = '[▶](bold fg:color_purple)'
+vimcmd_visual_symbol = '[▶](bold fg:color_yellow)'
+
+[hostname]
+ssh_only = false
+style = "bg:color_prod_red fg:color_fg0"
+format = "[ $hostname ]($style)"
+trim_at = "."
+

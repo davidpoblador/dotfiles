@@ -2,6 +2,12 @@
 [[ -d "$HOME/bin" ]] && export PATH="$HOME/bin:$PATH"
 [[ -d "$HOME/.local/bin" ]] && export PATH="$HOME/.local/bin:$PATH"
 
+# Chezmoi profile (dev/prod), used by starship and other profile-aware configs
+export CHEZMOI_PROFILE=$(cat "${XDG_CACHE_HOME:-$HOME/.cache}/chezmoi-profile" 2>/dev/null || echo "dev")
+
+# Starship config per profile
+export STARSHIP_CONFIG="$HOME/.config/starship-${CHEZMOI_PROFILE}.toml"
+
 # Homebrew (macOS)
 if [[ "$(uname)" == "Darwin" && -x /opt/homebrew/bin/brew ]]; then
     eval "$(/opt/homebrew/bin/brew shellenv)"

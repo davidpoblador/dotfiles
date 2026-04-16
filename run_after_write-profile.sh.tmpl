@@ -1,0 +1,3 @@
+#!/bin/bash
+# Write chezmoi profile to a fast-readable file for shell startup.
+echo "{{ .profile }}" > "${XDG_CACHE_HOME:-$HOME/.cache}/chezmoi-profile"
