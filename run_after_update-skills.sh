@@ -1,4 +1,3 @@
-{{ if eq .profile "dev" -}}
 #!/bin/bash
 # Update agent skills weekly, or immediately on first run (e.g. fresh machine setup).
 
@@ -16,4 +15,3 @@ fi
 echo "[skills] Updating agent skills..."
 bunx skills update -g -y
 touch "$STAMP"
-{{ end -}}
