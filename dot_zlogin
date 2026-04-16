@@ -23,6 +23,27 @@ if [[ -o login ]]; then
   echo " [38;2;0;0;0m       [7m[38;2;83;31;46m▅[38;2;88;34;49m▃▁[0m[38;2;18;7;10;48;2;91;35;51m   [0m[38;2;91;35;51m▌  [7m▏[0m[38;2;0;0;0;48;2;91;35;51m   [0m[7m[38;2;89;34;50m▁▃[38;2;84;32;47m▅[0m[38;2;6;2;3m        [0m"
   echo " [38;2;0;0;0m           [7m[38;2;74;28;41m▆▅[0m[38;2;68;26;38m▘  [7m[38;2;79;30;44m▅[38;2;75;29;42m▅[38;2;76;29;42m▆[0m[38;2;0;0;0m            [0m"
   echo ""
-  echo "  Powered by All Tuner Labs, S.L."
+  echo "  \033[1mPowered by All Tuner Labs, S.L.\033[0m"
+
+  # Show last dotfiles sync age
+  local stamp="${XDG_CACHE_HOME:-$HOME/.cache}/chezmoi_last_apply"
+  if [[ -f "$stamp" ]]; then
+    local days_ago=$(( ( $(date +%s) - $(date -r "$stamp" +%s 2>/dev/null || stat -c %Y "$stamp" 2>/dev/null) ) / 86400 ))
+    if [[ $days_ago -eq 0 ]]; then
+      echo "  Last dotfiles sync: today"
+    elif [[ $days_ago -eq 1 ]]; then
+      echo "  Last dotfiles sync: yesterday"
+    else
+      echo "  Last dotfiles sync: ${days_ago} days ago"
+    fi
+    if [[ $days_ago -ge 7 ]]; then
+      echo ""
+      echo "  \033[33m[dotfiles] Run 'chezmoi update' to sync latest dotfiles.\033[0m"
+    fi
+  else
+    echo "  Last dotfiles sync: never"
+    echo ""
+    echo "  \033[33m[dotfiles] Run 'chezmoi update' to sync latest dotfiles.\033[0m"
+  fi
   echo ""
 fi
