@@ -103,6 +103,7 @@ fi
 # Auto-update mise tools daily in background (non-blocking)
 if command_exists mise; then
   if [[ ! -f "${XDG_CACHE_HOME}/mise_last_update" ]] || [[ $(find "${XDG_CACHE_HOME}/mise_last_update" -mtime +1 2>/dev/null) ]]; then
+    echo "[mise] Updating tools in the background..."
     { mise upgrade -y >/dev/null 2>&1 && touch "${XDG_CACHE_HOME}/mise_last_update" } &!
   fi
 fi
