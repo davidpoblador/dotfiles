@@ -13,15 +13,12 @@ prod/
 .agents/
 .codex/
 .gemini/
-.config/bat/
 .config/broot/
 .config/ghostty/
-.config/lazygit/
 .config/opencode/
 .config/sc-im/
 .config/silicon/
 .config/zed/
-.config/bottom/
 .docker/
 .ssh/
 private_Library/
