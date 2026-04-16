@@ -126,9 +126,18 @@ fi
 ###########################################################
 
 # Modern CLI replacements
-load_if_exists lsd 'alias ls="lsd" && alias l="lsd -l"'
-# Default l alias for systems without lsd
-command_exists lsd || alias l='ls -la'
+if command_exists lsd; then
+  alias ls="lsd"
+  alias l="lsd -l"
+else
+  # Enable ls colors on Linux
+  if [[ -x /usr/bin/dircolors ]]; then
+    eval "$(dircolors -b)"
+    alias ls='ls --color=auto'
+    alias grep='grep --color=auto'
+  fi
+  alias l='ls -la'
+fi
 
 if (( $+functions[zsh-defer] )); then
   zsh-defer -c 'eval "$(fzf --zsh)"'
