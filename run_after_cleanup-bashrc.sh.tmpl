@@ -1,7 +1,0 @@
-{{ if and (eq .chezmoi.os "linux") (eq .profile "prod") -}}
-#!/bin/bash
-# Remove old .bashrc that conflicts with zsh (bash completion commands error in zsh).
-[ -f "$HOME/.bashrc" ] && rm "$HOME/.bashrc"
-[ -f "$HOME/.bashrc.bak" ] && rm "$HOME/.bashrc.bak"
-true
-{{ end -}}
