@@ -1,6 +1,11 @@
 
 # Show branding on login (after system MOTD)
 if [[ -o login ]]; then
+  # Remind to update dotfiles if chezmoi hasn't run in 7+ days
+  if [[ ! -f "${XDG_CACHE_HOME:-$HOME/.cache}/chezmoi_last_apply" ]] ||      [[ $(find "${XDG_CACHE_HOME:-$HOME/.cache}/chezmoi_last_apply" -mtime +7 2>/dev/null) ]]; then
+    echo "  [dotfiles] Run 'chezmoi update' to sync latest dotfiles."
+    echo ""
+  fi
   echo "[?25l[0m [38;2;0;0;0m           [38;2;64;24;36m▁[38;2;91;35;51m▁▂▂▂▂[38;2;74;28;41m▂[38;2;70;27;39m▁            [0m"
   echo " [38;2;0;0;0m       [38;2;80;30;44m▂[38;2;88;34;49m▄▆[48;2;85;33;48m [48;2;91;35;51m        [48;2;86;33;48m [0m[38;2;90;34;50m▆▄[38;2;83;32;46m▂        [0m"
   echo " [38;2;0;0;0m     [38;2;85;32;47m▄[48;2;83;32;46m [48;2;91;35;51m [0m[7m[38;2;91;35;51m▗▃▃[0m[38;2;0;0;0;48;2;83;31;46m [48;2;91;35;51m      [0m[7m[38;2;90;34;50m▗[38;2;91;35;51m▃▃[0m[38;2;0;0;0;48;2;91;35;51m  [48;2;85;32;47m [0m[38;2;87;33;48m▄[38;2;56;21;31m▁     [0m"
