@@ -35,8 +35,14 @@ sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply davidpoblador --prompt
 ```
 
 Chezmoi will prompt for email, full name, and profile. Enter `prod` for profile.
-Installs mise, which installs starship, uv, and gh. Deploys a production `.bashrc`
-with docker/git aliases and a red-hostname starship prompt.
+Requires zsh (`sudo apt-get install -y zsh`). Chezmoi will set it as default shell
+and install mise, which installs starship, uv, gh, lsd, atuin, delta, and difftastic.
+
+After bootstrap, import existing shell history into atuin:
+
+```bash
+atuin import auto
+```
 
 ## Day-to-day usage
 

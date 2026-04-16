@@ -71,54 +71,32 @@ uv = "latest"
 
 Add more tools here as needed. Mise itself is installed by the bootstrap script.
 
-### 4. Bootstrap script (`install.sh`)
+## Implementation
 
-All user-space, no sudo required.
+Unified chezmoi dotfiles with a `profile` variable (dev/prod). Single `.zshrc`
+with availability checks instead of templates. Prod uses zsh (same as dev).
 
-1. Install mise if not present (single curl, user-space binary)
-2. Deploy `bashrc` to `~/.bashrc` (backs up existing)
-3. Deploy `starship.toml` to `~/.config/starship.toml`
-4. Deploy `mise.toml` to `~/.config/mise/config.toml`
-5. Run `mise install` (installs starship, uv, and any other tools in the config)
-6. Print summary of what changed
-
-## Repo layout
-
-Same repo as dev dotfiles, separate `prod/` directory. No chezmoi on prod hosts.
-
-```
-dotfiles/
-  ...                                    # dev (existing chezmoi files)
-  prod/
-    SCOPING.md                           # This file
-    install.sh                           # Bootstrap script
-    bashrc                               # Production .bashrc
-    starship.toml                        # Production starship config
-    mise.toml                            # Production mise tool list
-```
-
-## Bootstrap workflow
+### Bootstrap
 
 ```bash
-# First time on a new prod host (repo is public, no auth needed):
-curl -sS https://raw.githubusercontent.com/davidpoblador/dotfiles/main/prod/install.sh | bash
+# Prerequisite: zsh must be installed
+sudo apt-get install -y zsh
 
-# Updating later:
-prod-update
+# Bootstrap chezmoi (enter "prod" when prompted for profile)
+sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply davidpoblador --prompt
+
+# Import existing shell history into atuin
+atuin import auto
+```
+
+### Updating
+
+```bash
+chezmoi update
 ```
 
 ## Out of scope
 
 - System packages (apt): managed during host provisioning
-- Docker, tailscale, gh: installed at system level
+- Docker, tailscale: installed at system level
 - Agent skills: not needed on prod
-- Zsh: bash is sufficient for prod ops
-
-## Next steps
-
-1. Approve this scope
-2. Build `prod/bashrc` with aliases and history config
-3. Build `prod/starship.toml` with red/production theme
-4. Build `prod/mise.toml` with uv
-5. Build `prod/install.sh` bootstrap script
-6. Test on one host, then roll out to the rest
