@@ -39,19 +39,29 @@ if [[ -o login ]]; then
     fi
   fi
 
+  # System info
+  local users_count=$(who | wc -l | tr -d ' ')
+  local uptime_str=$(uptime -p 2>/dev/null | sed 's/^up //' || uptime | sed -E 's/.*up +//' | sed 's/,.*//')
+  local disk_usage=$(df -h / 2>/dev/null | awk 'NR==2 {print $3 "/" $2 " (" $5 ")"}')
+  local mem_usage=$(free -h 2>/dev/null | awk '/^Mem:/ {print $3 "/" $2}' || vm_stat 2>/dev/null | awk '/Pages active/ {printf "%.0fM", $3*4096/1048576}' || echo "n/a")
+
   # Move cursor up into the logo area and print info at column $col
-  printf "\033[11A"
+  printf "\033[12A"
   printf "\033[${col}G \033[1mPowered by All Tuner Labs, S.L.\033[0m\n"
   printf "\033[${col}G\n"
+  printf "\033[${col}G \033[2mHost:\033[0m %s\n" "$(hostname -s)"
+  printf "\033[${col}G \033[2mUptime:\033[0m %s\n" "$uptime_str"
+  printf "\033[${col}G \033[2mUsers:\033[0m %s logged in\n" "$users_count"
+  printf "\033[${col}G \033[2mDisk:\033[0m %s\n" "$disk_usage"
+  printf "\033[${col}G \033[2mMemory:\033[0m %s\n" "$mem_usage"
   printf "\033[${col}G \033[2mLast sync:\033[0m %s\n" "$sync_msg"
-  printf "\033[${col}G \033[2mHost:\033[0m     %s\n" "$(hostname -s)"
 
   if [[ $days_ago -ge 7 || $days_ago -eq -1 ]]; then
     printf "\033[${col}G\n"
     printf "\033[${col}G \033[33mRun 'chezmoi update'\033[0m\n"
-    printf "\033[5B"
+    printf "\033[2B"
   else
-    printf "\033[7B"
+    printf "\033[4B"
   fi
   echo ""
 fi
