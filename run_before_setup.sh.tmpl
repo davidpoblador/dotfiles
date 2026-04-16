@@ -1,7 +1,8 @@
-{{ if eq .chezmoi.os "linux" -}}
 #!/bin/bash
-# Setup Linux environment: check prerequisites, install/update mise.
+# Setup environment: check prerequisites, install/update mise.
 
+{{ if eq .chezmoi.os "linux" -}}
+# Ensure zsh is installed and set as default shell
 if ! command -v zsh &>/dev/null; then
   echo "ERROR: zsh is not installed. Run: sudo apt-get install -y zsh" >&2
   exit 1
@@ -15,12 +16,14 @@ if [[ "$(basename "$CURRENT_SHELL")" != "zsh" ]]; then
   echo "[setup] If using SSH multiplexing, close the shared connection first: ssh -O exit <host>"
   exit 1
 fi
+{{ end -}}
 
 # Install or update mise (user-space, no sudo)
-if [ -f "$HOME/.local/bin/mise" ]; then
+if command -v mise &>/dev/null; then
+  mise self-update -y 2>/dev/null || true
+elif [ -f "$HOME/.local/bin/mise" ]; then
   "$HOME/.local/bin/mise" self-update -y 2>/dev/null || true
 else
   echo "[mise] Installing..."
   curl -fsSL https://mise.jdx.dev/install.sh | bash
 fi
-{{ end -}}
