@@ -9,7 +9,8 @@ prod/
 
 {{- if eq .profile "prod" }}
 # Dev-only files excluded on prod
-.claude/
+.claude/hooks/agent-browser-session.sh
+.claude/skills
 .agents/.skill-lock.json
 .codex/
 .gemini/
