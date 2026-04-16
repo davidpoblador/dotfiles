@@ -316,6 +316,9 @@ fi
 
 zstyle ':completion:*' menu select
 
+# Show dotfiles in tab completion
+setopt GLOB_DOTS
+
 # Tool-specific completions (deferred when available)
 if (( $+functions[zsh-defer] )); then
   zsh-defer # ngrok: only load completion if it supports zsh (brew version does, snap doesn't)
