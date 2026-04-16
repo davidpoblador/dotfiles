@@ -56,11 +56,11 @@ if [[ -o login ]]; then
   printf "\033[12A"
   printf "\033[${col}G \033[1mPowered by All Tuner Labs, S.L.\033[0m\n"
   printf "\033[${col}G\n"
-  printf "\033[${col}G     \033[2mHost:\033[0m %s\n" "$(hostname -s)"
-  printf "\033[${col}G   \033[2mUptime:\033[0m %s\n" "$uptime_str"
-  printf "\033[${col}G    \033[2mUsers:\033[0m %s logged in\n" "$users_count"
-  printf "\033[${col}G     \033[2mDisk:\033[0m %s\n" "$disk_usage"
-  printf "\033[${col}G   \033[2mMemory:\033[0m %s\n" "$mem_usage"
+  printf "\033[${col}G \033[2m     Host:\033[0m %s\n" "$(hostname -s)"
+  printf "\033[${col}G \033[2m   Uptime:\033[0m %s\n" "$uptime_str"
+  printf "\033[${col}G \033[2m    Users:\033[0m %s\n" "$users_count"
+  printf "\033[${col}G \033[2m     Disk:\033[0m %s\n" "$disk_usage"
+  printf "\033[${col}G \033[2m   Memory:\033[0m %s\n" "$mem_usage"
   printf "\033[${col}G \033[2mLast sync:\033[0m %s\n" "$sync_msg"
 
   if [[ $days_ago -ge 7 || $days_ago -eq -1 ]]; then
