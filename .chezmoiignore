@@ -15,14 +15,11 @@ prod/
 .gemini/
 .config/bat/
 .config/broot/
-.config/fzf/
 .config/ghostty/
 .config/lazygit/
-.config/lsd/
 .config/opencode/
 .config/sc-im/
 .config/silicon/
-.config/tmux/
 .config/zed/
 .config/bottom/
 .docker/
