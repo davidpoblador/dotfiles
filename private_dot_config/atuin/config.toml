@@ -11,6 +11,9 @@ filter_mode = "global"
 show_preview = true
 show_help = false
 
+# Exclude navigation commands from history
+history_filter = ["^z ", "^zi "]
+
 # Theme (file in ~/.config/atuin/themes/)
 [theme]
 name = "catppuccin-macchiato"
