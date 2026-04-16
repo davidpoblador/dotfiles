@@ -58,7 +58,7 @@ if [[ -o login ]]; then
   printf "\033[${col}G\n"
   printf "\033[${col}G \033[2m     Host:\033[0m %s\n" "$(hostname -s)"
   printf "\033[${col}G \033[2m   Uptime:\033[0m %s\n" "$uptime_str"
-  printf "\033[${col}G \033[2m    Users:\033[0m %s\n" "$users_count"
+  printf "\033[${col}G \033[2m Sessions:\033[0m %s\n" "$users_count"
   printf "\033[${col}G \033[2m     Disk:\033[0m %s\n" "$disk_usage"
   printf "\033[${col}G \033[2m   Memory:\033[0m %s\n" "$mem_usage"
   printf "\033[${col}G \033[2mLast sync:\033[0m %s\n" "$sync_msg"
