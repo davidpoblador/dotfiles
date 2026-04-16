@@ -54,7 +54,7 @@ if [[ -o login ]]; then
 
   # Move cursor up into the logo area and print info at column $col
   printf "\033[12A"
-  printf "\033[${col}G \033[1mPowered by All Tuner Labs, S.L.\033[0m\n"
+  printf "\033[${col}G \033[2mPowered by\033[0m \033[1mAll Tuner\033[0m \033[2mLabs, S.L.\033[0m\n"
   printf "\033[${col}G\n"
   printf "\033[${col}G \033[2m     Host:\033[0m %s\n" "$(hostname -s)"
   printf "\033[${col}G \033[2m   Uptime:\033[0m %s\n" "$uptime_str"
