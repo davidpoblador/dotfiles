@@ -11,7 +11,7 @@ filter_mode = "global"
 show_preview = true
 show_help = false
 
-# Exclude navigation commands from history
+# Don't record zoxide jumps (z/zi), they clutter history
 history_filter = ["^z ", "^zi "]
 
 # Theme (file in ~/.config/atuin/themes/)
