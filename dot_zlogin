@@ -1,0 +1,7 @@
+
+# Show branding on login (after system MOTD)
+if [[ -o login ]]; then
+  echo ""
+  echo "  Powered by All Tuner Labs, S.L."
+  echo ""
+fi
