@@ -19,6 +19,7 @@ export XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
 # fzf config file (theme, defaults)
 [[ -f "${XDG_CONFIG_HOME}/fzf/config" ]] && export FZF_DEFAULT_OPTS_FILE="${XDG_CONFIG_HOME}/fzf/config"
 
+# Mise-generated completions
 fpath=(${XDG_DATA_HOME}/mise-completions/zsh $fpath)
 
 
@@ -158,6 +159,7 @@ else
   load_if_exists zoxide 'eval "$(zoxide init zsh)"'
 fi
 
+# Print directory after zoxide jumps
 export _ZO_ECHO=1
 
 load_if_exists starship 'eval "$(starship init zsh)"'
@@ -232,6 +234,7 @@ gnb() {
 alias ..='cd ..'
 alias ...='cd ../..'
 
+# cd to the main working tree of the current git repo (useful from worktrees)
 cdm() {
     local git_dir
     git_dir="$(git rev-parse --git-dir 2>/dev/null)" || { echo "Not in a git repo"; return 1; }
@@ -239,6 +242,7 @@ cdm() {
     cd "$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")"
 }
 
+# Navigate to repos directory
 rep() {
     if [ $# -eq 0 ]; then
         cd ~/repos
@@ -282,8 +286,8 @@ alias dcd='docker compose down'
 alias dcr='docker compose restart'
 alias dcl='docker compose logs -f --tail 100'
 
-dlogs() { docker logs -f --tail 100 "$1"; }
-dexec() { docker exec -it "$1" /bin/sh; }
+dlogs() { docker logs -f --tail 100 "$1"; }   # Follow container logs
+dexec() { docker exec -it "$1" /bin/sh; }    # Shell into a container
 
 # Agent skills
 if command_exists bunx; then
@@ -329,18 +333,15 @@ zstyle ':completion:*' menu select
 setopt GLOB_DOTS
 
 # Tool-specific completions (deferred when available)
-if (( $+functions[zsh-defer] )); then
-  zsh-defer # ngrok: only load completion if it supports zsh (brew version does, snap doesn't)
+# ngrok: only load if it outputs zsh completions (snap version outputs bash only)
 if command_exists ngrok && ngrok completion 2>/dev/null | head -1 | grep -q compdef; then
   eval "$(ngrok completion)"
 fi
+
+if (( $+functions[zsh-defer] )); then
   zsh-defer -c 'eval "$(uvx --generate-shell-completion zsh)"'
   zsh-defer -c 'eval "$(uv generate-shell-completion zsh)"'
 else
-  # ngrok: only load completion if it supports zsh (brew version does, snap doesn't)
-if command_exists ngrok && ngrok completion 2>/dev/null | head -1 | grep -q compdef; then
-  eval "$(ngrok completion)"
-fi
   command_exists uvx && eval "$(uvx --generate-shell-completion zsh)"
   command_exists uv && eval "$(uv generate-shell-completion zsh)"
 fi
