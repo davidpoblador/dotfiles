@@ -36,9 +36,21 @@ if [[ -o login ]]; then
 
   # System info
   local users_count=$(who | wc -l | tr -d ' ')
-  local uptime_str=$(uptime -p 2>/dev/null | sed 's/^up //' || uptime | sed -E 's/.*up +//' | sed 's/,.*//')
+  local uptime_str
+  if uptime -p &>/dev/null; then
+    uptime_str=$(uptime -p | sed 's/^up //')
+  else
+    uptime_str=$(uptime | sed -E 's/.*up +//' | sed -E 's/, +[0-9]+ user.*//')
+  fi
   local disk_usage=$(df -h / 2>/dev/null | awk 'NR==2 {print $3 "/" $2 " (" $5 ")"}')
-  local mem_usage=$(free -h 2>/dev/null | awk '/^Mem:/ {print $3 "/" $2}' || vm_stat 2>/dev/null | awk '/Pages active/ {printf "%.0fM", $3*4096/1048576}' || echo "n/a")
+  local mem_usage
+  if command -v free &>/dev/null; then
+    mem_usage=$(free -h | awk '/^Mem:/ {print $3 "/" $2}')
+  else
+    local total=$(sysctl -n hw.memsize 2>/dev/null | awk '{printf "%.0fG", $1/1073741824}')
+    local used=$(ps -caxm -orss= | awk '{sum+=$1} END {printf "%.1fG", sum/1048576}')
+    mem_usage="${used} / ${total}"
+  fi
 
   # Move cursor up into the logo area and print info at column $col
   printf "\033[12A"
