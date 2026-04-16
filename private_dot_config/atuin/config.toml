@@ -11,8 +11,6 @@ filter_mode = "global"
 show_preview = true
 show_help = false
 
-{{ if eq .profile "dev" -}}
 # Theme (file in ~/.config/atuin/themes/)
 [theme]
 name = "catppuccin-macchiato"
-{{ end -}}
