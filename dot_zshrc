@@ -115,10 +115,17 @@ fi
 [[ -f "${XDG_CONFIG_HOME}/zsh/catppuccin-macchiato-syntax-highlighting.zsh" ]] && \
   source "${XDG_CONFIG_HOME}/zsh/catppuccin-macchiato-syntax-highlighting.zsh"
 
-# Antidote plugin manager (installed via brew)
-if [[ -n "$BREW_PREFIX" && -f "${BREW_PREFIX}/opt/antidote/share/antidote/antidote.zsh" ]]; then
-  source "${BREW_PREFIX}/opt/antidote/share/antidote/antidote.zsh"
-  antidote load
+# Antidote plugin manager
+ANTIDOTE_DIR="${ZDOTDIR:-$HOME}/.antidote"
+if [[ ! -d "$ANTIDOTE_DIR" ]]; then
+  git clone --depth 1 https://github.com/mattmc3/antidote.git "$ANTIDOTE_DIR"
+fi
+source "${ANTIDOTE_DIR}/antidote.zsh"
+antidote load
+
+# Auto-update antidote and plugins weekly in background
+if [[ ! -f "${XDG_CACHE_HOME}/antidote_last_update" ]] || [[ $(find "${XDG_CACHE_HOME}/antidote_last_update" -mtime +7 2>/dev/null) ]]; then
+  (git -C "$ANTIDOTE_DIR" pull -q && antidote update -q && touch "${XDG_CACHE_HOME}/antidote_last_update" &) 2>/dev/null
 fi
 
 ###########################################################

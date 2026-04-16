@@ -9,7 +9,6 @@ prod/
 
 {{- if eq .profile "prod" }}
 # Dev-only files excluded on prod
-.zsh_plugins.txt
 .claude/
 .agents/
 .codex/
