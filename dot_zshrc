@@ -289,12 +289,21 @@ alias dcl='docker compose logs -f --tail 100'
 dlogs() { docker logs -f --tail 100 "$1"; }   # Follow container logs
 dexec() { docker exec -it "$1" /bin/sh; }    # Shell into a container
 
-# Agent skills
+# Agent skills: update, sync lock file to chezmoi, commit, push
 if command_exists bunx; then
   skills-update() {
       bunx skills update -g -y
       chezmoi add ~/.agents/.skill-lock.json
-      echo "Lock file updated in chezmoi."
+      local chezmoi_dir
+      chezmoi_dir="$(chezmoi source-path)"
+      if git -C "$chezmoi_dir" diff --quiet -- dot_agents/dot_skill-lock.json; then
+          echo "Lock file already up to date."
+      else
+          git -C "$chezmoi_dir" add dot_agents/dot_skill-lock.json
+          git -C "$chezmoi_dir" commit -m "skills: update lock file"
+          git -C "$chezmoi_dir" push
+          echo "Lock file committed and pushed."
+      fi
   }
 fi
 
