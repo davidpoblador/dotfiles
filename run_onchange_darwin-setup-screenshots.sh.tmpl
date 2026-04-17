@@ -1,0 +1,25 @@
+{{ if eq .chezmoi.os "darwin" -}}
+#!/bin/bash
+# Set up shared screenshot location and symlinks.
+
+SCREENSHOTS_DIR="$HOME/sync/exchange/screenshots"
+
+# Ensure the synced directory exists (creates it locally; syncthing picks it up)
+mkdir -p "$SCREENSHOTS_DIR"
+
+# Set macOS screenshot save location
+defaults write com.apple.screencapture location "$SCREENSHOTS_DIR"
+
+# Symlink ~/Screenshots for easy shell access
+if [[ ! -e "$HOME/Screenshots" ]]; then
+  ln -s "$SCREENSHOTS_DIR" "$HOME/Screenshots"
+fi
+
+# Symlink ~/Desktop/Screenshots for easy GUI access
+if [[ ! -e "$HOME/Desktop/Screenshots" ]]; then
+  ln -s "$SCREENSHOTS_DIR" "$HOME/Desktop/Screenshots"
+fi
+
+# Reload screencapture settings
+killall SystemUIServer 2>/dev/null || true
+{{ end -}}
