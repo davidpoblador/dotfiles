@@ -1,8 +1,77 @@
 {{ if eq .chezmoi.os "darwin" -}}
 #!/bin/bash
 # macOS system defaults. Re-runs when this file changes.
+# Some changes require app restart (Finder, Dock, SystemUIServer).
 
-# Faster text cursor blink (default is ~500ms on/off)
+###########################################################
+# Keyboard                                                #
+###########################################################
+
+# Fast key repeat (default 6, min 1)
+defaults write -g KeyRepeat -int 1
+
+# Short delay before repeat starts (default 68, min 10)
+defaults write -g InitialKeyRepeat -int 15
+
+# Disable press-and-hold accent menu (required for key repeat in many apps)
+defaults write -g ApplePressAndHoldEnabled -bool false
+
+# Disable autocorrect, smart quotes, smart dashes (bad for code)
+defaults write -g NSAutomaticSpellingCorrectionEnabled -bool false
+defaults write -g NSAutomaticQuoteSubstitutionEnabled -bool false
+defaults write -g NSAutomaticDashSubstitutionEnabled -bool false
+
+###########################################################
+# Cursor                                                  #
+###########################################################
+
+# Text cursor blink rate (default ~500ms on/off)
 defaults write -g NSTextInsertionPointBlinkPeriodOn -float 400
 defaults write -g NSTextInsertionPointBlinkPeriodOff -float 300
+
+# Don't enlarge cursor when shaking mouse
+defaults write -g CGDisableCursorLocationMagnification -bool true
+
+###########################################################
+# Windows                                                 #
+###########################################################
+
+# Near-instant window resize animation
+defaults write -g NSWindowResizeTime -float 0.001
+
+# Save dialogs default to expanded view
+defaults write -g NSNavPanelExpandedStateForSaveMode -bool true
+
+###########################################################
+# Dock                                                    #
+###########################################################
+
+# Speed up autohide animation
+defaults write com.apple.dock autohide-time-modifier -float 0.25
+
+###########################################################
+# Finder                                                  #
+###########################################################
+
+# Show hidden files
+defaults write com.apple.finder AppleShowAllFiles -bool true
+
+# Show path breadcrumb at bottom
+defaults write com.apple.finder ShowPathbar -bool true
+
+# Search current folder by default (not entire Mac)
+defaults write com.apple.finder FXDefaultSearchScope -string "SCcf"
+
+# Don't write .DS_Store on network shares
+defaults write com.apple.desktopservices DSDontWriteNetworkStores -bool true
+
+###########################################################
+# Screenshots                                             #
+###########################################################
+
+# Disable window screenshot drop shadow
+defaults write com.apple.screencapture disable-shadow -bool true
+
+# Screenshot format
+defaults write com.apple.screencapture type -string "png"
 {{ end -}}
