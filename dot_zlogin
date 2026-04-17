@@ -52,6 +52,31 @@ if [[ -o login ]]; then
     mem_usage="${used} / ${total}"
   fi
 
+  # Skills lockfile age
+  local skills_lock="$HOME/.agents/.skill-lock.json"
+  local skills_msg="never"
+  local skills_days=-1
+  if [[ -f "$skills_lock" ]]; then
+    skills_days=$(( ( $(date +%s) - $(date -r "$skills_lock" +%s 2>/dev/null || stat -c %Y "$skills_lock" 2>/dev/null) ) / 86400 ))
+    if [[ $skills_days -eq 0 ]]; then
+      skills_msg="today"
+    elif [[ $skills_days -eq 1 ]]; then
+      skills_msg="yesterday"
+    else
+      skills_msg="${skills_days} days ago"
+    fi
+  fi
+
+  # Helper: print value in yellow if stale (>= 7 days or -1), dim otherwise
+  _stale_value() {
+    local days="$1" value="$2"
+    if [[ $days -ge 7 || $days -eq -1 ]]; then
+      printf "\033[33m%s\033[0m" "$value"
+    else
+      printf "%s" "$value"
+    fi
+  }
+
   # Move cursor up into the logo area and print info at column $col
   printf "\033[12A"
   printf "\033[${col}G \033[2mPowered by\033[0m \033[1mAll Tuner Labs\033[0m \033[2mS.L.\033[0m\n"
@@ -61,14 +86,13 @@ if [[ -o login ]]; then
   printf "\033[${col}G \033[2m Sessions:\033[0m %s\n" "$users_count"
   printf "\033[${col}G \033[2m     Disk:\033[0m %s\n" "$disk_usage"
   printf "\033[${col}G \033[2m   Memory:\033[0m %s\n" "$mem_usage"
-  printf "\033[${col}G \033[2mLast sync:\033[0m %s\n" "$sync_msg"
-
-  if [[ $days_ago -ge 7 || $days_ago -eq -1 ]]; then
-    printf "\033[${col}G\n"
-    printf "\033[${col}G \033[33mRun 'chezmoi update'\033[0m\n"
-    printf "\033[2B"
+  printf "\033[${col}G \033[2mLast sync:\033[0m %s\n" "$(_stale_value $days_ago "$sync_msg")"
+  if [[ -f "$skills_lock" ]] || command -v bunx &>/dev/null; then
+    printf "\033[${col}G \033[2m   Skills:\033[0m %s\n" "$(_stale_value $skills_days "$skills_msg")"
+    printf "\033[3B"
   else
     printf "\033[4B"
   fi
+  unset -f _stale_value
   echo ""
 fi
