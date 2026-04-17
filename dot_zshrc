@@ -126,6 +126,9 @@ fi
 source "${ANTIDOTE_DIR}/antidote.zsh"
 antidote load
 
+# zsh-autosuggestions: use palette color 8 (mid-gray in both dark and light themes)
+ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=8'
+
 # Auto-update antidote and plugins weekly in background
 if [[ $(find "${XDG_CACHE_HOME}/antidote_last_update" -mtime +7 2>/dev/null) ]]; then
   (git -C "$ANTIDOTE_DIR" pull -q && antidote update -q && touch "${XDG_CACHE_HOME}/antidote_last_update" &) 2>/dev/null
