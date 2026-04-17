@@ -8,6 +8,8 @@ window-padding-x = 4
 window-padding-y = 4
 shell-integration = zsh
 macos-titlebar-style = tabs
+# Ghostty defaults plus extra box-drawing chars for TUI column separators
+selection-word-chars = " 	'\"│`|:;,()[]{}<>$┤┈├┊┆┇┅┋"
 window-inherit-working-directory = false
 tab-inherit-working-directory = true
 split-inherit-working-directory = true
