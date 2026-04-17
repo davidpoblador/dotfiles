@@ -4,6 +4,8 @@ font-family = JetBrainsMono Nerd Font
 font-size = 13
 cursor-style = block
 cursor-style-blink = true
+# Keep block cursor at the prompt (shell integration defaults to beam)
+shell-integration-features = no-cursor
 window-padding-x = 4
 window-padding-y = 4
 shell-integration = zsh
