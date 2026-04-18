@@ -11,3 +11,4 @@ if ! command -v mise &>/dev/null; then
 fi
 
 mise install -y
+mise upgrade -y
