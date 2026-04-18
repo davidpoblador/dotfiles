@@ -47,8 +47,11 @@ message. Log out fully and reconnect (if using SSH multiplexing, close the
 shared connection first: `ssh -O exit <host>`). Then run:
 
 ```bash
-chezmoi apply
+~/bin/chezmoi apply
 ```
+
+(Use the full path — no config files are deployed yet, so `~/bin` isn't on
+PATH. Subsequent runs can use `chezmoi update` since `.zprofile` adds it.)
 
 This installs mise (via curl), deploys configs, installs mise tools (starship,
 uv, atuin, delta, etc.), and installs the `alltuner` CLI from the private
