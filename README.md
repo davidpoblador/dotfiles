@@ -24,6 +24,14 @@ After bootstrap, import existing shell history into atuin:
 atuin import auto
 ```
 
+If you want to be able to mosh into this Mac, allow `mosh-server` through the
+firewall (one-time, requires sudo):
+
+```bash
+sudo /usr/libexec/ApplicationFirewall/socketfilterfw --add /opt/homebrew/bin/mosh-server
+sudo /usr/libexec/ApplicationFirewall/socketfilterfw --unblock /opt/homebrew/bin/mosh-server
+```
+
 ### Prod (Linux)
 
 Prerequisite: zsh must be installed.
