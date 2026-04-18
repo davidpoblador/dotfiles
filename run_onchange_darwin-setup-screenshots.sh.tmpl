@@ -20,6 +20,15 @@ if [[ ! -e "$HOME/Desktop/Screenshots" ]]; then
   ln -s "$SCREENSHOTS_DIR" "$HOME/Desktop/Screenshots"
 fi
 
+# Lock the desktop symlink against accidental deletion (-h applies to the symlink, not target)
+chflags -h uchg "$HOME/Desktop/Screenshots" 2>/dev/null || true
+
+# Apply custom icon to the target folder if available
+ICON="$HOME/sync/exchange/icons/screenshots.png"
+if [[ -f "$ICON" ]] && command -v fileicon &>/dev/null; then
+  fileicon set "$SCREENSHOTS_DIR" "$ICON" >/dev/null 2>&1 || true
+fi
+
 # Reload screencapture settings
 killall SystemUIServer 2>/dev/null || true
 {{ end -}}
