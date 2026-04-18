@@ -10,5 +10,6 @@ if ! command -v mise &>/dev/null; then
   fi
 fi
 
-mise install -y
-mise upgrade -y
+# Suppress no-op messages, show only actual changes
+mise install -y 2>&1 | grep -vE "^mise all tools are installed$" || true
+mise upgrade -y 2>&1 | grep -vE "^mise All tools are up to date$" || true

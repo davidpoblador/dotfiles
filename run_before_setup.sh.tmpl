@@ -19,10 +19,16 @@ fi
 {{ end -}}
 
 # Install or update mise (user-space, no sudo)
+MISE_BIN=""
 if command -v mise &>/dev/null; then
-  mise self-update -y 2>/dev/null || true
+  MISE_BIN="mise"
 elif [ -f "$HOME/.local/bin/mise" ]; then
-  "$HOME/.local/bin/mise" self-update -y 2>/dev/null || true
+  MISE_BIN="$HOME/.local/bin/mise"
+fi
+
+if [ -n "$MISE_BIN" ]; then
+  # Suppress the no-op "already up to date" message
+  "$MISE_BIN" self-update -y 2>&1 | grep -vE "^mise is already up to date$" || true
 else
   echo "[mise] Installing..."
   curl -fsSL https://mise.jdx.dev/install.sh | bash
