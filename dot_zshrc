@@ -183,6 +183,11 @@ if [[ -n "$BREW_PREFIX" ]]; then
   fi
 fi
 
+# Keychain: persistent ssh-agent (Linux only; macOS uses native Keychain)
+if command_exists keychain && [[ -f "$HOME/.ssh/id_ed25519" ]]; then
+  eval "$(keychain --eval --quiet --agents ssh id_ed25519)"
+fi
+
 ###########################################################
 # Key Bindings                                            #
 ###########################################################
