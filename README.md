@@ -11,32 +11,48 @@ Personal dotfiles managed with [chezmoi](https://www.chezmoi.io/).
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
 # 2. Bootstrap chezmoi (installs chezmoi, clones repo, applies dotfiles)
-sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply davidpoblador
-
-# 3. Install mise tools (bun, node, go, rust, etc.)
-mise install
-
-# 4. Install agent skills (requires bun from step 3)
-bunx skills update -g -y
-```
-
-Chezmoi will prompt for email and full name on first run. Profile defaults to `dev`.
-
-After step 2, `chezmoi apply` will:
-
-- Install all Homebrew packages (via `run_onchange_darwin-install-packages.sh`)
-- Install mise tools weekly (via `run_after_install-mise-tools.sh`)
-- Update agent skills weekly (via `run_after_update-skills.sh`)
-
-### Prod (Linux)
-
-```bash
 sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply davidpoblador --prompt
 ```
 
-Chezmoi will prompt for email, full name, and profile. Enter `prod` for profile.
-Requires zsh (`sudo apt-get install -y zsh`). Chezmoi will set it as default shell
-and install mise, which installs starship, uv, gh, lsd, atuin, delta, and difftastic.
+Chezmoi prompts for email, full name, and profile. Hit Enter on profile to accept
+the default (`dev`). Chezmoi will install Homebrew packages, mise tools (uv, bun,
+go, etc.), agent skills, and deploy configs.
+
+After bootstrap, import existing shell history into atuin:
+
+```bash
+atuin import auto
+```
+
+### Prod (Linux)
+
+Prerequisite: zsh must be installed.
+
+```bash
+# 1. Install zsh
+sudo apt-get install -y zsh
+
+# 2. Bootstrap chezmoi
+sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply davidpoblador --prompt
+```
+
+At the prompts:
+
+- **Email address:** `david@poblador.com`
+- **Full name:** `David Poblador i Garcia`
+- **Profile:** `prod`
+
+The first run will set zsh as the default shell via `chsh` and stop with a
+message. Log out fully and reconnect (if using SSH multiplexing, close the
+shared connection first: `ssh -O exit <host>`). Then run:
+
+```bash
+chezmoi apply
+```
+
+This installs mise (via curl), deploys configs, installs mise tools (starship,
+uv, atuin, delta, etc.), and installs the `alltuner` CLI from the private
+`alltuner/infrastructure` repo (requires SSH access to GitHub from the host).
 
 After bootstrap, import existing shell history into atuin:
 
