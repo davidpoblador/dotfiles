@@ -12,6 +12,12 @@ if ! command -v uv &>/dev/null; then
   exit 0
 fi
 
+# Verify uv supports `tool install` (added in uv 0.5+)
+if ! uv tool install --help &>/dev/null; then
+  echo "[alltuner] uv too old, skipping (run mise install to update)"
+  exit 0
+fi
+
 # Install or reinstall from the private repo via SSH
 # --force reinstalls even if already present, so we pick up new commits
 uv tool install --force --quiet git+ssh://git@github.com/alltuner/infrastructure.git 2>&1 || {

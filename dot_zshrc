@@ -95,6 +95,9 @@ setopt APPEND_HISTORY
 # Mise (version manager for dev tools)                    #
 ###########################################################
 
+# Source cargo env first so mise activate can prepend shims over cargo/bin
+[[ -f "$HOME/.cargo/env" ]] && source "$HOME/.cargo/env"
+
 if command_exists mise; then
   eval "$(mise activate zsh)"
 elif [[ -f "$HOME/.local/bin/mise" ]]; then
@@ -179,9 +182,6 @@ if [[ -n "$BREW_PREFIX" ]]; then
     source "${GCP_SDK_PATH}/path.zsh.inc"
   fi
 fi
-
-# Cargo
-[[ -f "$HOME/.cargo/env" ]] && source "$HOME/.cargo/env"
 
 ###########################################################
 # Key Bindings                                            #
