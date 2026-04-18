@@ -183,8 +183,9 @@ if [[ -n "$BREW_PREFIX" ]]; then
   fi
 fi
 
-# Keychain: persistent ssh-agent (Linux only; macOS uses native Keychain)
-if command_exists keychain && [[ -f "$HOME/.ssh/id_ed25519" ]]; then
+# Keychain: persistent ssh-agent. Only needed in mosh sessions
+# (SSH agent forwarding doesn't survive mosh's UDP handoff).
+if [[ -n "$MOSH_CONNECTION" ]] && command_exists keychain && [[ -f "$HOME/.ssh/id_ed25519" ]]; then
   eval "$(keychain --eval --quiet --agents ssh id_ed25519)"
 fi
 
