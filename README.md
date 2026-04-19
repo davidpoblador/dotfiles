@@ -247,6 +247,26 @@ Mise tools auto-upgrade daily in the background via `.zshrc`.
 
 Mise also auto-installs dependencies on `cd`: runs `uv sync` when `uv.lock` exists without `.venv`, and `bun install` when `bun.lock` exists without `node_modules`.
 
+#### Adding a new mise tool
+
+```bash
+mise registry <tool>    # see which backends are available
+mise use -g <tool>      # install + add to global config
+# then: chezmoi re-add ~/.config/mise/config.toml to track the change
+```
+
+Prefer backends in this order: **core** (built-in) > **aqua** / **ubi** (single binary download) > **asdf** (legacy plugin). Core/aqua/ubi install cleanly. `asdf:` plugins refresh their git repo on every `mise install`/`upgrade`, adding one line of noise per apply — fine for a tool you need, annoying for orphans.
+
+If `mise registry` only lists an `asdf:` backend, you can still use it — or pin another backend explicitly in `config.toml` (e.g. `"aqua:owner/repo" = "latest"`).
+
+Cleaning up an orphan/legacy plugin:
+
+```bash
+mise uninstall <tool>           # remove the installed binary
+mise plugins uninstall <tool>   # remove the plugin's git repo
+mise cache clear <tool>         # flush version cache
+```
+
 ### Zsh plugins
 
 | Plugin | Description |
