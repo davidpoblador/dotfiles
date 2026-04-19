@@ -1,6 +1,6 @@
 {{ if eq .chezmoi.os "darwin" -}}
 #!/bin/bash
-# Set up shared wallpaper location and symlinks.
+# Set up wallpaper sync folder and apply wallpapers to attached displays.
 
 WALLPAPERS_DIR="$HOME/sync/exchange/wallpapers"
 
@@ -10,5 +10,10 @@ mkdir -p "$WALLPAPERS_DIR"
 # Symlink ~/Pictures/wallpapers for easy GUI access
 if [[ ! -e "$HOME/Pictures/wallpapers" ]]; then
   ln -s "$WALLPAPERS_DIR" "$HOME/Pictures/wallpapers"
+fi
+
+# Apply wallpapers (idempotent; noops if sync dir is empty)
+if command -v bun &>/dev/null && [[ -x "$HOME/.local/bin/wallpaper-sync" ]]; then
+  "$HOME/.local/bin/wallpaper-sync" --apply || true
 fi
 {{ end -}}
