@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 // ABOUTME: picks the best wallpaper per display from ~/Pictures/wallpapers
-// ABOUTME: and sets it with --apply. default is dry-run. idempotent.
+// ABOUTME: and sets it with --apply. default is dry-run. idempotent. quiet.
 
 import { setWallpaper, getWallpaper, screens as wpScreens } from 'wallpaper@7.3.0';
 import si from 'systeminformation@5.31.5';
@@ -9,6 +9,7 @@ import { join } from 'node:path';
 import { homedir } from 'node:os';
 
 const APPLY = process.argv.includes('--apply');
+const VERBOSE = process.argv.includes('--verbose') || process.argv.includes('-v');
 const WALLPAPER_DIR = join(homedir(), 'Pictures/wallpapers');
 const EXTENSIONS = new Set(['.png', '.jpg', '.jpeg', '.heic', '.tiff', '.tif']);
 
@@ -63,22 +64,17 @@ async function samePath(a: string, b: string): Promise<boolean> {
   try { return (await realpath(a)) === (await realpath(b)); } catch { return false; }
 }
 
-const [names, gfx, files] = await Promise.all([wpScreens(), si.graphics(), loadWallpapers()]);
+function verbose(msg: string) { if (VERBOSE) console.log(msg); }
+
+const [gfx, files] = await Promise.all([si.graphics(), loadWallpapers()]);
 const displays = gfx.displays ?? [];
 
-console.log(`mode            : ${APPLY ? 'apply' : 'dry-run (pass --apply to set)'}`);
-console.log(`wallpapers dir  : ${WALLPAPER_DIR}`);
-console.log(`wallpaper files : ${files.length}`);
-console.log(`displays        : ${displays.length}`);
+verbose(`mode            : ${APPLY ? 'apply' : 'dry-run'}`);
+verbose(`wallpapers dir  : ${WALLPAPER_DIR}`);
+verbose(`wallpaper files : ${files.length}`);
+verbose(`displays        : ${displays.length}`);
 
-if (!files.length) {
-  console.log('\nno wallpapers available — nothing to do.');
-  process.exit(0);
-}
-if (!displays.length) {
-  console.log('\nno displays detected — nothing to do.');
-  process.exit(0);
-}
+if (!files.length || !displays.length) process.exit(0);
 
 const plan = await Promise.all(displays.map(async (d, i) => {
   const pick = pickFor(d, files);
@@ -89,37 +85,30 @@ const plan = await Promise.all(displays.map(async (d, i) => {
 
 const changes = plan.filter(p => p.pick && !p.unchanged);
 
-console.log('');
-for (const { i, display: d, pick, current, unchanged } of plan) {
-  const tag = `[${i}] ${d.model || '(no model)'}${d.builtin ? ' ⌂' : ''}${d.main ? ' ★' : ''}`;
-  if (!pick) {
-    console.log(`${tag}\n     skip — no resolution data to match against`);
-    continue;
+if (VERBOSE) {
+  console.log('');
+  for (const { i, display: d, pick, current, unchanged } of plan) {
+    const tag = `[${i}] ${d.model || '(no model)'}${d.builtin ? ' ⌂' : ''}${d.main ? ' ★' : ''}`;
+    if (!pick) { console.log(`${tag}  skip — no resolution data`); continue; }
+    if (unchanged) { console.log(`${tag}  ok — ${pick.name}`); continue; }
+    const from = current ? current.replace(homedir(), '~') : '(unknown)';
+    console.log(`${tag}  ${APPLY ? 'set' : 'plan'} — ${pick.name} (was: ${from})`);
   }
-  if (unchanged) {
-    console.log(`${tag}\n     ok   — already set to ${pick.name}`);
-    continue;
-  }
-  const from = current ? current.replace(homedir(), '~') : '(unknown)';
-  console.log(`${tag}\n     ${APPLY ? 'set' : 'plan'} — ${pick.name}\n            from: ${from}`);
 }
 
-if (!changes.length) {
-  console.log('\nall displays already in sync.');
-  process.exit(0);
-}
+if (!changes.length) process.exit(0);
 
 if (!APPLY) {
-  console.log(`\n${changes.length} change(s) pending. rerun with --apply to set.`);
+  for (const { i, pick } of changes) if (pick) console.log(`[${i}] plan: ${pick.name}`);
+  console.log(`run with --apply to set.`);
   process.exit(0);
 }
 
-console.log('');
 for (const { i, pick } of changes) {
   if (!pick) continue;
   try {
     await setWallpaper(pick.path, { screen: i, scale: 'fill' });
-    console.log(`[${i}] set ${pick.name}`);
+    console.log(`[${i}] set: ${pick.name}`);
   } catch (e) {
     console.error(`[${i}] FAILED: ${(e as Error).message}`);
     process.exitCode = 1;
