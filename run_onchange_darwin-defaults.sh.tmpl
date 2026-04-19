@@ -4,6 +4,19 @@
 # Some changes require app restart (Finder, Dock, SystemUIServer).
 
 ###########################################################
+# Appearance                                              #
+###########################################################
+
+# Auto-switch between light and dark mode
+defaults write -g AppleInterfaceStyleSwitchesAutomatically -bool true
+
+# Accent color: purple
+defaults write -g AppleAccentColor -int 5
+
+# Highlight color: custom dark wine (matches wallpaper background)
+defaults write -g AppleHighlightColor -string "0.356863 0.137255 0.200000 Other"
+
+###########################################################
 # Keyboard                                                #
 ###########################################################
 
@@ -49,12 +62,21 @@ defaults write -g NSNavPanelExpandedStateForSaveMode -bool true
 # Speed up autohide animation
 defaults write com.apple.dock autohide-time-modifier -float 0.25
 
+# Auto-hide the dock
+defaults write com.apple.dock autohide -bool true
+
+# Compact dock tile size
+defaults write com.apple.dock tilesize -int 57
+
 ###########################################################
 # Finder                                                  #
 ###########################################################
 
 # Show path breadcrumb at bottom
 defaults write com.apple.finder ShowPathbar -bool true
+
+# Default to list view (Nlsv=list, icnv=icon, clmv=column, glyv=gallery)
+defaults write com.apple.finder FXPreferredViewStyle -string "Nlsv"
 
 # Search current folder by default (not entire Mac)
 defaults write com.apple.finder FXDefaultSearchScope -string "SCcf"
