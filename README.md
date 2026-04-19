@@ -211,6 +211,12 @@ Mise tools auto-upgrade daily in the background via `.zshrc`.
 |---|
 | font-jetbrains-mono-nerd-font |
 
+#### Notes
+
+| Package | Description |
+|---|---|
+| obsidian | Markdown-based knowledge base |
+
 #### Mac App Store
 
 | App | Description |
