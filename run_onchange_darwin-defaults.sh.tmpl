@@ -207,13 +207,4 @@ defaults write com.apple.screencapture type -string "png"
 
 # Skip the floating thumbnail preview — save straight to file
 defaults write com.apple.screencapture show-thumbnail -bool false
-
-###########################################################
-# Login window (requires sudo)                            #
-###########################################################
-
-# Disable guest account. Silently skipped if passwordless sudo isn't
-# configured; run the command manually in that case.
-sudo -n defaults write /Library/Preferences/com.apple.loginwindow GuestEnabled -bool false 2>/dev/null || \
-  echo "note: run 'sudo defaults write /Library/Preferences/com.apple.loginwindow GuestEnabled -bool false' manually"
 {{ end -}}
