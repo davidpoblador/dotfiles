@@ -5,3 +5,6 @@ skip_global_compinit=1
 [[ -d "$HOME/bin" ]] && export PATH="$HOME/bin:$PATH"
 [[ -d "$HOME/.local/bin" ]] && export PATH="$HOME/.local/bin:$PATH"
 [[ -x /opt/homebrew/bin/brew ]] && eval "$(/opt/homebrew/bin/brew shellenv)"
+
+# Don't quarantine cask apps — avoids the "downloaded from internet" warning
+export HOMEBREW_CASK_OPTS="--no-quarantine"

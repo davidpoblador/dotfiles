@@ -1,6 +1,9 @@
 {{- if eq .chezmoi.os "darwin" -}}
 #!/bin/bash
 
+# Don't quarantine cask apps — avoids the "downloaded from internet" warning
+export HOMEBREW_CASK_OPTS="--no-quarantine"
+
 brew bundle --file=/dev/stdin << EOF
 tap "buo/cask-upgrade"
 
