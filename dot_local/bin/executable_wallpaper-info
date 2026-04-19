@@ -1,17 +1,71 @@
 #!/usr/bin/env bun
-// ABOUTME: diagnostic for wallpaper sync — dumps everything we know about
-// ABOUTME: currently attached displays. no side effects. no install needed.
+// ABOUTME: diagnostic for wallpaper sync — dumps per-display info and shows
+// ABOUTME: which file it would pick. no side effects. no install needed.
 
 import { screens as wpScreens } from 'wallpaper@7.3.0';
 import si from 'systeminformation@5.31.5';
+import { readdir, stat } from 'node:fs/promises';
+import { join } from 'node:path';
+import { homedir } from 'node:os';
 
-const [names, gfx] = await Promise.all([wpScreens(), si.graphics()]);
+const WALLPAPER_DIR = join(homedir(), 'sync/exchange/wallpapers');
+const EXTENSIONS = new Set(['.png', '.jpg', '.jpeg', '.heic', '.tiff', '.tif']);
 
+type WallpaperFile = { path: string; name: string; width: number; height: number; aspect: number };
+
+async function imageDimensions(path: string): Promise<{ width: number; height: number } | null> {
+  const proc = Bun.spawn(['sips', '-g', 'pixelWidth', '-g', 'pixelHeight', path], {
+    stdout: 'pipe', stderr: 'pipe',
+  });
+  const out = await new Response(proc.stdout).text();
+  await proc.exited;
+  if (proc.exitCode !== 0) return null;
+  const w = out.match(/pixelWidth:\s*(\d+)/)?.[1];
+  const h = out.match(/pixelHeight:\s*(\d+)/)?.[1];
+  if (!w || !h) return null;
+  return { width: parseInt(w, 10), height: parseInt(h, 10) };
+}
+
+async function loadWallpapers(): Promise<WallpaperFile[]> {
+  let entries: string[];
+  try {
+    entries = await readdir(WALLPAPER_DIR);
+  } catch {
+    return [];
+  }
+  const results: WallpaperFile[] = [];
+  for (const name of entries) {
+    if (name.startsWith('.')) continue;
+    const ext = name.slice(name.lastIndexOf('.')).toLowerCase();
+    if (!EXTENSIONS.has(ext)) continue;
+    const path = join(WALLPAPER_DIR, name);
+    try {
+      const s = await stat(path);
+      if (!s.isFile()) continue;
+    } catch { continue; }
+    const dims = await imageDimensions(path);
+    if (!dims) continue;
+    results.push({ path, name, ...dims, aspect: dims.width / dims.height });
+  }
+  return results;
+}
+
+function pickFor(display: si.Systeminformation.GraphicsDisplayData, files: WallpaperFile[]): WallpaperFile | null {
+  if (!files.length || !display.resolutionX || !display.resolutionY) return null;
+  const target = display.resolutionX / display.resolutionY;
+  return files.reduce((best, f) =>
+    !best || Math.abs(f.aspect - target) < Math.abs(best.aspect - target) ? f : best,
+    null as WallpaperFile | null);
+}
+
+const [names, gfx, files] = await Promise.all([wpScreens(), si.graphics(), loadWallpapers()]);
 const displays = gfx.displays ?? [];
 
 console.log('─'.repeat(72));
 console.log(`wallpaper.screens()   → ${JSON.stringify(names)}`);
 console.log(`systeminformation     → ${displays.length} display(s)`);
+console.log(`wallpapers dir        → ${WALLPAPER_DIR}`);
+console.log(`wallpaper files       → ${files.length} image(s)`);
 console.log('─'.repeat(72));
 
 for (const [i, d] of displays.entries()) {
@@ -26,6 +80,8 @@ for (const [i, d] of displays.entries()) {
   const diag = d.sizeX && d.sizeY ? (Math.hypot(d.sizeX, d.sizeY) / 25.4).toFixed(1) + '"' : '?';
   const dpi = d.sizeX && d.resolutionX ? Math.round(d.resolutionX / (d.sizeX / 25.4)) : '?';
 
+  const pick = pickFor(d, files);
+
   console.log(`\n[${i}] ${d.model || '(no model)'} ${d.main ? '★ main ' : ''}${d.builtin ? '⌂ builtin' : ''}`);
   console.log(`     vendor        : ${d.vendor || '?'} (${d.vendorId || '?'})`);
   console.log(`     connection    : ${d.connection || '?'}`);
@@ -35,12 +91,26 @@ for (const [i, d] of displays.entries()) {
   console.log(`     physical      : ${physical}   (~${diag} diagonal, ~${dpi} DPI)`);
   console.log(`     serial        : ${d.serial || '?'}`);
   console.log(`     productionYear: ${d.productionYear || '?'}`);
+  if (pick) {
+    const pickAspect = pick.aspect.toFixed(3);
+    const delta = d.resolutionX && d.resolutionY
+      ? Math.abs(pick.aspect - d.resolutionX / d.resolutionY).toFixed(3)
+      : '?';
+    console.log(`     → would pick  : ${pick.name} (${pick.width}×${pick.height}, aspect ${pickAspect}, Δ ${delta})`);
+  } else if (files.length === 0) {
+    console.log(`     → would pick  : (none — dir empty or missing; script would noop)`);
+  } else {
+    console.log(`     → would pick  : (no match — missing resolution data)`);
+  }
 }
 
 console.log('\n' + '─'.repeat(72));
-console.log('name match (wallpaper ↔ systeminformation):');
-for (const name of names) {
-  const hit = displays.find(d => d.model === name);
-  console.log(`  "${name}"  →  ${hit ? `match [model="${hit.model}"]` : 'NO DIRECT MATCH'}`);
+console.log('available wallpapers:');
+if (!files.length) {
+  console.log('  (none found)');
+} else {
+  for (const f of files) {
+    console.log(`  ${f.name}  ${f.width}×${f.height}  aspect ${f.aspect.toFixed(3)}`);
+  }
 }
 console.log('─'.repeat(72));
