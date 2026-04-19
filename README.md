@@ -222,6 +222,7 @@ Mise tools auto-upgrade daily in the background via `.zshrc`.
 | App | Description |
 |---|---|
 | DaisyDisk | Disk space analyzer |
+| Obsidian Web Clipper | Safari extension to clip web pages into Obsidian |
 | Keynote | Presentations |
 | Numbers | Spreadsheets |
 | Pages | Documents |
