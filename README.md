@@ -232,7 +232,6 @@ Mise tools auto-upgrade daily in the background via `.zshrc`.
 | go | Go programming language |
 | gopls | Go language server |
 | just | Command runner (like make) |
-| mc | MinIO client (S3-compatible) |
 | mongosh | MongoDB shell |
 | node | Node.js runtime |
 | rust | Rust programming language |
