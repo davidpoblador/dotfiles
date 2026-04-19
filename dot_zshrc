@@ -168,7 +168,7 @@ fi
 # Print directory after zoxide jumps
 export _ZO_ECHO=1
 
-load_if_exists starship 'eval "$(starship init zsh)"'
+load_if_exists "$HOME/.local/share/mise/shims/starship" 'eval "$("$HOME/.local/share/mise/shims/starship" init zsh)"'
 
 # Broot - interactive directory tree navigator
 if [[ -f "${XDG_CONFIG_HOME}/broot/launcher/bash/br" ]]; then
