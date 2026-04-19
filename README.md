@@ -381,8 +381,10 @@ aspect, cover screen, crop overflow).
 ### Setup
 
 1. Share `~/sync/exchange/wallpapers/` across your Macs with Syncthing.
-2. Drop image files in the folder. Any `.png`/`.jpg`/`.jpeg`/`.heic`/`.tiff`
-   works. Empty folder = script noops.
+   Chezmoi creates it on apply and symlinks `~/Pictures/wallpapers` to it
+   for easy Finder access.
+2. Drop image files in `~/Pictures/wallpapers`. Any `.png`/`.jpg`/`.jpeg`/
+   `.heic`/`.tiff` works. Empty folder = script noops.
 3. On each Mac:
 
    ```bash

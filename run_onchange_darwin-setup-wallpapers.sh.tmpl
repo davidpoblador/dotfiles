@@ -1,0 +1,14 @@
+{{ if eq .chezmoi.os "darwin" -}}
+#!/bin/bash
+# Set up shared wallpaper location and symlinks.
+
+WALLPAPERS_DIR="$HOME/sync/exchange/wallpapers"
+
+# Ensure the synced directory exists (creates it locally; syncthing picks it up)
+mkdir -p "$WALLPAPERS_DIR"
+
+# Symlink ~/Pictures/wallpapers for easy GUI access
+if [[ ! -e "$HOME/Pictures/wallpapers" ]]; then
+  ln -s "$WALLPAPERS_DIR" "$HOME/Pictures/wallpapers"
+fi
+{{ end -}}
