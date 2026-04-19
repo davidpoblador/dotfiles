@@ -4,6 +4,21 @@
 # Some changes require app restart (Finder, Dock, SystemUIServer).
 
 ###########################################################
+# Locale                                                  #
+###########################################################
+
+# Metric units
+defaults write -g AppleMetricUnits -bool true
+defaults write -g AppleMeasurementUnits -string "Centimeters"
+defaults write -g AppleTemperatureUnit -string "Celsius"
+
+# 24-hour time everywhere
+defaults write -g AppleICUForce24HourTime -bool true
+
+# Week starts on Monday
+defaults write -g AppleFirstWeekday -dict gregorian 2
+
+###########################################################
 # Appearance                                              #
 ###########################################################
 
@@ -15,6 +30,9 @@ defaults write -g AppleAccentColor -int 5
 
 # Highlight color: custom dark wine (matches wallpaper background)
 defaults write -g AppleHighlightColor -string "0.356863 0.137255 0.200000 Other"
+
+# Small sidebar icons (Finder, Mail, System Settings)
+defaults write -g NSTableViewDefaultSizeMode -int 1
 
 ###########################################################
 # Keyboard                                                #
@@ -33,6 +51,28 @@ defaults write -g ApplePressAndHoldEnabled -bool false
 defaults write -g NSAutomaticSpellingCorrectionEnabled -bool false
 defaults write -g NSAutomaticQuoteSubstitutionEnabled -bool false
 defaults write -g NSAutomaticDashSubstitutionEnabled -bool false
+
+# Full keyboard access — Tab cycles through all UI controls, not just text
+defaults write -g AppleKeyboardUIMode -int 3
+
+###########################################################
+# Trackpad                                                #
+###########################################################
+
+# Tap to click (both internal and bluetooth trackpads)
+defaults write com.apple.AppleMultitouchTrackpad Clicking -bool true
+defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad Clicking -bool true
+defaults write -g com.apple.mouse.tapBehavior -int 1
+defaults -currentHost write -g com.apple.mouse.tapBehavior -int 1
+
+# Natural scroll direction
+defaults write -g com.apple.swipescrolldirection -bool true
+
+# Mouse tracking speed (current machine value)
+defaults write -g com.apple.mouse.scaling -float 1
+
+# Scroll wheel speed (slower than default)
+defaults write -g com.apple.scrollwheel.scaling -float 0.5
 
 ###########################################################
 # Cursor                                                  #
@@ -55,6 +95,12 @@ defaults write -g NSWindowResizeTime -float 0.001
 # Save dialogs default to expanded view
 defaults write -g NSNavPanelExpandedStateForSaveMode -bool true
 
+# Always show file extensions
+defaults write -g AppleShowAllExtensions -bool true
+
+# Don't auto-restore windows when apps relaunch
+defaults write -g NSQuitAlwaysKeepsWindows -bool false
+
 ###########################################################
 # Dock                                                    #
 ###########################################################
@@ -62,11 +108,29 @@ defaults write -g NSNavPanelExpandedStateForSaveMode -bool true
 # Speed up autohide animation
 defaults write com.apple.dock autohide-time-modifier -float 0.25
 
+# Dock position
+defaults write com.apple.dock orientation -string "bottom"
+
 # Auto-hide the dock
 defaults write com.apple.dock autohide -bool true
 
 # Compact dock tile size
 defaults write com.apple.dock tilesize -int 57
+
+# Hide the "Recent Applications" section in the dock
+defaults write com.apple.dock show-recents -bool false
+
+# Minimize animation: suck (faster than genie)
+defaults write com.apple.dock mineffect -string "suck"
+
+# Disable all hot corners
+for corner in tl tr bl br; do
+  defaults write com.apple.dock "wvous-${corner}-corner" -int 0
+  defaults write com.apple.dock "wvous-${corner}-modifier" -int 0
+done
+
+# Don't auto-rearrange Spaces by most recent use
+defaults write com.apple.dock mru-spaces -bool false
 
 ###########################################################
 # Finder                                                  #
@@ -75,14 +139,61 @@ defaults write com.apple.dock tilesize -int 57
 # Show path breadcrumb at bottom
 defaults write com.apple.finder ShowPathbar -bool true
 
+# Show status bar (file count + free space)
+defaults write com.apple.finder ShowStatusBar -bool true
+
+# Spring-loaded folders open quickly when dragging
+defaults write -g com.apple.springing.enabled -bool true
+defaults write -g com.apple.springing.delay -float 0.1
+
 # Default to list view (Nlsv=list, icnv=icon, clmv=column, glyv=gallery)
 defaults write com.apple.finder FXPreferredViewStyle -string "Nlsv"
+
+# New Finder windows open in the home folder
+defaults write com.apple.finder NewWindowTarget -string "PfHm"
 
 # Search current folder by default (not entire Mac)
 defaults write com.apple.finder FXDefaultSearchScope -string "SCcf"
 
 # Don't write .DS_Store on network shares
 defaults write com.apple.desktopservices DSDontWriteNetworkStores -bool true
+
+# Skip the "Are you sure you want to open this?" dialog for downloaded apps
+defaults write com.apple.LaunchServices LSQuarantine -bool false
+
+###########################################################
+# Menu bar                                                #
+###########################################################
+
+# Clock: 24h with seconds, no date
+defaults write com.apple.menuextra.clock DateFormat -string "HH:mm:ss"
+defaults write com.apple.menuextra.clock Show24Hour -bool true
+defaults write com.apple.menuextra.clock ShowSeconds -bool true
+defaults write com.apple.menuextra.clock ShowDate -int 2
+defaults write com.apple.menuextra.clock IsAnalog -bool false
+
+# Hide battery percentage (icon only)
+defaults -currentHost write com.apple.controlcenter BatteryShowPercentage -bool false
+
+###########################################################
+# TextEdit                                                #
+###########################################################
+
+# Plain text default, UTF-8 on read and write
+defaults write com.apple.TextEdit RichText -int 0
+defaults write com.apple.TextEdit PlainTextEncoding -int 4
+defaults write com.apple.TextEdit PlainTextEncodingForWrite -int 4
+
+###########################################################
+# Safari                                                  #
+###########################################################
+# These may be ignored unless Terminal has Full Disk Access (Safari's
+# prefs are sandboxed on modern macOS). If the Develop menu doesn't
+# appear, enable it once via Safari → Settings → Advanced.
+
+defaults write com.apple.Safari IncludeDevelopMenu -bool true
+defaults write com.apple.Safari.SandboxBroker ShowDevelopMenu -bool true
+defaults write -g WebKitDeveloperExtras -bool true
 
 ###########################################################
 # Screenshots                                             #
@@ -93,4 +204,16 @@ defaults write com.apple.screencapture disable-shadow -bool true
 
 # Screenshot format
 defaults write com.apple.screencapture type -string "png"
+
+# Skip the floating thumbnail preview — save straight to file
+defaults write com.apple.screencapture show-thumbnail -bool false
+
+###########################################################
+# Login window (requires sudo)                            #
+###########################################################
+
+# Disable guest account. Silently skipped if passwordless sudo isn't
+# configured; run the command manually in that case.
+sudo -n defaults write /Library/Preferences/com.apple.loginwindow GuestEnabled -bool false 2>/dev/null || \
+  echo "note: run 'sudo defaults write /Library/Preferences/com.apple.loginwindow GuestEnabled -bool false' manually"
 {{ end -}}
