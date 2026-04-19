@@ -1,0 +1,46 @@
+#!/usr/bin/env bun
+// ABOUTME: diagnostic for wallpaper sync — dumps everything we know about
+// ABOUTME: currently attached displays. no side effects. no install needed.
+
+import { screens as wpScreens } from 'wallpaper@7.3.0';
+import si from 'systeminformation@5.31.5';
+
+const [names, gfx] = await Promise.all([wpScreens(), si.graphics()]);
+
+const displays = gfx.displays ?? [];
+
+console.log('─'.repeat(72));
+console.log(`wallpaper.screens()   → ${JSON.stringify(names)}`);
+console.log(`systeminformation     → ${displays.length} display(s)`);
+console.log('─'.repeat(72));
+
+for (const [i, d] of displays.entries()) {
+  const native = d.resolutionX && d.resolutionY ? `${d.resolutionX}×${d.resolutionY}` : '?';
+  const current = d.currentResX && d.currentResY ? `${d.currentResX}×${d.currentResY}` : '?';
+  const retina = d.resolutionX && d.currentResX ? d.resolutionX > d.currentResX : null;
+  const aspect = d.resolutionX && d.resolutionY ? (d.resolutionX / d.resolutionY).toFixed(3) : '?';
+  const orientation = d.resolutionX && d.resolutionY
+    ? (d.resolutionX >= d.resolutionY ? 'landscape' : 'portrait')
+    : '?';
+  const physical = d.sizeX && d.sizeY ? `${d.sizeX}×${d.sizeY} mm` : '?';
+  const diag = d.sizeX && d.sizeY ? (Math.hypot(d.sizeX, d.sizeY) / 25.4).toFixed(1) + '"' : '?';
+  const dpi = d.sizeX && d.resolutionX ? Math.round(d.resolutionX / (d.sizeX / 25.4)) : '?';
+
+  console.log(`\n[${i}] ${d.model || '(no model)'} ${d.main ? '★ main ' : ''}${d.builtin ? '⌂ builtin' : ''}`);
+  console.log(`     vendor        : ${d.vendor || '?'} (${d.vendorId || '?'})`);
+  console.log(`     connection    : ${d.connection || '?'}`);
+  console.log(`     native res    : ${native}    (aspect ${aspect}, ${orientation})`);
+  console.log(`     current res   : ${current}    ${retina === true ? '→ retina (HiDPI)' : retina === false ? '→ non-retina' : ''}`);
+  console.log(`     refresh       : ${d.currentRefreshRate ? d.currentRefreshRate + ' Hz' : '?'}`);
+  console.log(`     physical      : ${physical}   (~${diag} diagonal, ~${dpi} DPI)`);
+  console.log(`     serial        : ${d.serial || '?'}`);
+  console.log(`     productionYear: ${d.productionYear || '?'}`);
+}
+
+console.log('\n' + '─'.repeat(72));
+console.log('name match (wallpaper ↔ systeminformation):');
+for (const name of names) {
+  const hit = displays.find(d => d.model === name);
+  console.log(`  "${name}"  →  ${hit ? `match [model="${hit.model}"]` : 'NO DIRECT MATCH'}`);
+}
+console.log('─'.repeat(72));
