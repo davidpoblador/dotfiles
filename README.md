@@ -370,3 +370,47 @@ The profile is set once during `chezmoi init` and persists in `~/.config/chezmoi
 
 - **macOS**: Full dev environment with Homebrew packages, App Store apps, casks, fonts
 - **Linux**: Production config with bash, starship, mise (uv, gh)
+
+## Wallpaper sync (macOS)
+
+Keeps desktop wallpapers consistent across Macs via a Syncthing-backed
+folder. Pairs each attached display with the file whose aspect ratio is
+closest to the display's native aspect, using `--scale=fill` (preserve
+aspect, cover screen, crop overflow).
+
+### Setup
+
+1. Share `~/sync/exchange/wallpapers/` across your Macs with Syncthing.
+2. Drop image files in the folder. Any `.png`/`.jpg`/`.jpeg`/`.heic`/`.tiff`
+   works. Empty folder = script noops.
+3. On each Mac:
+
+   ```bash
+   ~/.local/bin/wallpaper-sync            # dry-run: shows plan
+   ~/.local/bin/wallpaper-sync --apply    # actually set wallpapers
+   ```
+
+The script is idempotent — re-running it does nothing if every display is
+already on the picked file.
+
+### Suggested files to keep in the folder
+
+The matcher only needs aspect-ratio coverage; resolutions just need to be
+big enough to render sharply when scaled/cropped to the target display.
+
+| Aspect | Covers | Suggested min resolution |
+|---|---|---|
+| 1.778 (16:9) | Every modern external 4K/5K/6K monitor, most TVs | 5120×2880 |
+| ~1.54 | All notched MacBooks (14"/16" MBP, M2+ MBA) | 3456×2234 |
+| 2.389 (21:9) | Ultrawides (optional) | 3440×1440 |
+| 1.6 (16:10) | Pre-notch MBPs, M1 MBA (optional) | 2560×1600 |
+
+Naming convention in this repo: `WIDTHxHEIGHT.ext` (e.g. `5120x2880.png`).
+Not required — the script reads actual image dimensions via `sips` — but
+makes the folder self-documenting.
+
+### Requirements
+
+- `bun` in `PATH`. Dependencies (`wallpaper`, `systeminformation`) are
+  auto-installed to bun's global cache on first run (needs network once).
+- macOS. Linux/Windows aren't targets.
