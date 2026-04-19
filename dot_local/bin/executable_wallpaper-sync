@@ -1,15 +1,15 @@
 #!/usr/bin/env bun
-// ABOUTME: picks the best wallpaper per display from ~/sync/exchange/wallpapers
+// ABOUTME: picks the best wallpaper per display from ~/Pictures/wallpapers
 // ABOUTME: and sets it with --apply. default is dry-run. idempotent.
 
 import { setWallpaper, getWallpaper, screens as wpScreens } from 'wallpaper@7.3.0';
 import si from 'systeminformation@5.31.5';
-import { readdir, stat } from 'node:fs/promises';
+import { readdir, stat, realpath } from 'node:fs/promises';
 import { join } from 'node:path';
 import { homedir } from 'node:os';
 
 const APPLY = process.argv.includes('--apply');
-const WALLPAPER_DIR = join(homedir(), 'sync/exchange/wallpapers');
+const WALLPAPER_DIR = join(homedir(), 'Pictures/wallpapers');
 const EXTENSIONS = new Set(['.png', '.jpg', '.jpeg', '.heic', '.tiff', '.tif']);
 
 type WallpaperFile = { path: string; name: string; width: number; height: number; aspect: number };
@@ -58,6 +58,11 @@ async function currentWallpaper(screen: number): Promise<string | null> {
   try { return await getWallpaper({ screen }); } catch { return null; }
 }
 
+async function samePath(a: string, b: string): Promise<boolean> {
+  if (a === b) return true;
+  try { return (await realpath(a)) === (await realpath(b)); } catch { return false; }
+}
+
 const [names, gfx, files] = await Promise.all([wpScreens(), si.graphics(), loadWallpapers()]);
 const displays = gfx.displays ?? [];
 
@@ -78,7 +83,7 @@ if (!displays.length) {
 const plan = await Promise.all(displays.map(async (d, i) => {
   const pick = pickFor(d, files);
   const current = pick ? await currentWallpaper(i) : null;
-  const unchanged = pick ? current === pick.path : false;
+  const unchanged = !!(pick && current && await samePath(current, pick.path));
   return { i, display: d, pick, current, unchanged };
 }));
 
