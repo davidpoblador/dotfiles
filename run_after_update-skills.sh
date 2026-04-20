@@ -30,7 +30,11 @@ mkdir -p "$CLAUDE_DIR"
 missing=$(
   while IFS=$'\t' read -r source name; do
     [[ -z "$source" || "$source" == \#* ]] && continue
-    if [[ ! -d "$AGENTS_DIR/$name" ]] || [[ ! -e "$CLAUDE_DIR/$name" ]]; then
+    # A skill counts as installed if Claude Code can see it — either as a
+    # symlink into $AGENTS_DIR or as a real dir copied directly there (some
+    # skills, e.g. pbakaus/impeccable's impeccable/layout/shape, install that
+    # way and never populate $AGENTS_DIR).
+    if [[ ! -e "$CLAUDE_DIR/$name" ]]; then
       printf '%s\t%s\n' "$source" "$name"
     fi
   done < "$MANIFEST" |
