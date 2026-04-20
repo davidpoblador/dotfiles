@@ -98,7 +98,7 @@ if [[ -o login ]]; then
     info_lines+=(" \033[2m     Brew:\033[0m $(_stale_value $brew_secs "$brew_msg")")
   fi
   if command -v bunx &>/dev/null; then
-    info_lines+=(" \033[2m   Skills:\033[0m $(_stale_value $skills_secs "$skills_msg")")
+    info_lines+=(" \033[2mSkills up:\033[0m $(_stale_value $skills_secs "$skills_msg")")
   fi
 
   # Move cursor up into the logo area and print info at column $col
