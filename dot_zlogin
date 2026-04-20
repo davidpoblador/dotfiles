@@ -35,7 +35,7 @@ if [[ -o login ]]; then
     if (( secs < 60 )); then
       msg="just now"
     elif (( secs < 3600 )); then
-      msg="$((secs / 60)) min ago"
+      msg="$((secs / 60))min ago"
     elif (( secs < 86400 )); then
       msg="$((secs / 3600))h ago"
     elif (( secs < 172800 )); then
