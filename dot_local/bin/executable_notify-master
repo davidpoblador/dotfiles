@@ -1,0 +1,61 @@
+#!/bin/bash
+# Send a Telegram message to the dotfile owner. Reads TELEGRAM_BOT_TOKEN and
+# TELEGRAM_CHAT_ID from ~/.config/notify-master/env (chezmoi-ignored, set up
+# per-machine — see ~/.config/notify-master/env.example).
+
+set -euo pipefail
+
+CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/notify-master"
+ENV_FILE="$CONFIG_DIR/env"
+
+usage() {
+  cat >&2 <<EOF
+usage: notify-master <message>
+
+Sends <message> to the Telegram chat configured in
+  $ENV_FILE
+(see $CONFIG_DIR/env.example for setup).
+
+Exit codes:
+  0  message sent
+  1  credentials missing or Telegram API call failed
+  2  usage error (no message argument)
+EOF
+}
+
+if [[ $# -lt 1 ]]; then
+  usage
+  exit 2
+fi
+
+host=$(hostname -s)
+message="[$host] $1"
+
+if [[ ! -f "$ENV_FILE" ]]; then
+  echo "notify-master: no credentials at $ENV_FILE — notification skipped." >&2
+  echo "notify-master: see $CONFIG_DIR/env.example for setup instructions." >&2
+  exit 1
+fi
+
+# shellcheck disable=SC1090
+. "$ENV_FILE"
+
+if [[ -z "${TELEGRAM_BOT_TOKEN:-}" || -z "${TELEGRAM_CHAT_ID:-}" ]]; then
+  echo "notify-master: TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID empty in $ENV_FILE." >&2
+  exit 1
+fi
+
+if ! response=$(curl -sS -X POST \
+  "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+  --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
+  --data-urlencode "text=${message}" 2>&1); then
+  echo "notify-master: curl failed:" >&2
+  echo "$response" >&2
+  exit 1
+fi
+
+if ! printf '%s' "$response" | grep -q '"ok":true'; then
+  echo "notify-master: telegram rejected the request:" >&2
+  echo "$response" >&2
+  exit 1
+fi

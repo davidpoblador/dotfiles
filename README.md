@@ -390,6 +390,40 @@ skills-update               # or: skills-manifest && chezmoi re-add ~/.agents/sk
 On a fresh machine, chezmoi delivers `skills.list`; the `run_after` script
 then installs every entry and wires it to Claude Code.
 
+## Telegram notifications
+
+The `notify-master` skill lets agents ping David on Telegram when asked
+(e.g. "notify your master when you have an answer"). It ships on both dev
+and prod profiles.
+
+Chezmoi installs:
+
+| Path | What |
+|---|---|
+| `~/.claude/skills/notify-master/SKILL.md` | Skill definition that tells agents to call `notify-master` |
+| `~/.local/bin/notify-master` | Shell script that posts to the Telegram Bot API |
+| `~/.config/notify-master/env.example` | Template for per-machine credentials |
+
+Credentials are **never** tracked in this (public) repo. Per machine:
+
+```bash
+# 1. Create a bot via @BotFather on Telegram, copy the token.
+# 2. Send any message to the bot from your account, then visit
+#    https://api.telegram.org/bot<TOKEN>/getUpdates
+#    to find your numeric chat id.
+# 3. Configure:
+cp ~/.config/notify-master/env.example ~/.config/notify-master/env
+chmod 600 ~/.config/notify-master/env
+$EDITOR ~/.config/notify-master/env   # fill in TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID
+
+# 4. Smoke test:
+notify-master "hello from $(hostname)"
+```
+
+Until the env file exists, `chezmoi apply` prints a one-line reminder and
+the `notify-master` command exits non-zero with a clear stderr message —
+agents will report that the ping did not go through.
+
 ## Profiles
 
 Chezmoi uses a `profile` variable to switch between dev and prod configs:

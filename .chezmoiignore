@@ -12,6 +12,7 @@ prod/
 {{- if eq .profile "prod" }}
 # Dev-only files excluded on prod
 .claude/skills
+!.claude/skills/notify-master
 .codex/
 .gemini/
 .config/broot/
