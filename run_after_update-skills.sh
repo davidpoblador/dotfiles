@@ -44,8 +44,11 @@ missing=$(
 if [[ -n "$missing" ]]; then
   echo "[skills] Reconciling $(printf '%s\n' "$missing" | wc -l | tr -d ' ') source(s) from manifest..."
   while IFS=$'\t' read -r source names; do
+    # </dev/null prevents bunx's TUI from consuming the here-string that feeds
+    # this loop, which otherwise terminates iteration after the first source.
     # shellcheck disable=SC2086
-    bunx skills add "$source" --skill $names --agent claude-code -g -y
+    bunx skills add "$source" --skill $names --agent claude-code -g -y </dev/null ||
+      echo "[skills] warning: bunx failed for $source ($names); continuing"
   done <<<"$missing"
 fi
 
