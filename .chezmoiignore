@@ -11,8 +11,6 @@ prod/
 
 {{- if eq .profile "prod" }}
 # Dev-only files excluded on prod
-.claude/skills
-!.claude/skills/notify-master
 .codex/
 .gemini/
 .config/broot/
@@ -25,7 +23,6 @@ prod/
 .ssh/
 private_Library/
 run_onchange_darwin-install-packages.sh
-update-skills.sh
 {{- end }}
 
 {{- if ne .chezmoi.os "darwin" }}
