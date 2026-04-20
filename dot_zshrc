@@ -92,6 +92,19 @@ setopt HIST_IGNORE_SPACE
 setopt APPEND_HISTORY
 
 ###########################################################
+# GitHub API authentication                               #
+###########################################################
+
+# Authenticate GitHub API calls (mise, gh extension installs, etc.)
+# to avoid the 60/hour unauthenticated rate limit. Silently no-ops if
+# gh is missing, not logged in, or the token lookup fails.
+if command_exists gh && [[ -z "$GITHUB_TOKEN" ]]; then
+  _gh_token="$(gh auth token 2>/dev/null)" || _gh_token=""
+  [[ -n "$_gh_token" ]] && export GITHUB_TOKEN="$_gh_token"
+  unset _gh_token
+fi
+
+###########################################################
 # Mise (version manager for dev tools)                    #
 ###########################################################
 
