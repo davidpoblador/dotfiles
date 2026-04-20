@@ -50,8 +50,7 @@ if [[ -o login ]]; then
   _relative_time "$cache_dir/chezmoi_last_apply"
   sync_msg="$reply[1]"; sync_secs=$reply[2]
 
-  local skills_lock="$HOME/.agents/.skill-lock.json"
-  _relative_time "$skills_lock"
+  _relative_time "$cache_dir/skills_last_update"
   skills_msg="$reply[1]"; skills_secs=$reply[2]
 
   _relative_time "$cache_dir/brew_last_update"
@@ -98,7 +97,7 @@ if [[ -o login ]]; then
   if command -v brew &>/dev/null; then
     info_lines+=(" \033[2m     Brew:\033[0m $(_stale_value $brew_secs "$brew_msg")")
   fi
-  if [[ -f "$skills_lock" ]] || command -v bunx &>/dev/null; then
+  if command -v bunx &>/dev/null; then
     info_lines+=(" \033[2m   Skills:\033[0m $(_stale_value $skills_secs "$skills_msg")")
   fi
 
