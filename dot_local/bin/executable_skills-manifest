@@ -1,0 +1,16 @@
+#!/bin/bash
+# Regenerate ~/.agents/skills.list from ~/.agents/.skill-lock.json.
+# The manifest is the chezmoi-tracked source of truth for which global skills
+# to reconcile on each machine; the lockfile itself is ignored by chezmoi.
+
+set -euo pipefail
+
+LOCKFILE="${HOME}/.agents/.skill-lock.json"
+MANIFEST="${HOME}/.agents/skills.list"
+
+if [[ ! -f "$LOCKFILE" ]]; then
+  echo "skills-manifest: no lockfile at $LOCKFILE" >&2
+  exit 1
+fi
+
+jq -r '.skills | to_entries | map("\(.value.source)\t\(.key)") | sort | .[]' "$LOCKFILE" > "$MANIFEST"

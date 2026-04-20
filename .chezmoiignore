@@ -1,5 +1,7 @@
-# Skills are managed by `bunx skills`, not chezmoi. Only the lock file is tracked.
+# Skills are managed by `bunx skills`, not chezmoi. Only the manifest is tracked;
+# the lockfile is runtime state rewritten on every bunx add/update.
 .agents/skills
+.agents/.skill-lock.json
 
 # Repo files, not dotfiles
 CLAUDE.md
@@ -10,7 +12,6 @@ prod/
 {{- if eq .profile "prod" }}
 # Dev-only files excluded on prod
 .claude/skills
-.agents/.skill-lock.json
 .codex/
 .gemini/
 .config/broot/

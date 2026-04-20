@@ -75,7 +75,7 @@ atuin import auto
 
 ```bash
 chezmoi update              # Pull latest dotfiles and apply
-skills-update               # Update agent skills and commit lock file to chezmoi
+skills-update               # Update agent skills and commit manifest to chezmoi
 bubu                        # Update Homebrew packages
 ```
 
@@ -93,7 +93,7 @@ Mise tools auto-upgrade daily in the background via `.zshrc`.
 | `.config/gh/` | GitHub CLI |
 | `.config/bat/`, `.config/lazygit/` | CLI tools |
 | `.claude/` | Claude Code settings, hooks, skills symlinks |
-| `.agents/` | Agent skills (only lock file tracked, skills restored via `bunx`) |
+| `.agents/` | Agent skills (only manifest tracked, skills restored via `bunx`) |
 | `.docker/` | Docker daemon config |
 | `.ssh/` | SSH config (no keys) |
 | `.vimrc` | Vim config |
@@ -361,25 +361,34 @@ All plugins except zsh-defer are lazy-loaded with `kind:defer`.
 | `gnb <branch>` | Checkout main, pull, create new branch |
 | `cdm` | cd to main worktree of current git repo |
 | `rep [name]` | cd to `~/repos` or `~/repos/<name>` |
-| `skills-update` | Update agent skills and commit lock file to chezmoi |
+| `skills-update` | Update agent skills, regenerate manifest, commit to chezmoi |
 
 ## Agent skills
 
-Skills are managed by `bunx skills`, not chezmoi. Only `.agents/.skill-lock.json` is tracked
-as the source of truth (like `package-lock.json` vs `node_modules/`).
+Skills are managed by `bunx skills`, not chezmoi. Chezmoi tracks
+`.agents/skills.list` — a manifest of `<source>\t<skill>` pairs that
+`run_after_update-skills.sh` reconciles into installed skills on every
+`chezmoi apply`. The `bunx`-maintained `.agents/.skill-lock.json` is
+runtime state: it lives on disk, gets rewritten on every `bunx` add/update,
+and is ignored by chezmoi.
 
 ```bash
-skills-update               # Update all skills + commit lock file to chezmoi
-bunx skills update -g -y    # Update skills without committing to chezmoi
-bunx skills ls -g            # List installed global skills
-bunx skills add <repo> -g   # Add a new skill
+skills-update               # Update all skills + regenerate manifest + commit to chezmoi
+bunx skills update -g -y    # Just update skills (no chezmoi sync)
+bunx skills ls -g           # List installed global skills
+bunx skills add <repo> --agent claude-code -g -y   # Add a new skill
+skills-manifest             # Regenerate ~/.agents/skills.list from the lockfile
 ```
 
-Obsidian skills (installed via Git URL) need manual updates:
+Typical workflow when adding a skill:
 
 ```bash
-npx skills add git@github.com:kepano/obsidian-skills.git -g -y
+bunx skills add <repo> --skill <name> --agent claude-code -g -y
+skills-update               # or: skills-manifest && chezmoi re-add ~/.agents/skills.list
 ```
+
+On a fresh machine, chezmoi delivers `skills.list`; the `run_after` script
+then installs every entry and wires it to Claude Code.
 
 ## Profiles
 
