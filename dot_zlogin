@@ -37,7 +37,7 @@ if [[ -o login ]]; then
     elif (( secs < 3600 )); then
       msg="$((secs / 60)) min ago"
     elif (( secs < 86400 )); then
-      msg="$((secs / 3600)) h ago"
+      msg="$((secs / 3600))h ago"
     elif (( secs < 172800 )); then
       msg="yesterday"
     else
