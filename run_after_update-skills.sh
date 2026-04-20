@@ -3,9 +3,9 @@
 # is the chezmoi-tracked source of truth (one "<source>\t<skill>" pair per line);
 # the lockfile is ignored by chezmoi and lives on disk as runtime state.
 #
-# After reconciling and the weekly bunx update, regenerate the manifest from the
-# live lockfile so local changes (bunx skills add/remove) can be picked up with
-# `chezmoi re-add ~/.agents/skills.list`.
+# This hook is a consumer of the manifest and must never write to it: doing so
+# would make chezmoi prompt about the file having changed on the next apply.
+# Manifest regeneration is handled by the `skills-update` shell function.
 
 set -euo pipefail
 
@@ -57,8 +57,3 @@ if [[ ! -f "$STAMP" ]] || [[ -n $(find "$STAMP" -mtime +7 2>/dev/null) ]]; then
   touch "$STAMP"
 fi
 
-# Refresh the manifest from the live lockfile so `chezmoi re-add` picks up any
-# skills added/removed locally via bunx.
-if command -v skills-manifest &>/dev/null; then
-  skills-manifest
-fi
