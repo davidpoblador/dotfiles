@@ -19,20 +19,43 @@ if [[ -o login ]]; then
   echo " [38;2;0;0;0m           [7m[38;2;91;35;51m▆▅[0m[38;2;91;35;51m▘  [7m[38;2;91;35;51m▅[38;2;91;35;51m▅[38;2;91;35;51m▆[0m[38;2;0;0;0m            [0m"
   # Overlay info on the right side of the logo
   local col=38
-  local stamp="${XDG_CACHE_HOME:-$HOME/.cache}/chezmoi_last_apply"
-  local sync_msg="never"
-  local days_ago=-1
+  local cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}"
 
-  if [[ -f "$stamp" ]]; then
-    days_ago=$(( ( $(date +%s) - $(date -r "$stamp" +%s 2>/dev/null || stat -c %Y "$stamp" 2>/dev/null) ) / 86400 ))
-    if [[ $days_ago -eq 0 ]]; then
-      sync_msg="today"
-    elif [[ $days_ago -eq 1 ]]; then
-      sync_msg="yesterday"
-    else
-      sync_msg="${days_ago} days ago"
+  # Format a file's mtime as "X min ago" / "X h ago" / "yesterday" / "N days ago".
+  # Sets reply=(msg seconds). seconds is -1 when the file is missing.
+  _relative_time() {
+    local file="$1" now mtime secs msg
+    if [[ ! -f "$file" ]]; then
+      reply=("never" -1)
+      return
     fi
-  fi
+    now=$(date +%s)
+    mtime=$(date -r "$file" +%s 2>/dev/null || stat -c %Y "$file" 2>/dev/null)
+    secs=$(( now - mtime ))
+    if (( secs < 60 )); then
+      msg="just now"
+    elif (( secs < 3600 )); then
+      msg="$((secs / 60)) min ago"
+    elif (( secs < 86400 )); then
+      msg="$((secs / 3600)) h ago"
+    elif (( secs < 172800 )); then
+      msg="yesterday"
+    else
+      msg="$((secs / 86400)) days ago"
+    fi
+    reply=("$msg" $secs)
+  }
+
+  local sync_msg sync_secs skills_msg skills_secs brew_msg brew_secs
+  _relative_time "$cache_dir/chezmoi_last_apply"
+  sync_msg="$reply[1]"; sync_secs=$reply[2]
+
+  local skills_lock="$HOME/.agents/.skill-lock.json"
+  _relative_time "$skills_lock"
+  skills_msg="$reply[1]"; skills_secs=$reply[2]
+
+  _relative_time "$cache_dir/brew_last_update"
+  brew_msg="$reply[1]"; brew_secs=$reply[2]
 
   # System info
   local users_count=$(who | wc -l | tr -d ' ')
@@ -52,48 +75,42 @@ if [[ -o login ]]; then
     mem_usage="${used} / ${total}"
   fi
 
-  # Skills lockfile age
-  local skills_lock="$HOME/.agents/.skill-lock.json"
-  local skills_msg="never"
-  local skills_days=-1
-  if [[ -f "$skills_lock" ]]; then
-    skills_days=$(( ( $(date +%s) - $(date -r "$skills_lock" +%s 2>/dev/null || stat -c %Y "$skills_lock" 2>/dev/null) ) / 86400 ))
-    if [[ $skills_days -eq 0 ]]; then
-      skills_msg="today"
-    elif [[ $skills_days -eq 1 ]]; then
-      skills_msg="yesterday"
-    else
-      skills_msg="${skills_days} days ago"
-    fi
-  fi
-
-  # Helper: print value in yellow if stale (>= 7 days or -1), dim otherwise
+  # Helper: print value in yellow if stale (>= 7 days or unknown), plain otherwise
   _stale_value() {
-    local days="$1" value="$2"
-    if [[ $days -ge 7 || $days -eq -1 ]]; then
+    local secs="$1" value="$2"
+    if [[ $secs -ge 604800 || $secs -eq -1 ]]; then
       printf "\033[33m%s\033[0m" "$value"
     else
       printf "%s" "$value"
     fi
   }
 
+  # Print info lines at column $col, tracking how many we emit
+  local -a info_lines
+  info_lines+=(" \033[2mPowered by\033[0m \033[1mAll Tuner Labs\033[0m \033[2mS.L.\033[0m")
+  info_lines+=("")
+  info_lines+=(" \033[2m     Host:\033[0m $(hostname -s)")
+  info_lines+=(" \033[2m   Uptime:\033[0m $uptime_str")
+  info_lines+=(" \033[2m Sessions:\033[0m $users_count")
+  info_lines+=(" \033[2m     Disk:\033[0m $disk_usage")
+  info_lines+=(" \033[2m   Memory:\033[0m $mem_usage")
+  info_lines+=(" \033[2mLast sync:\033[0m $(_stale_value $sync_secs "$sync_msg")")
+  if command -v brew &>/dev/null; then
+    info_lines+=(" \033[2m     Brew:\033[0m $(_stale_value $brew_secs "$brew_msg")")
+  fi
+  if [[ -f "$skills_lock" ]] || command -v bunx &>/dev/null; then
+    info_lines+=(" \033[2m   Skills:\033[0m $(_stale_value $skills_secs "$skills_msg")")
+  fi
+
   # Move cursor up into the logo area and print info at column $col
   printf "\033[12A"
-  printf "\033[${col}G \033[2mPowered by\033[0m \033[1mAll Tuner Labs\033[0m \033[2mS.L.\033[0m\n"
-  printf "\033[${col}G\n"
-  printf "\033[${col}G \033[2m     Host:\033[0m %s\n" "$(hostname -s)"
-  printf "\033[${col}G \033[2m   Uptime:\033[0m %s\n" "$uptime_str"
-  printf "\033[${col}G \033[2m Sessions:\033[0m %s\n" "$users_count"
-  printf "\033[${col}G \033[2m     Disk:\033[0m %s\n" "$disk_usage"
-  printf "\033[${col}G \033[2m   Memory:\033[0m %s\n" "$mem_usage"
-  printf "\033[${col}G \033[2mLast sync:\033[0m %s\n" "$(_stale_value $days_ago "$sync_msg")"
-  if [[ -f "$skills_lock" ]] || command -v bunx &>/dev/null; then
-    printf "\033[${col}G \033[2m   Skills:\033[0m %s\n" "$(_stale_value $skills_days "$skills_msg")"
-    printf "\033[3B"
-  else
-    printf "\033[4B"
-  fi
-  unset -f _stale_value
+  local line
+  for line in "${info_lines[@]}"; do
+    printf "\033[${col}G%b\n" "$line"
+  done
+  local remaining=$(( 12 - ${#info_lines[@]} ))
+  (( remaining > 0 )) && printf "\033[${remaining}B"
+  unset -f _stale_value _relative_time
   printf "\033[?25h"
   echo ""
 fi
