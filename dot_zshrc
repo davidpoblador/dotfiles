@@ -112,6 +112,14 @@ if command_exists mise; then
   fi
 fi
 
+# Auto-update Homebrew packages daily in background (non-blocking)
+if command_exists brew; then
+  if [[ ! -f "${XDG_CACHE_HOME}/brew_last_update" ]] || [[ $(find "${XDG_CACHE_HOME}/brew_last_update" -mtime +1 2>/dev/null) ]]; then
+    echo "[brew] Updating packages in the background..."
+    { brew update >/dev/null 2>&1; brew upgrade >/dev/null 2>&1; touch "${XDG_CACHE_HOME}/brew_last_update" } &!
+  fi
+fi
+
 ###########################################################
 # Plugins (antidote + zsh-defer, when available)          #
 ###########################################################
