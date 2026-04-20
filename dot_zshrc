@@ -391,12 +391,21 @@ if [[ -n "$GCP_SDK_PATH" && -d "$GCP_SDK_PATH" ]]; then
   fi
 fi
 
-# Reset Kitty keyboard protocol after Claude Code exits
-# (workaround for Claude not always popping keyboard mode on exit in Ghostty)
+# Reset terminal modes that leak as visible chars when SSH drops mid-session:
+# mouse tracking (1000/1002/1003/1006/1015), bracketed paste (2004),
+# modifyOtherKeys, kitty extended keys (CSI <u), cursor visibility + shape,
+# and SGR attributes. `stty sane` recovers cooked mode, echo, and signal keys.
+# Symptom this cures: stray `0;120;45M` / `0;120;45m` from mouse events,
+# bare `[>1u` / `[<u` from keyboard protocol, lingering paste markers.
+reset-term() {
+    printf '\e[?1000l\e[?1002l\e[?1003l\e[?1006l\e[?1015l\e[?2004l\e[>4;0m\e[<u\e[?25h\e[2 q\e[0m'
+    stty sane 2>/dev/null
+}
+
+# Ghostty occasionally doesn't receive the keyboard-mode pop on `claude` exit.
 if command_exists claude; then
   claude() {
       command claude "$@"
-      printf '\e[<u'
-      stty sane 2>/dev/null
+      reset-term
   }
 fi
