@@ -12,7 +12,7 @@ set -euo pipefail
 
 # Agents to wire every skill into. bunx knows each agent's skill dir; content
 # lives once under ~/.agents/skills and is symlinked into each agent's dir.
-AGENTS=(claude-code codex gemini-cli github-copilot opencode openclaw)
+AGENTS=(claude-code codex gemini-cli github-copilot opencode)
 
 MANIFEST="$HOME/.agents/skills.list"
 AGENTS_DIR="$HOME/.agents/skills"
