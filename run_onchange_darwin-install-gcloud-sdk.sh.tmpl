@@ -14,7 +14,7 @@ case "$(uname -m)" in
   *) echo "unsupported arch $(uname -m)" >&2; exit 1 ;;
 esac
 
-TARBALL_URL="https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-cli-darwin-${ARCH}.tar.gz"
+TARBALL_URL="https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-cli-darwin-${ARCH}.tar.gz"
 TMPDIR=$(mktemp -d)
 trap 'rm -rf "$TMPDIR"' EXIT
 
