@@ -131,40 +131,50 @@ if [[ -f "$LOCKFILE" ]] && command -v jq &>/dev/null; then
 
   # Third pass: enforce AGENTS as the complete wiring set. `bunx skills add
   # --agent X` is additive — once wired, an agent sticks even after it leaves
-  # AGENTS. Normalize bunx's display names (e.g. "Gemini CLI", "GitHub
-  # Copilot") to identifiers by lowercasing + replacing spaces with dashes,
-  # which matches bunx's accepted agent identifiers.
+  # AGENTS. bunx reports display names ("Cortex Code", "IBM Bob") that don't
+  # always reduce to the identifier via lowercase-and-dashify ("cortex",
+  # "bob"), so we keep an explicit map for the irregular cases.
+  display_to_id() {
+    case "$1" in
+      "Cortex Code") echo "cortex";;
+      "IBM Bob") echo "bob";;
+      "Kilo Code") echo "kilo";;
+      "Roo Code") echo "roo";;
+      *) printf '%s' "$1" | tr '[:upper:]' '[:lower:]' | tr ' ' '-';;
+    esac
+  }
+
   allowed=$'\n'
   for a in "${AGENTS[@]}"; do
     allowed+="$a"$'\n'
   done
   extras=()
-  while IFS= read -r agent; do
-    [[ -z "$agent" ]] && continue
-    [[ "$allowed" == *$'\n'"$agent"$'\n'* ]] && continue
-    extras+=("$agent")
+  while IFS= read -r display; do
+    [[ -z "$display" ]] && continue
+    id=$(display_to_id "$display")
+    [[ -z "$id" ]] && continue
+    [[ "$allowed" == *$'\n'"$id"$'\n'* ]] && continue
+    extras+=("$id")
   done < <(
     bunx skills ls -g --json 2>/dev/null |
       jq -r '.[].agents[]' |
-      tr '[:upper:]' '[:lower:]' |
-      tr ' ' '-' |
       sort -u
   )
   if (( ${#extras[@]} > 0 )); then
     echo "[skills] Unwiring ${#extras[@]} extra agent(s): ${extras[*]}"
+    # Dump every (skill, agent-display-name) pair once so we can filter in
+    # bash using display_to_id — jq on its own doesn't have the mapping.
+    pairs=$(bunx skills ls -g --json 2>/dev/null |
+              jq -r '.[] | .name as $n | .agents[] | "\($n)\t\(.)"')
     for agent in "${extras[@]}"; do
       # bunx remove doesn't accept '*' or comma/space-joined skill lists; the
       # only working multi-skill form is repeated -s flags.
       skill_flags=()
-      while IFS= read -r skill; do
-        [[ -z "$skill" ]] && continue
-        skill_flags+=(-s "$skill")
-      done < <(
-        bunx skills ls -g --json 2>/dev/null |
-          jq -r --arg a "$agent" '
-            .[] | select(.agents | map(ascii_downcase | gsub(" ";"-")) | index($a)) | .name
-          '
-      )
+      while IFS=$'\t' read -r skill_name display; do
+        [[ -z "$skill_name" ]] && continue
+        [[ "$(display_to_id "$display")" == "$agent" ]] || continue
+        skill_flags+=(-s "$skill_name")
+      done <<<"$pairs"
       if (( ${#skill_flags[@]} > 0 )); then
         bunx skills remove -g -y -a "$agent" "${skill_flags[@]}" </dev/null ||
           echo "[skills] warning: unwire failed for $agent; continuing"
