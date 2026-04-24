@@ -361,6 +361,7 @@ All plugins except zsh-defer are lazy-loaded with `kind:defer`.
 | `gnb <branch>` | Checkout main, pull, create new branch |
 | `cdm` | cd to main worktree of current git repo |
 | `rep [name]` | cd to `~/repos` or `~/repos/<name>` |
+| `skills-add <source> [--skill <name>]` | Add a skill to every configured agent and propagate via chezmoi |
 | `skills-update` | Update agent skills, regenerate manifest, commit to chezmoi |
 
 ## Agent skills
@@ -372,23 +373,45 @@ Skills are managed by `bunx skills`, not chezmoi. Chezmoi tracks
 runtime state: it lives on disk, gets rewritten on every `bunx` add/update,
 and is ignored by chezmoi.
 
+Every skill is wired to the same set of agents on every machine. The list
+lives in one place — the `AGENTS` array at the top of
+`run_after_update-skills.sh`. It currently wires:
+
+- `claude-code` — Anthropic's Claude Code CLI
+- `codex` — OpenAI Codex CLI
+- `gemini-cli` — Google's Gemini CLI
+- `github-copilot` — GitHub Copilot
+- `opencode` — the open-source `opencode` agent
+- `openclaw` — OpenClaw, a cross-platform personal AI assistant ([openclaw/openclaw](https://github.com/openclaw/openclaw))
+
+Skill content is cloned once into `~/.agents/skills/<name>`; each agent
+gets a symlink back to it from its own skill dir (e.g.
+`~/.claude/skills/<name>`, `~/.codex/skills/<name>`, …).
+
 ```bash
-skills-update               # Update all skills + regenerate manifest + commit to chezmoi
-bunx skills update -g -y    # Just update skills (no chezmoi sync)
-bunx skills ls -g           # List installed global skills
-bunx skills add <repo> --agent claude-code -g -y   # Add a new skill
-skills-manifest             # Regenerate ~/.agents/skills.list from the lockfile
+skills-add <repo> [--skill <name>]   # Add + propagate in one shot
+skills-update                        # Update all skills + regenerate manifest + commit
+bunx skills update -g -y             # Just update skills (no chezmoi sync)
+bunx skills ls -g                    # List installed global skills
+skills-manifest                      # Regenerate ~/.agents/skills.list from the lockfile
 ```
 
-Typical workflow when adding a skill:
+Typical workflow when adding a skill on any machine:
 
 ```bash
-bunx skills add <repo> --skill <name> --agent claude-code -g -y
-skills-update               # or: skills-manifest && chezmoi re-add ~/.agents/skills.list
+skills-add <repo> --skill <name>
 ```
+
+Then on every other machine: `git pull && chezmoi apply`. The reconcile
+script installs newly-added skills and prunes Claude Code symlinks for
+skills that were dropped from the manifest. To change which agents get
+wired, edit the `AGENTS=(...)` line at the top of
+`run_after_update-skills.sh`. Valid names come from `bunx skills` —
+running `bunx skills add <repo> --agent foo --skill bar -g -y` with an
+invalid agent prints the full list of accepted identifiers.
 
 On a fresh machine, chezmoi delivers `skills.list`; the `run_after` script
-then installs every entry and wires it to Claude Code.
+then installs every entry and wires it to every agent in `AGENTS`.
 
 ## Telegram notifications
 

@@ -331,6 +331,13 @@ if command_exists bunx; then
           echo "Manifest committed and pushed."
       fi
   }
+
+  # Add a skill and propagate via chezmoi in one shot.
+  # Usage: skills-add <source> [--skill <name> ...]
+  skills-add() {
+      bunx skills add "$@" --agent claude-code --agent codex --agent gemini-cli --agent github-copilot --agent opencode --agent openclaw -g -y || return
+      skills-update
+  }
 fi
 
 # Dotfile management

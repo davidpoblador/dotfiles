@@ -1,13 +1,18 @@
 #!/bin/bash
-# Reconcile ~/.agents/skills.list → installed skills for Claude Code. The manifest
-# is the chezmoi-tracked source of truth (one "<source>\t<skill>" pair per line);
-# the lockfile is ignored by chezmoi and lives on disk as runtime state.
+# Reconcile ~/.agents/skills.list → installed skills for every agent in $AGENTS.
+# The manifest is the chezmoi-tracked source of truth (one "<source>\t<skill>"
+# pair per line); the lockfile is ignored by chezmoi and lives on disk as
+# runtime state.
 #
 # This hook is a consumer of the manifest and must never write to it: doing so
 # would make chezmoi prompt about the file having changed on the next apply.
 # Manifest regeneration is handled by the `skills-update` shell function.
 
 set -euo pipefail
+
+# Agents to wire every skill into. bunx knows each agent's skill dir; content
+# lives once under ~/.agents/skills and is symlinked into each agent's dir.
+AGENTS=(claude-code codex gemini-cli github-copilot opencode openclaw)
 
 MANIFEST="$HOME/.agents/skills.list"
 AGENTS_DIR="$HOME/.agents/skills"
@@ -26,7 +31,15 @@ fi
 
 mkdir -p "$CLAUDE_DIR"
 
-# Group missing/unwired skills by source repo so each source is cloned at most once.
+# Build --agent args once: --agent a --agent b --agent c
+agent_args=()
+for a in "${AGENTS[@]}"; do
+  agent_args+=(--agent "$a")
+done
+
+# Group missing/unwired skills by source repo so each source is cloned at most
+# once. Presence is probed via the Claude Code dir as the canonical signal;
+# the weekly refresh below re-reconciles every agent regardless.
 missing=$(
   while IFS=$'\t' read -r source name; do
     [[ -z "$source" || "$source" == \#* ]] && continue
@@ -47,10 +60,29 @@ if [[ -n "$missing" ]]; then
     # </dev/null prevents bunx's TUI from consuming the here-string that feeds
     # this loop, which otherwise terminates iteration after the first source.
     # shellcheck disable=SC2086
-    bunx skills add "$source" --skill $names --agent claude-code -g -y </dev/null ||
+    bunx skills add "$source" --skill $names "${agent_args[@]}" -g -y </dev/null ||
       echo "[skills] warning: bunx failed for $source ($names); continuing"
   done <<<"$missing"
 fi
+
+# Prune Claude Code symlinks for skills no longer in the manifest. Only touch
+# symlinks so real dirs (impeccable/layout/shape, notify-master) stay put.
+declare -A wanted
+while IFS=$'\t' read -r source name; do
+  [[ -z "$source" || "$source" == \#* ]] && continue
+  wanted[$name]=1
+done < "$MANIFEST"
+
+shopt -s nullglob
+for link in "$CLAUDE_DIR"/*; do
+  [[ -L "$link" ]] || continue
+  name="$(basename "$link")"
+  if [[ -z "${wanted[$name]:-}" ]]; then
+    rm "$link"
+    echo "[skills] pruned stale symlink: $name"
+  fi
+done
+shopt -u nullglob
 
 # Weekly refresh of skill content.
 if [[ ! -f "$STAMP" ]] || [[ -n $(find "$STAMP" -mtime +7 2>/dev/null) ]]; then
@@ -59,4 +91,3 @@ if [[ ! -f "$STAMP" ]] || [[ -n $(find "$STAMP" -mtime +7 2>/dev/null) ]]; then
   mkdir -p "$(dirname "$STAMP")"
   touch "$STAMP"
 fi
-
