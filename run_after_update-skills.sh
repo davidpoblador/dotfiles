@@ -83,26 +83,52 @@ fi
 mkdir -p "$(dirname "$AGENTS_HASH_FILE")"
 printf '%s' "$agents_hash" > "$AGENTS_HASH_FILE"
 
-# Prune Claude Code symlinks for skills no longer in the manifest. Only touch
-# symlinks so real dirs (impeccable/layout/shape, notify-master) stay put.
-# Uses a newline-delimited string instead of an associative array so this
-# works on macOS's stock bash 3.2.
-wanted=$'\n'
-while IFS=$'\t' read -r source name; do
-  [[ -z "$source" || "$source" == \#* ]] && continue
-  wanted+="$name"$'\n'
-done < "$MANIFEST"
+# Evict skills that bunx tracks in its lockfile but that no longer appear in
+# the manifest. Running `bunx skills remove` (rather than unlinking) also
+# clears the shared content under ~/.agents/skills/<name> and every per-agent
+# wiring, so orphans don't linger as "not linked" rows in `bunx skills ls`.
+# Skills delivered outside bunx (e.g. notify-master via chezmoi) are absent
+# from the lockfile and so stay immune.
+LOCKFILE="$HOME/.agents/.skill-lock.json"
+if [[ -f "$LOCKFILE" ]] && command -v jq &>/dev/null; then
+  wanted=$'\n'
+  while IFS=$'\t' read -r source name; do
+    [[ -z "$source" || "$source" == \#* ]] && continue
+    wanted+="$name"$'\n'
+  done < "$MANIFEST"
 
-shopt -s nullglob
-for link in "$CLAUDE_DIR"/*; do
-  [[ -L "$link" ]] || continue
-  name="$(basename "$link")"
-  if [[ "$wanted" != *$'\n'"$name"$'\n'* ]]; then
-    rm "$link"
-    echo "[skills] pruned stale symlink: $name"
+  orphans=()
+  while IFS= read -r name; do
+    [[ -z "$name" ]] && continue
+    if [[ "$wanted" != *$'\n'"$name"$'\n'* ]]; then
+      orphans+=("$name")
+    fi
+  done < <(jq -r '.skills | keys[]' "$LOCKFILE")
+
+  if (( ${#orphans[@]} > 0 )); then
+    echo "[skills] Evicting ${#orphans[@]} orphan(s): ${orphans[*]}"
+    bunx skills remove -g -y "${orphans[@]}" </dev/null ||
+      echo "[skills] warning: bunx remove failed; continuing"
   fi
-done
-shopt -u nullglob
+
+  # Second pass: loose directories under ~/.agents/skills/ that bunx doesn't
+  # track (leftovers from older versions of a skill pack that have since
+  # dropped a skill). `bunx skills ls` still surfaces these as "not linked".
+  if [[ -d "$AGENTS_DIR" ]]; then
+    shopt -s nullglob
+    for dir in "$AGENTS_DIR"/*; do
+      [[ -d "$dir" ]] || continue
+      name="$(basename "$dir")"
+      [[ "$wanted" == *$'\n'"$name"$'\n'* ]] && continue
+      if jq -e --arg n "$name" '.skills[$n]' "$LOCKFILE" >/dev/null 2>&1; then
+        continue
+      fi
+      rm -rf "$dir"
+      echo "[skills] removed loose orphan dir: $name"
+    done
+    shopt -u nullglob
+  fi
+fi
 
 # Weekly refresh of skill content.
 if [[ ! -f "$STAMP" ]] || [[ -n $(find "$STAMP" -mtime +7 2>/dev/null) ]]; then

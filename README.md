@@ -413,9 +413,11 @@ skills-add <repo> --skill <name>
 ```
 
 Then on every other machine: `git pull && chezmoi apply`. The reconcile
-script installs newly-added skills and prunes Claude Code symlinks for
-skills that were dropped from the manifest. To change which agents get
-wired, edit the `AGENTS=(...)` line at the top of
+script installs newly-added skills and evicts any bunx-tracked skill that
+leaves the manifest (content, lockfile entry, and every agent wiring in
+one shot, via `bunx skills remove`). Skills delivered outside bunx (e.g.
+`notify-master`) are absent from the lockfile and stay untouched. To
+change which agents get wired, edit the `AGENTS=(...)` line at the top of
 `run_after_update-skills.sh`. Valid names come from `bunx skills` —
 running `bunx skills add <repo> --agent foo --skill bar -g -y` with an
 invalid agent prints the full list of accepted identifiers.
