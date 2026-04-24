@@ -7,98 +7,113 @@ export HOMEBREW_CASK_OPTS="--no-quarantine"
 brew bundle --file=/dev/stdin << EOF
 tap "buo/cask-upgrade"
 
-# Homebrew, Terminal and Shell Tools
-brew "chezmoi"
-brew "mas"
+#
+# Shell, terminal, and dotfile plumbing
+# Things that bootstrap the shell environment itself.
+#
+brew "chezmoi"              # dotfile manager (self-hosted)
+brew "mas"                  # Mac App Store CLI (drives the 'mas' lines below)
 brew "tmux"
 brew "zsh-completions"
 brew "zsh-syntax-highlighting"
-cask "ghostty"
+cask "ghostty"              # terminal emulator
 
-# System Tools
-brew "chafa"
+#
+# Everyday CLI utilities
+# General-purpose tools used interactively across projects.
+#
+brew "chafa"                # render images as ANSI art in the terminal
 brew "curl"
-brew "d2"
-brew "duckdb"
+brew "d2"                   # diagram-as-code renderer
+brew "duckdb"               # in-process OLAP SQL engine
 brew "ffmpeg"
-brew "fileicon"
-brew "fx"
+brew "fileicon"             # set custom icons on files/folders
+brew "fx"                   # interactive JSON viewer
 brew "imagemagick"
-brew "jless"
+brew "jless"                # pager for JSON
+brew "jnv"                  # interactive jq
 brew "jq"
-brew "jnv"
-brew "knock"
-brew "litecli"
-brew "mosh"
-brew "pv"
+brew "knock"                # port-knocking client
+brew "litecli"              # SQLite REPL with autocompletion
+brew "mosh"                 # mobile/latency-tolerant SSH replacement
+brew "pv"                   # pipe progress meter
 brew "qrencode"
 brew "rsync"
-brew "sc-im"
-brew "shfmt"
-brew "silicon"
+brew "sc-im"                # spreadsheet in the terminal
+brew "shfmt"                # shell formatter
+brew "silicon"              # render source code as an image
 brew "telnet"
-brew "tokei"
+brew "tokei"                # code-line counter
 brew "tree"
-brew "watchexec"
-brew "watchman"
-brew "yq"
-brew "yt-dlp"
+brew "watchexec"            # run commands on file changes
+brew "watchman"             # Facebook file-watcher (RN / Xcode tooling)
 brew "wget"
-cask "ngrok"
+brew "yq"                   # YAML/XML/TOML jq-alike
+brew "yt-dlp"               # video downloader (youtube-dl fork)
+cask "ngrok"                # local-to-public tunnels
 
-# Stack
+#
+# Modern replacements for classic unix tools
+# (kept in brew where mise doesn't yet supply them)
+#
+brew "broot"                # tree + navigator
+brew "cheat"                # cheatsheets
+brew "curlie"               # curl + httpie
+brew "duff"                 # fast duplicate finder
+brew "gping"                # ping with a graph
+brew "httpie"               # curl for humans
+brew "procs"                # ps replacement
+brew "the_silver_searcher"  # 'ag' — grep replacement
+brew "tlrc"                 # tldr client in rust
+
+#
+# Build-from-source toolchain
+# Compilers / generators that other installs may pull in as deps.
+#
 brew "cmake"
-brew "coreutils"
-brew "create-dmg"
+brew "coreutils"            # GNU versions of ls, cp, etc. (prefixed with 'g')
+brew "create-dmg"           # used by factoryfloor release scripts
 brew "protobuf"
-brew "sentencepiece"
+brew "sentencepiece"        # tokenizer lib, pulled in by ML tooling
 
-# AI Stuff
-brew "agent-browser"
-cask "macwhisper"
+#
+# git ecosystem
+#
+brew "git"                  # newer git than macOS ships
+brew "git-absorb"           # auto-fixup commits
+brew "tig"                  # git TUI
 
-# git stuff
-brew "git"
-brew "git-absorb"
-brew "tig"
+#
+# AI / inference tooling
+#
+brew "agent-browser"        # headless browser driver for agents
+cask "macwhisper"           # local Whisper transcription app
 
-# programming languages
-
-# modern replacements
-brew "broot"
-brew "cheat"
-brew "curlie"
-brew "duff"
-brew "gping"
-brew "httpie"
-brew "procs"
-brew "the_silver_searcher"
-brew "tlrc"
-
-# fonts
-cask "font-jetbrains-mono-nerd-font"
-
-# notes / knowledge base
-cask "obsidian"
-
-# password manager
-cask "bitwarden"
-
-# launcher
-cask "raycast"
-
-# docker
+#
+# Docker
+#
 cask "docker-desktop"
 brew "docker-completion"
 
-# AppStore stuff
-mas "DaisyDisk", id: 411643860
+#
+# Productivity / end-user apps (casks)
+#
+cask "bitwarden"                        # password manager
+cask "font-jetbrains-mono-nerd-font"
+cask "obsidian"                         # knowledge base
+cask "raycast"                          # launcher / Spotlight replacement
+
+#
+# Mac App Store apps
+# Installed via 'mas'; IDs are stable across machines.
+#
+mas "DaisyDisk",          id: 411643860
 mas "Obsidian Web Clipper", id: 6720708363
-mas "Keynote", id: 409183694
-mas "Numbers", id: 409203825
-mas "Pages", id: 409201541
-mas "Slack", id: 803453959
-mas "Xcode", id: 497799835
+mas "Keynote",            id: 409183694
+mas "Numbers",            id: 409203825
+mas "Pages",              id: 409201541
+mas "Slack",              id: 803453959
+mas "Xcode",              id: 497799835
 
 EOF
 {{ end -}}
