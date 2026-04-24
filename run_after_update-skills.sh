@@ -18,6 +18,19 @@ MANIFEST="$HOME/.agents/skills.list"
 AGENTS_DIR="$HOME/.agents/skills"
 CLAUDE_DIR="$HOME/.claude/skills"
 STAMP="${XDG_CACHE_HOME:-$HOME/.cache}/skills_last_update"
+AGENTS_HASH_FILE="${XDG_CACHE_HOME:-$HOME/.cache}/skills_agents_hash"
+
+# Hash the agent list so a change (added/removed agent) busts the presence
+# cache below and re-runs `bunx skills add` for every skill — otherwise
+# skills already installed for one agent never get wired to newly-added ones.
+agents_hash=$(printf '%s\n' "${AGENTS[@]}" | LC_ALL=C sort | shasum | awk '{print $1}')
+prev_agents_hash=$(cat "$AGENTS_HASH_FILE" 2>/dev/null || true)
+if [[ "$agents_hash" != "$prev_agents_hash" ]]; then
+  echo "[skills] AGENTS list changed; re-wiring every skill."
+  reconcile_all=1
+else
+  reconcile_all=0
+fi
 
 if ! command -v bunx &>/dev/null; then
   echo "[skills] bunx not found. Install mise tools (mise install), then re-run chezmoi apply."
@@ -47,7 +60,7 @@ missing=$(
     # symlink into $AGENTS_DIR or as a real dir copied directly there (some
     # skills, e.g. pbakaus/impeccable's impeccable/layout/shape, install that
     # way and never populate $AGENTS_DIR).
-    if [[ ! -e "$CLAUDE_DIR/$name" ]]; then
+    if (( reconcile_all )) || [[ ! -e "$CLAUDE_DIR/$name" ]]; then
       printf '%s\t%s\n' "$source" "$name"
     fi
   done < "$MANIFEST" |
@@ -64,6 +77,11 @@ if [[ -n "$missing" ]]; then
       echo "[skills] warning: bunx failed for $source ($names); continuing"
   done <<<"$missing"
 fi
+
+# Record the current AGENTS hash so the next apply skips the full re-wire
+# unless someone edits the AGENTS list again.
+mkdir -p "$(dirname "$AGENTS_HASH_FILE")"
+printf '%s' "$agents_hash" > "$AGENTS_HASH_FILE"
 
 # Prune Claude Code symlinks for skills no longer in the manifest. Only touch
 # symlinks so real dirs (impeccable/layout/shape, notify-master) stay put.

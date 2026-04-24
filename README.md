@@ -386,7 +386,17 @@ lives in one place — the `AGENTS` array at the top of
 
 Skill content is cloned once into `~/.agents/skills/<name>`; each agent
 gets a symlink back to it from its own skill dir (e.g.
-`~/.claude/skills/<name>`, `~/.codex/skills/<name>`, …).
+`~/.claude/skills/<name>`, `~/.openclaw/skills/<name>`, …).
+
+> **Codex is "universal"-mode in bunx.** `bunx skills add --agent codex`
+> does not populate `~/.codex/skills/`; codex picks up skills via the
+> shared `~/.agents/skills/` tree referenced from `~/.codex/AGENTS.md`.
+> That's by bunx design — it still counts as "wired" for codex.
+
+When you edit the `AGENTS=(...)` line at the top of
+`run_after_update-skills.sh`, the next `chezmoi apply` detects the change
+(via a cached hash of the list) and re-runs `bunx skills add` for every
+skill so new agents get wired retroactively.
 
 ```bash
 skills-add <repo> [--skill <name>]   # Add + propagate in one shot
