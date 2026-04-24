@@ -1,0 +1,36 @@
+{{- if eq .chezmoi.os "darwin" -}}
+#!/bin/bash
+set -euo pipefail
+
+INSTALL_DIR="${HOME}/.local/share/google-cloud-sdk"
+
+if [[ -x "${INSTALL_DIR}/bin/gcloud" ]]; then
+  exit 0
+fi
+
+case "$(uname -m)" in
+  arm64)  ARCH="arm" ;;
+  x86_64) ARCH="x86_64" ;;
+  *) echo "unsupported arch $(uname -m)" >&2; exit 1 ;;
+esac
+
+TARBALL_URL="https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-cli-darwin-${ARCH}.tar.gz"
+TMPDIR=$(mktemp -d)
+trap 'rm -rf "$TMPDIR"' EXIT
+
+echo "gcloud: downloading ${TARBALL_URL}"
+curl -fsSL "$TARBALL_URL" -o "${TMPDIR}/gcloud.tar.gz"
+
+mkdir -p "${HOME}/.local/share"
+tar -xzf "${TMPDIR}/gcloud.tar.gz" -C "${HOME}/.local/share"
+
+"${INSTALL_DIR}/install.sh" \
+  --quiet \
+  --path-update=false \
+  --command-completion=false \
+  --usage-reporting=false \
+  --install-python=false
+
+echo "gcloud: installed at ${INSTALL_DIR}"
+echo "gcloud: run 'gcloud components update' to keep it current"
+{{ end -}}

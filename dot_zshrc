@@ -193,11 +193,10 @@ if [[ -f "${XDG_CONFIG_HOME}/broot/launcher/bash/br" ]]; then
 fi
 
 # Google Cloud SDK
-if [[ -n "$BREW_PREFIX" ]]; then
-  GCP_SDK_PATH="${BREW_PREFIX}/share/google-cloud-sdk"
-  if [[ -d "$GCP_SDK_PATH" ]]; then
-    source "${GCP_SDK_PATH}/path.zsh.inc"
-  fi
+GCP_SDK_PATH="${HOME}/.local/share/google-cloud-sdk"
+if [[ -d "$GCP_SDK_PATH" ]]; then
+  source "${GCP_SDK_PATH}/path.zsh.inc"
+  source "${GCP_SDK_PATH}/completion.zsh.inc"
 fi
 
 # Keychain: persistent ssh-agent. Only needed in mosh sessions
