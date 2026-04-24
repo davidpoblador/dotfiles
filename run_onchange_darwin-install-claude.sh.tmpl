@@ -1,0 +1,14 @@
+{{- if eq .chezmoi.os "darwin" -}}
+#!/bin/bash
+set -euo pipefail
+
+if [[ -x "${HOME}/.local/bin/claude" ]]; then
+  exit 0
+fi
+
+echo "claude: running native installer"
+curl -fsSL https://claude.ai/install.sh | bash
+
+echo "claude: installed at ${HOME}/.local/bin/claude"
+echo "claude: autoupdates are managed by Claude itself"
+{{ end -}}
