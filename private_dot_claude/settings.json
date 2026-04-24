@@ -216,5 +216,7 @@
   },
   "alwaysThinkingEnabled": true,
   "showThinkingSummaries": true,
-  "skipDangerousModePermissionPrompt": true
+  "skipDangerousModePermissionPrompt": true,
+  "teammateMode": "tmux",
+  "remoteControlAtStartup": false
 }
