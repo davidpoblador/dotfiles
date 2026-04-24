@@ -24,3 +24,18 @@ If a file needs secrets, use chezmoi templates with `chezmoi data` or environmen
 - One commit per logical change
 - Commit messages: lowercase, imperative, concise
 - Test changes locally before pushing (new terminal, `chezmoi apply`)
+
+## Shell scripts run by chezmoi
+
+macOS ships `/bin/bash` 3.2 and that's what chezmoi uses for `run_*.sh`
+hooks unless a shebang points elsewhere. Anything newer than bash 3.2 will
+break silently on `chezmoi apply`. Avoid (or guard) bash-4+ features:
+
+- `declare -A` / associative arrays — use newline-delimited strings and
+  substring match, or a tmp file
+- `${var,,}` / `${var^^}` case conversion — use `tr`
+- `mapfile` / `readarray` — use `while read` loops
+- `&>` redirection is fine in bash 3.2; `|&` is not
+
+Smoke-test hooks with `/bin/bash path/to/script.sh` before pushing, not
+just with whatever `bash` is first on `$PATH` (typically Homebrew's bash 5+).

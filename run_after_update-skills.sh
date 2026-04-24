@@ -67,17 +67,19 @@ fi
 
 # Prune Claude Code symlinks for skills no longer in the manifest. Only touch
 # symlinks so real dirs (impeccable/layout/shape, notify-master) stay put.
-declare -A wanted
+# Uses a newline-delimited string instead of an associative array so this
+# works on macOS's stock bash 3.2.
+wanted=$'\n'
 while IFS=$'\t' read -r source name; do
   [[ -z "$source" || "$source" == \#* ]] && continue
-  wanted[$name]=1
+  wanted+="$name"$'\n'
 done < "$MANIFEST"
 
 shopt -s nullglob
 for link in "$CLAUDE_DIR"/*; do
   [[ -L "$link" ]] || continue
   name="$(basename "$link")"
-  if [[ -z "${wanted[$name]:-}" ]]; then
+  if [[ "$wanted" != *$'\n'"$name"$'\n'* ]]; then
     rm "$link"
     echo "[skills] pruned stale symlink: $name"
   fi
