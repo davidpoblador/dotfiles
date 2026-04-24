@@ -128,6 +128,49 @@ if [[ -f "$LOCKFILE" ]] && command -v jq &>/dev/null; then
     done
     shopt -u nullglob
   fi
+
+  # Third pass: enforce AGENTS as the complete wiring set. `bunx skills add
+  # --agent X` is additive — once wired, an agent sticks even after it leaves
+  # AGENTS. Normalize bunx's display names (e.g. "Gemini CLI", "GitHub
+  # Copilot") to identifiers by lowercasing + replacing spaces with dashes,
+  # which matches bunx's accepted agent identifiers.
+  allowed=$'\n'
+  for a in "${AGENTS[@]}"; do
+    allowed+="$a"$'\n'
+  done
+  extras=()
+  while IFS= read -r agent; do
+    [[ -z "$agent" ]] && continue
+    [[ "$allowed" == *$'\n'"$agent"$'\n'* ]] && continue
+    extras+=("$agent")
+  done < <(
+    bunx skills ls -g --json 2>/dev/null |
+      jq -r '.[].agents[]' |
+      tr '[:upper:]' '[:lower:]' |
+      tr ' ' '-' |
+      sort -u
+  )
+  if (( ${#extras[@]} > 0 )); then
+    echo "[skills] Unwiring ${#extras[@]} extra agent(s): ${extras[*]}"
+    for agent in "${extras[@]}"; do
+      # bunx remove doesn't accept '*' or comma/space-joined skill lists; the
+      # only working multi-skill form is repeated -s flags.
+      skill_flags=()
+      while IFS= read -r skill; do
+        [[ -z "$skill" ]] && continue
+        skill_flags+=(-s "$skill")
+      done < <(
+        bunx skills ls -g --json 2>/dev/null |
+          jq -r --arg a "$agent" '
+            .[] | select(.agents | map(ascii_downcase | gsub(" ";"-")) | index($a)) | .name
+          '
+      )
+      if (( ${#skill_flags[@]} > 0 )); then
+        bunx skills remove -g -y -a "$agent" "${skill_flags[@]}" </dev/null ||
+          echo "[skills] warning: unwire failed for $agent; continuing"
+      fi
+    done
+  fi
 fi
 
 # Weekly refresh of skill content.
