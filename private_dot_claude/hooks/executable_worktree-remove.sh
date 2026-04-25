@@ -30,10 +30,25 @@ DEFAULT_BRANCH=$(detect_default_branch "$REPO_ROOT")
 if ! git -C "$REPO_ROOT" rev-parse --verify HEAD >/dev/null 2>&1; then
 	log "⚠ Repository has no commits, skipping branch checks"
 	if [ -d "$WORKTREE_DIR" ]; then
-		rm -rf "$WORKTREE_DIR"
-		git -C "$REPO_ROOT" worktree prune >"$OUT" 2>&1 || true
-		log "✓ Removed worktree directory: $NAME"
+		if is_dry_run; then
+			log "[dry-run] would rm -rf $WORKTREE_DIR and run worktree prune"
+		else
+			rm -rf "$WORKTREE_DIR"
+			git -C "$REPO_ROOT" worktree prune >"$OUT" 2>&1 || true
+			log "✓ Removed worktree directory: $NAME"
+		fi
 	fi
+	exit 0
+fi
+
+# In dry-run, the helpers below are already dry-run aware. The only thing
+# left to guard is the project-config rm -rf and the project hook, which we
+# short-circuit by exiting after the cleanup loop.
+if is_dry_run; then
+	log "[dry-run] would remove worktree $NAME (subject to merged-PR check)"
+	log "[dry-run] skipping project-config rm and project hook"
+	update_default_branch "$REPO_ROOT" "$DEFAULT_BRANCH"
+	clean_stale_worktrees "$REPO_ROOT" "$DEFAULT_BRANCH" "$NAME" "yes"
 	exit 0
 fi
 

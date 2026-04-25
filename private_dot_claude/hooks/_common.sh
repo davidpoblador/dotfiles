@@ -8,6 +8,13 @@
 #   - Helpers depend on the caller having defined log() and $OUT, both set up
 #     by setup_logging. We rely on bash dynamic scoping for that, which keeps
 #     each helper signature small and readable.
+#
+# Environment variables read:
+#   HOOK_DEBUG=1     — surface chatty subcommand output on the tty.
+#   HOOK_DRY_RUN=1   — log destructive operations as "[dry-run] would ..."
+#                      instead of executing them. Useful for debugging the
+#                      cleanup loop without nuking real worktrees:
+#                          HOOK_DRY_RUN=1 echo "$payload" | worktree-create.sh
 
 # Initialize logging state. Defines:
 #   $LOGFILE — daily log under /tmp; appended to in addition to stdout
@@ -25,11 +32,15 @@ setup_logging() {
 	else
 		OUT=/dev/null
 	fi
+	DRY_RUN="${HOOK_DRY_RUN:-0}"
 	# Defined here, called from caller scope after we return — invisible to
 	# static analysis, hence the disables for "unreachable" / "unused".
 	# shellcheck disable=SC2317,SC2329
 	log() { echo "$(date '+%Y-%m-%d %H:%M:%S') $LOG_TAG $*" | tee -a "$LOGFILE" >/dev/tty 2>/dev/null || true; }
 }
+
+# True when HOOK_DRY_RUN=1. Used by destructive helpers to short-circuit.
+is_dry_run() { [ "${DRY_RUN:-0}" = "1" ]; }
 
 # Print the original repo's working-tree path, even when called from inside a
 # worktree. CLAUDE_PROJECT_DIR points at the worktree when Claude runs there,
@@ -67,6 +78,10 @@ detect_default_branch() {
 # $1: repo root  $2: branch name (no refs/heads/ prefix)
 update_default_branch() {
 	local repo="$1" branch="$2" was_clean=false
+	if is_dry_run; then
+		log "[dry-run] would fetch + fast-forward $branch in $repo"
+		return 0
+	fi
 	if git -C "$repo" diff --quiet 2>/dev/null && git -C "$repo" diff --cached --quiet 2>/dev/null; then
 		was_clean=true
 	fi
@@ -119,6 +134,11 @@ project_gh() {
 # $3: branch name (no refs/heads/ prefix)
 remove_worktree_branch() {
 	local repo="$1" wt_dir="$2" branch="$3" configured
+	if is_dry_run; then
+		log "[dry-run] would rm -rf $wt_dir/{.venv,node_modules} and remove worktree $wt_dir"
+		log "[dry-run] would delete branch $branch (if present)"
+		return 0
+	fi
 	rm -rf "$wt_dir/.venv" "$wt_dir/node_modules"
 	git -C "$repo" worktree remove --force "$wt_dir" >"$OUT" 2>&1 || {
 		rm -rf "$wt_dir"

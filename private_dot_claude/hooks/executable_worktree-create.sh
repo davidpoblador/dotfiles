@@ -25,7 +25,7 @@ if [ -n "$DEFAULT_BRANCH" ]; then
 	log "✓ Fetching origin and updating $DEFAULT_BRANCH..."
 	update_default_branch "$REPO_ROOT" "$DEFAULT_BRANCH"
 	BASE_REF="$DEFAULT_BRANCH"
-	log "✓ $DEFAULT_BRANCH is up to date"
+	is_dry_run || log "✓ $DEFAULT_BRANCH is up to date"
 else
 	BASE_REF="HEAD"
 	log "⚠ Could not determine default branch, using HEAD"
@@ -37,6 +37,16 @@ if ! git -C "$REPO_ROOT" rev-parse --verify HEAD >/dev/null 2>&1; then
 	log "  Make an initial commit first: git add <file> && git commit -m 'Initial commit'"
 	echo "Repository has no commits yet. Make an initial commit before using worktree mode." >&2
 	exit 2
+fi
+
+# In dry-run, skip everything after the (dry-run-aware) default branch update
+# except the cleanup loop — that is what dry-run exists to debug.
+if is_dry_run; then
+	log "[dry-run] would create worktree $WORKTREE_DIR on branch $BRANCH from $BASE_REF"
+	log "[dry-run] skipping per-creation steps (submodules, .env, prek, uv, bun, project hook, memory symlink)"
+	clean_stale_worktrees "$REPO_ROOT" "$BASE_REF" "$NAME" "no"
+	echo "$WORKTREE_DIR"
+	exit 0
 fi
 
 if [ -d "$WORKTREE_DIR" ]; then
