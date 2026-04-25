@@ -1,26 +1,17 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# shellcheck source=_common.sh
+source "$(dirname "$0")/_common.sh"
+
 INPUT=$(cat)
 NAME=$(echo "$INPUT" | jq -r '.name')
 
-# Resolve the main repo root (CLAUDE_PROJECT_DIR points to the worktree when
-# Claude runs inside one, but we need the original repo for all operations)
-REPO_ROOT=$(git -C "$CLAUDE_PROJECT_DIR" worktree list --porcelain 2>/dev/null | head -1 | sed 's/^worktree //')
-if [ -z "$REPO_ROOT" ]; then
-	REPO_ROOT="$CLAUDE_PROJECT_DIR"
-fi
-
+REPO_ROOT=$(resolve_repo_root "$CLAUDE_PROJECT_DIR")
 WORKTREE_DIR="$REPO_ROOT/.claude/worktrees/$NAME"
 BRANCH="worktree-$NAME"
 
-LOGFILE="/tmp/worktree-hooks-$(date '+%Y-%m-%d').log"
-log() { echo "$(date '+%Y-%m-%d %H:%M:%S') [create] $*" | tee -a "$LOGFILE" >/dev/tty 2>/dev/null || true; }
-if [ "${HOOK_DEBUG:-0}" = "1" ]; then
-	OUT=/dev/tty
-else
-	OUT=/dev/null
-fi
+setup_logging "[create]"
 
 echo "" >> "$LOGFILE"
 log "--- WorktreeCreate: $NAME (branch: $BRANCH) ---"
@@ -29,39 +20,10 @@ echo "  payload: $INPUT" >> "$LOGFILE"
 mkdir -p "$REPO_ROOT/.claude/worktrees"
 
 # --- ensure main/master is up to date with remote ---
-DEFAULT_BRANCH=$(git -C "$REPO_ROOT" symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@') || true
-if [ -z "$DEFAULT_BRANCH" ]; then
-	# fallback: check if main or master exists
-	if git -C "$REPO_ROOT" show-ref --verify --quiet refs/heads/main 2>/dev/null; then
-		DEFAULT_BRANCH="main"
-	elif git -C "$REPO_ROOT" show-ref --verify --quiet refs/heads/master 2>/dev/null; then
-		DEFAULT_BRANCH="master"
-	fi
-fi
-
+DEFAULT_BRANCH=$(detect_default_branch "$REPO_ROOT")
 if [ -n "$DEFAULT_BRANCH" ]; then
 	log "✓ Fetching origin and updating $DEFAULT_BRANCH..."
-	# Check if working tree is clean BEFORE moving the ref
-	WAS_CLEAN=false
-	if git -C "$REPO_ROOT" diff --quiet 2>/dev/null && \
-	   git -C "$REPO_ROOT" diff --cached --quiet 2>/dev/null; then
-		WAS_CLEAN=true
-	fi
-	git -C "$REPO_ROOT" fetch origin "$DEFAULT_BRANCH" >$OUT 2>&1 || {
-		log "⚠ fetch failed, continuing with local $DEFAULT_BRANCH"
-	}
-	git -C "$REPO_ROOT" update-ref "refs/heads/$DEFAULT_BRANCH" "refs/remotes/origin/$DEFAULT_BRANCH" 2>$OUT || {
-		log "⚠ update-ref failed, continuing with local $DEFAULT_BRANCH"
-	}
-	# update-ref moves the ref but leaves the index + working tree stale.
-	# Only --hard reset if the tree was clean before we touched anything,
-	# so we never discard real uncommitted work.
-	if [ "$WAS_CLEAN" = true ]; then
-		git -C "$REPO_ROOT" reset --hard --quiet >$OUT 2>&1 || true
-	else
-		git -C "$REPO_ROOT" reset --quiet >$OUT 2>&1 || true
-		log "⚠ Working tree had local changes, preserved them (index reset only)"
-	fi
+	update_default_branch "$REPO_ROOT" "$DEFAULT_BRANCH"
 	BASE_REF="$DEFAULT_BRANCH"
 	log "✓ $DEFAULT_BRANCH is up to date"
 else
@@ -202,61 +164,7 @@ if [ -x "$PROJECT_HOOK" ]; then
 fi
 
 # --- opportunistic cleanup: remove stale worktrees whose remote branch is gone ---
-if [ -d "$REPO_ROOT/.claude/worktrees" ]; then
-	git -C "$REPO_ROOT" fetch origin --prune >$OUT 2>&1 || true
-	for stale_dir in "$REPO_ROOT/.claude/worktrees"/*/; do
-		[ -d "$stale_dir" ] || continue
-		stale_name=$(basename "$stale_dir")
-		stale_branch="worktree-$stale_name"
-		# Skip the current worktree
-		[ "$stale_name" = "$NAME" ] && continue
-		has_upstream=$(git -C "$REPO_ROOT" for-each-ref --format='%(upstream)' "refs/heads/$stale_branch" 2>/dev/null)
-		should_clean=false
-		reason=""
-
-		if [ -n "$has_upstream" ]; then
-			# Pushed but remote branch is now gone (e.g., PR merged and branch deleted)
-			if ! git -C "$REPO_ROOT" show-ref --verify --quiet "refs/remotes/origin/$stale_branch" 2>/dev/null; then
-				should_clean=true
-				reason="remote branch gone"
-			fi
-		else
-			# Never pushed — check if older than 24h with no unique commits.
-			# %gd with --date=unix gives the reflog entry time (branch creation);
-			# %ct would give the tip commit's timestamp, which is unrelated to age.
-			wt_created=$(git -C "$REPO_ROOT" reflog show --date=unix --format='%gd' "$stale_branch" 2>/dev/null \
-				| tail -1 | sed -E 's/.*@\{([0-9]+)\}/\1/')
-			wt_created=${wt_created:-0}
-			age_hours=$(( ($(date +%s) - wt_created) / 3600 ))
-			if [ "$age_hours" -ge 24 ]; then
-				unique_commits=$(git -C "$REPO_ROOT" rev-list --count "$BASE_REF".."$stale_branch" 2>/dev/null || echo 0)
-				if [ "$unique_commits" -eq 0 ]; then
-					should_clean=true
-					reason="no upstream, no unique commits, ${age_hours}h old"
-				else
-					log "⏭ Keeping stale worktree: $stale_name (${age_hours}h old but has $unique_commits unpushed commit(s))"
-				fi
-			fi
-		fi
-
-		if [ "$should_clean" = true ]; then
-			log "✓ Cleaning stale worktree: $stale_name ($reason)"
-			git -C "$REPO_ROOT" worktree remove --force "$stale_dir" >$OUT 2>&1 || {
-				rm -rf "$stale_dir"
-				git -C "$REPO_ROOT" worktree prune >$OUT 2>&1 || true
-			}
-			if git -C "$REPO_ROOT" show-ref --verify --quiet "refs/heads/$stale_branch" 2>/dev/null; then
-				git -C "$REPO_ROOT" branch -D "$stale_branch" >$OUT 2>&1 || true
-			fi
-			# Guard: clear core.worktree if it pointed at the cleaned worktree
-			configured_wt=$(git -C "$REPO_ROOT" config core.worktree 2>/dev/null || true)
-			if [ "$configured_wt" = "$stale_dir" ] || [ "$configured_wt" = "${stale_dir%/}" ]; then
-				git -C "$REPO_ROOT" config --unset core.worktree >$OUT 2>&1 || true
-				log "✓ Cleared stale core.worktree for $stale_name"
-			fi
-		fi
-	done
-fi
+clean_stale_worktrees "$REPO_ROOT" "$BASE_REF" "$NAME" "no"
 
 # --- symlink auto-memory so all worktrees share the main repo's memory ---
 # Claude sanitizes paths: / -> -, . -> - (so /foo/.claude -> -foo--claude)
