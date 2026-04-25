@@ -22,7 +22,7 @@ setup_logging "[remove]"
 
 echo "" >> "$LOGFILE"
 log "--- WorktreeRemove: $NAME (branch: $BRANCH, repo: $REPO_ROOT) ---"
-echo "  payload: $INPUT" >> "$LOGFILE"
+log_quiet "    payload: $(jq -c . <<< "$INPUT" 2>/dev/null || echo "$INPUT" | tr '\n' ' ')"
 
 DEFAULT_BRANCH=$(detect_default_branch "$REPO_ROOT")
 

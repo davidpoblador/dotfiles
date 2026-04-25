@@ -37,6 +37,9 @@ setup_logging() {
 	# static analysis, hence the disables for "unreachable" / "unused".
 	# shellcheck disable=SC2317,SC2329
 	log() { echo "$(date '+%Y-%m-%d %H:%M:%S') $LOG_TAG $*" | tee -a "$LOGFILE" >/dev/tty 2>/dev/null || true; }
+	# Same shape, file-only — for verbose lines we don't want on screen.
+	# shellcheck disable=SC2317,SC2329
+	log_quiet() { echo "$(date '+%Y-%m-%d %H:%M:%S') $LOG_TAG $*" >> "$LOGFILE"; }
 }
 
 # True when HOOK_DRY_RUN=1. Used by destructive helpers to short-circuit.

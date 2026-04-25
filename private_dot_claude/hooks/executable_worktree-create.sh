@@ -15,7 +15,7 @@ setup_logging "[create]"
 
 echo "" >> "$LOGFILE"
 log "--- WorktreeCreate: $NAME (branch: $BRANCH, repo: $REPO_ROOT) ---"
-echo "  payload: $INPUT" >> "$LOGFILE"
+log_quiet "    payload: $(jq -c . <<< "$INPUT" 2>/dev/null || echo "$INPUT" | tr '\n' ' ')"
 
 mkdir -p "$REPO_ROOT/.claude/worktrees"
 
