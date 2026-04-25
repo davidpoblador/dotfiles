@@ -10,11 +10,15 @@
 #     each helper signature small and readable.
 #
 # Environment variables read:
-#   HOOK_DEBUG=1     — surface chatty subcommand output on the tty.
-#   HOOK_DRY_RUN=1   — log destructive operations as "[dry-run] would ..."
-#                      instead of executing them. Useful for debugging the
-#                      cleanup loop without nuking real worktrees:
-#                          HOOK_DRY_RUN=1 echo "$payload" | worktree-create.sh
+#   HOOK_DEBUG=1            — surface chatty subcommand output on the tty.
+#   HOOK_DRY_RUN=1          — log destructive operations as "[dry-run] would ..."
+#                              instead of executing them. Useful for debugging
+#                              the cleanup loop without nuking real worktrees:
+#                                  HOOK_DRY_RUN=1 echo "$payload" | worktree-create.sh
+#   HOOK_LOG_MAX_BYTES=N    — rotate today's log when it exceeds N bytes
+#                              (default 5 MiB). Rotated files keep the
+#                              "worktree-hooks-*.log" name so the existing
+#                              age-based cleanup picks them up.
 
 # Initialize logging state. Defines:
 #   $LOGFILE — daily log under /tmp; appended to in addition to stdout
@@ -27,6 +31,7 @@ setup_logging() {
 	# (bash has no closures — function bodies look up vars at call time).
 	LOG_TAG="$1"
 	LOGFILE="/tmp/worktree-hooks-$(date '+%Y-%m-%d').log"
+	rotate_log_if_oversized "$LOGFILE" "${HOOK_LOG_MAX_BYTES:-5242880}"
 	if [ "${HOOK_DEBUG:-0}" = "1" ]; then
 		OUT=/dev/tty
 	else
@@ -44,6 +49,20 @@ setup_logging() {
 
 # True when HOOK_DRY_RUN=1. Used by destructive helpers to short-circuit.
 is_dry_run() { [ "${DRY_RUN:-0}" = "1" ]; }
+
+# Rename $logfile out of the way if it's larger than $max_bytes, so today's
+# log starts fresh. Rotated files keep the "worktree-hooks-*.log" pattern
+# (suffix is the current HHMMSS) so the daily age-based cleanup catches them.
+# Silent on the no-op path; uses BSD stat first, falls back to GNU.
+# $1: logfile path  $2: max bytes
+rotate_log_if_oversized() {
+	local logfile="$1" max_bytes="$2" size
+	[ -f "$logfile" ] || return 0
+	size=$(stat -f %z "$logfile" 2>/dev/null || stat -c %s "$logfile" 2>/dev/null || echo 0)
+	if [ "$size" -gt "$max_bytes" ]; then
+		mv "$logfile" "${logfile%.log}-$(date +%H%M%S).log" 2>/dev/null || true
+	fi
+}
 
 # Print the original repo's working-tree path, even when called from inside a
 # worktree. CLAUDE_PROJECT_DIR points at the worktree when Claude runs there,
