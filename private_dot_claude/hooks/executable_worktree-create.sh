@@ -42,7 +42,7 @@ fi
 if [ -d "$WORKTREE_DIR" ]; then
 	log "✓ Resuming existing worktree: $NAME"
 else
-	git -C "$REPO_ROOT" worktree add "$WORKTREE_DIR" -b "$BRANCH" "$BASE_REF" >$OUT 2>&1 || {
+	git -C "$REPO_ROOT" worktree add "$WORKTREE_DIR" -b "$BRANCH" "$BASE_REF" >"$OUT" 2>&1 || {
 		log "⚠ Failed to create worktree '$NAME' (branch '$BRANCH' may already exist)"
 		log "  Try: git branch -d worktree-$NAME"
 		echo "$WORKTREE_DIR"
@@ -60,19 +60,22 @@ else
 		# Fast path: if modules are already cloned locally, point submodule URLs
 		# at the local cache to avoid a remote fetch (~1s vs ~10s).
 		if [ -d "$MODULES_DIR" ]; then
-			git -C "$WORKTREE_DIR" submodule init >$OUT 2>&1 || true
+			git -C "$WORKTREE_DIR" submodule init >"$OUT" 2>&1 || true
+			# $sm_path/$name/$toplevel are foreach's own variables, expanded by
+			# the child shell git spawns — so the body must stay single-quoted.
+			# shellcheck disable=SC2016
 			git -C "$WORKTREE_DIR" submodule foreach --quiet \
 				'mod=$(basename "$sm_path")
 				 local_mod="'"$MODULES_DIR"'/$mod"
 				 if [ -d "$local_mod" ]; then
 				   git -C "$toplevel" config "submodule.$name.url" "file://$local_mod"
-				 fi' >$OUT 2>&1 || true
-			if git -C "$WORKTREE_DIR" -c protocol.file.allow=always submodule update --recursive --depth 1 >$OUT 2>&1; then
+				 fi' >"$OUT" 2>&1 || true
+			if git -C "$WORKTREE_DIR" -c protocol.file.allow=always submodule update --recursive --depth 1 >"$OUT" 2>&1; then
 				log "✓ Submodules initialized (from local cache)"
 			else
 				log "⚠ Local cache init failed, falling back to remote..."
-				git -C "$WORKTREE_DIR" submodule deinit --all --force >$OUT 2>&1 || true
-				if git -C "$WORKTREE_DIR" submodule update --init --recursive --depth 1 >$OUT 2>&1; then
+				git -C "$WORKTREE_DIR" submodule deinit --all --force >"$OUT" 2>&1 || true
+				if git -C "$WORKTREE_DIR" submodule update --init --recursive --depth 1 >"$OUT" 2>&1; then
 					log "✓ Submodules initialized (from remote)"
 				else
 					log "⚠ Submodule init failed, continuing anyway"
@@ -80,7 +83,7 @@ else
 			fi
 		else
 			# No local module cache, clone from remote
-			if git -C "$WORKTREE_DIR" submodule update --init --recursive --depth 1 >$OUT 2>&1; then
+			if git -C "$WORKTREE_DIR" submodule update --init --recursive --depth 1 >"$OUT" 2>&1; then
 				log "✓ Submodules initialized"
 			else
 				log "⚠ Submodule init failed, continuing anyway"
@@ -107,7 +110,7 @@ else
 				log "✓ Cleared core.hooksPath (pre-commit leftover)"
 			fi
 			log "✓ Installing prek hooks..."
-			if (cd "$WORKTREE_DIR" && uv tool run prek install) >$OUT 2>&1; then
+			if (cd "$WORKTREE_DIR" && uv tool run prek install) >"$OUT" 2>&1; then
 				log "✓ prek hooks installed"
 			else
 				log "⚠ prek install failed, continuing anyway"
@@ -122,8 +125,10 @@ fi
 if [ -f "$WORKTREE_DIR/uv.lock" ]; then
 	if command -v uv >/dev/null 2>&1; then
 		log "✓ uv syncing..."
-		UV_QUIET=$( [ "$OUT" = "/dev/null" ] && echo "--quiet" || echo "" )
-		(cd "$WORKTREE_DIR" && uv sync --frozen $UV_QUIET) >$OUT 2>&1 || {
+		# Array form so an empty flag list expands to nothing (rather than "")
+		uv_flags=()
+		[ "$OUT" = "/dev/null" ] && uv_flags=(--quiet)
+		(cd "$WORKTREE_DIR" && uv sync --frozen "${uv_flags[@]}") >"$OUT" 2>&1 || {
 			log "⚠ uv sync failed, continuing anyway"
 		}
 		log "✓ uv sync done"
@@ -142,8 +147,9 @@ fi
 if [ -f "$WORKTREE_DIR/bun.lock" ] || [ -f "$WORKTREE_DIR/bun.lockb" ]; then
 	if command -v bun >/dev/null 2>&1; then
 		log "✓ bun installing..."
-		BUN_SILENT=$( [ "$OUT" = "/dev/null" ] && echo "--silent" || echo "" )
-		(cd "$WORKTREE_DIR" && bun install --frozen-lockfile $BUN_SILENT) >$OUT 2>&1 || {
+		bun_flags=()
+		[ "$OUT" = "/dev/null" ] && bun_flags=(--silent)
+		(cd "$WORKTREE_DIR" && bun install --frozen-lockfile "${bun_flags[@]}") >"$OUT" 2>&1 || {
 			log "⚠ bun install failed, continuing anyway"
 		}
 		log "✓ bun install done"
@@ -157,7 +163,7 @@ PROJECT_HOOK="$REPO_ROOT/.hooks/worktree-create.sh"
 if [ -x "$PROJECT_HOOK" ]; then
 	log "✓ Running project hook..."
 	export WORKTREE_DIR
-	echo "$INPUT" | "$PROJECT_HOOK" >$OUT 2>&1 || {
+	echo "$INPUT" | "$PROJECT_HOOK" >"$OUT" 2>&1 || {
 		log "⚠ Project hook failed, continuing anyway"
 	}
 	log "✓ Project hook done"
@@ -180,8 +186,12 @@ log "✓ Symlinked auto-memory to main repo"
 # --- clean up old log files (keep 7 days) ---
 find /tmp -maxdepth 1 -name 'worktree-hooks-*.log' -mtime +7 -delete 2>/dev/null || true
 
-# Tell Ghostty the worktree is the "cwd" so new panes open there
+# Tell Ghostty the worktree is the "cwd" so new panes open there.
+# The trailing \e\\ is the OSC string terminator (ESC + backslash); the
+# literal `\\` is two chars in the single-quoted format and printf decodes
+# them to a single `\` — shellcheck SC1003 misreads it as quote-escaping.
 ABS_WORKTREE_DIR=$(cd "$WORKTREE_DIR" && pwd -P)
+# shellcheck disable=SC1003
 printf '\e]7;file://%s%s\e\\' "$HOSTNAME" "$ABS_WORKTREE_DIR" >/dev/tty 2>/dev/null || true
 
 # stdout = path only

@@ -31,7 +31,7 @@ if ! git -C "$REPO_ROOT" rev-parse --verify HEAD >/dev/null 2>&1; then
 	log "⚠ Repository has no commits, skipping branch checks"
 	if [ -d "$WORKTREE_DIR" ]; then
 		rm -rf "$WORKTREE_DIR"
-		git -C "$REPO_ROOT" worktree prune >$OUT 2>&1 || true
+		git -C "$REPO_ROOT" worktree prune >"$OUT" 2>&1 || true
 		log "✓ Removed worktree directory: $NAME"
 	fi
 	exit 0
@@ -61,7 +61,7 @@ if [ "$SAFE_TO_REMOVE" = true ]; then
 		log "✓ Removed worktree: $NAME"
 	else
 		log "⚠ Worktree directory not found: $WORKTREE_DIR"
-		git -C "$REPO_ROOT" worktree prune >$OUT 2>&1 || true
+		git -C "$REPO_ROOT" worktree prune >"$OUT" 2>&1 || true
 	fi
 fi
 

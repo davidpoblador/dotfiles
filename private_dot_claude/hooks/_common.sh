@@ -25,7 +25,9 @@ setup_logging() {
 	else
 		OUT=/dev/null
 	fi
-	# shellcheck disable=SC2317  # invoked from caller scope
+	# Defined here, called from caller scope after we return — invisible to
+	# static analysis, hence the disables for "unreachable" / "unused".
+	# shellcheck disable=SC2317,SC2329
 	log() { echo "$(date '+%Y-%m-%d %H:%M:%S') $LOG_TAG $*" | tee -a "$LOGFILE" >/dev/tty 2>/dev/null || true; }
 }
 
