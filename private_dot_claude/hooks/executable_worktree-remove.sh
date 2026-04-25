@@ -58,12 +58,15 @@ SAFE_TO_REMOVE=true
 if git -C "$REPO_ROOT" show-ref --verify --quiet "refs/heads/$BRANCH" 2>/dev/null; then
 	unique_commits=$(unique_commits_against "$REPO_ROOT" "$DEFAULT_BRANCH" "$BRANCH")
 	if [ "$unique_commits" -gt 0 ]; then
-		merged_pr=$(merged_pr_for_branch "$REPO_ROOT" "$BRANCH")
-		if [ -n "$merged_pr" ]; then
+		# Try git cherry first (portable, catches squash/rebase merges) then
+		# fall back to a GitHub PR lookup for edge cases.
+		if branch_is_squash_merged_into "$REPO_ROOT" "$DEFAULT_BRANCH" "$BRANCH"; then
+			log "✓ Branch $BRANCH has $unique_commits local commit(s) but all are already in $DEFAULT_BRANCH (squash/rebase merged), safe to remove"
+		elif merged_pr=$(merged_pr_for_branch "$REPO_ROOT" "$BRANCH") && [ -n "$merged_pr" ]; then
 			log "✓ Branch $BRANCH has $unique_commits local commit(s) but PR #$merged_pr was merged, safe to remove"
 		else
 			SAFE_TO_REMOVE=false
-			log "⚠ Branch $BRANCH has $unique_commits unmerged commit(s) and no merged PR, preserving worktree"
+			log "⚠ Branch $BRANCH has $unique_commits unmerged commit(s) and no merge evidence, preserving worktree"
 		fi
 	fi
 fi

@@ -140,6 +140,24 @@ merged_pr_for_branch() {
 	project_gh "$repo" pr list --head "$branch" --state merged --json number --jq '.[0].number' 2>/dev/null || true
 }
 
+# Returns 0 (true) if every commit in $branch has an equivalent already in
+# $base by patch-id — i.e., the branch was squash-merged or rebased into
+# $base. Returns 1 if any commit is genuinely unique to $branch, or if the
+# command fails (conservative: prefer "not merged" on uncertainty).
+#
+# `git cherry $base $branch` lists commits in $branch not in $base, prefixed
+# with "+" (no patch-id match in $base) or "-" (patch-id present in $base).
+# Any "+" line means real divergence; all-"-" or empty output means merged.
+#
+# This is the remote-agnostic equivalent of "is there a merged PR?", so the
+# hooks no longer need GitHub to detect squash-merged work.
+# $1: repo root  $2: base ref  $3: branch name
+branch_is_squash_merged_into() {
+	local repo="$1" base="$2" branch="$3" out
+	out=$(git -C "$repo" cherry "$base" "$branch" 2>/dev/null) || return 1
+	! grep -q '^+ ' <<< "$out"
+}
+
 # Best-effort removal of a worktree directory and its branch.
 #   1. Pre-delete heavy untracked dirs (.venv, node_modules) so `git worktree
 #      remove --force` doesn't trip over them.
@@ -208,15 +226,21 @@ clean_stale_worktrees() {
 
 		if [ -n "$has_upstream" ]; then
 			# Pushed at some point. If the remote branch is gone, the work is
-			# very likely merged — but verify with a PR check when require_pr.
+			# very likely merged. Verify in this order:
+			#   1. git cherry — portable, catches squash/rebase merges
+			#   2. gh pr list — GitHub-only, catches edge cases (rare)
+			# When require_pr=no we trust an absent remote outright.
 			if ! git -C "$repo" show-ref --verify --quiet "refs/remotes/origin/$stale_branch" 2>/dev/null; then
-				if [ "$require_pr" = "yes" ]; then
+				if branch_is_squash_merged_into "$repo" "$base_ref" "$stale_branch"; then
+					should_clean=true
+					reason="remote branch gone, all commits already in $base_ref"
+				elif [ "$require_pr" = "yes" ]; then
 					merged_pr=$(merged_pr_for_branch "$repo" "$stale_branch")
 					if [ -n "$merged_pr" ]; then
 						should_clean=true
 						reason="remote branch gone, PR #$merged_pr merged"
 					else
-						log "⏭ Keeping worktree: $stale_name (remote branch gone but no merged PR found)"
+						log "⏭ Keeping worktree: $stale_name (remote branch gone but no merge evidence)"
 					fi
 				else
 					should_clean=true
