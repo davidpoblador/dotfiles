@@ -221,11 +221,13 @@ if [ -d "$REPO_ROOT/.claude/worktrees" ]; then
 				reason="remote branch gone"
 			fi
 		else
-			# Never pushed — check if older than 24h with no unique commits
-			wt_created=$(git -C "$REPO_ROOT" reflog show --format='%ct' "$stale_branch" 2>/dev/null | tail -1) || true
+			# Never pushed — check if older than 24h with no unique commits.
+			# %gd with --date=unix gives the reflog entry time (branch creation);
+			# %ct would give the tip commit's timestamp, which is unrelated to age.
+			wt_created=$(git -C "$REPO_ROOT" reflog show --date=unix --format='%gd' "$stale_branch" 2>/dev/null \
+				| tail -1 | sed -E 's/.*@\{([0-9]+)\}/\1/')
 			wt_created=${wt_created:-0}
-			now=$(date +%s)
-			age_hours=$(( (now - wt_created) / 3600 ))
+			age_hours=$(( ($(date +%s) - wt_created) / 3600 ))
 			if [ "$age_hours" -ge 24 ]; then
 				unique_commits=$(git -C "$REPO_ROOT" rev-list --count "$BASE_REF".."$stale_branch" 2>/dev/null || echo 0)
 				if [ "$unique_commits" -eq 0 ]; then
