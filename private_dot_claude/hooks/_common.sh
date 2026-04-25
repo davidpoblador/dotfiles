@@ -214,11 +214,13 @@ clean_stale_worktrees() {
 
 	local stale_dir stale_name stale_branch has_upstream should_clean reason
 	local merged_pr wt_created age_hours unique_commits
+	local removed=0 kept=0 scanned=0
 	for stale_dir in "$dir"/*/; do
 		[ -d "$stale_dir" ] || continue
 		stale_name=$(basename "$stale_dir")
 		stale_branch="worktree-$stale_name"
 		[ "$stale_name" = "$skip" ] && continue
+		scanned=$((scanned + 1))
 
 		has_upstream=$(git -C "$repo" for-each-ref --format='%(upstream)' "refs/heads/$stale_branch" 2>/dev/null)
 		should_clean=false
@@ -264,8 +266,14 @@ clean_stale_worktrees() {
 		fi
 
 		if [ "$should_clean" = true ]; then
-			log "✓ Cleaning stale worktree: $stale_name ($reason)"
+			log "→ Cleaning stale worktree: $stale_name ($reason)"
 			remove_worktree_branch "$repo" "$stale_dir" "$stale_branch"
+			removed=$((removed + 1))
+		else
+			kept=$((kept + 1))
 		fi
 	done
+	if [ "$scanned" -gt 0 ]; then
+		log "✓ Cleanup loop: scanned $scanned, removed $removed, kept $kept"
+	fi
 }

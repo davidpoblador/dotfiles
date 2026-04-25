@@ -22,7 +22,7 @@ mkdir -p "$REPO_ROOT/.claude/worktrees"
 # --- ensure main/master is up to date with remote ---
 DEFAULT_BRANCH=$(detect_default_branch "$REPO_ROOT")
 if [ -n "$DEFAULT_BRANCH" ]; then
-	log "✓ Fetching origin and updating $DEFAULT_BRANCH..."
+	log "→ Fetching origin and updating $DEFAULT_BRANCH..."
 	update_default_branch "$REPO_ROOT" "$DEFAULT_BRANCH"
 	BASE_REF="$DEFAULT_BRANCH"
 	is_dry_run || log "✓ $DEFAULT_BRANCH is up to date"
@@ -62,7 +62,7 @@ else
 
 	# --- git submodules (only on creation) ---
 	if [ -f "$REPO_ROOT/.gitmodules" ]; then
-		log "✓ Initializing submodules..."
+		log "→ Initializing submodules..."
 		# Resolve the real .git/modules dir (works for both main repos and worktrees)
 		GIT_COMMON_DIR=$(git -C "$REPO_ROOT" rev-parse --git-common-dir 2>/dev/null)
 		MODULES_DIR="$GIT_COMMON_DIR/modules"
@@ -119,7 +119,7 @@ else
 				git -C "$WORKTREE_DIR" config --local --unset-all core.hooksPath 2>/dev/null || true
 				log "✓ Cleared core.hooksPath (pre-commit leftover)"
 			fi
-			log "✓ Installing prek hooks..."
+			log "→ Installing prek hooks..."
 			if (cd "$WORKTREE_DIR" && uv tool run prek install) >"$OUT" 2>&1; then
 				log "✓ prek hooks installed"
 			else
@@ -134,7 +134,7 @@ fi
 # --- uv: sync + compileall (always) ---
 if [ -f "$WORKTREE_DIR/uv.lock" ]; then
 	if command -v uv >/dev/null 2>&1; then
-		log "✓ uv syncing..."
+		log "→ uv syncing..."
 		# Array form so an empty flag list expands to nothing (rather than "")
 		uv_flags=()
 		[ "$OUT" = "/dev/null" ] && uv_flags=(--quiet)
@@ -156,7 +156,7 @@ fi
 # --- bun: install (always) ---
 if [ -f "$WORKTREE_DIR/bun.lock" ] || [ -f "$WORKTREE_DIR/bun.lockb" ]; then
 	if command -v bun >/dev/null 2>&1; then
-		log "✓ bun installing..."
+		log "→ bun installing..."
 		bun_flags=()
 		[ "$OUT" = "/dev/null" ] && bun_flags=(--silent)
 		(cd "$WORKTREE_DIR" && bun install --frozen-lockfile "${bun_flags[@]}") >"$OUT" 2>&1 || {
@@ -171,7 +171,7 @@ fi
 # --- project-level hook (always) ---
 PROJECT_HOOK="$REPO_ROOT/.hooks/worktree-create.sh"
 if [ -x "$PROJECT_HOOK" ]; then
-	log "✓ Running project hook..."
+	log "→ Running project hook..."
 	export WORKTREE_DIR
 	echo "$INPUT" | "$PROJECT_HOOK" >"$OUT" 2>&1 || {
 		log "⚠ Project hook failed, continuing anyway"

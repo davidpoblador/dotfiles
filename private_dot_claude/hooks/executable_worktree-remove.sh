@@ -21,7 +21,7 @@ BRANCH="worktree-$NAME"
 setup_logging "[remove]"
 
 echo "" >> "$LOGFILE"
-log "--- WorktreeRemove: $NAME (branch: $BRANCH) ---"
+log "--- WorktreeRemove: $NAME (branch: $BRANCH, repo: $REPO_ROOT) ---"
 echo "  payload: $INPUT" >> "$LOGFILE"
 
 DEFAULT_BRANCH=$(detect_default_branch "$REPO_ROOT")
