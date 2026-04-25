@@ -122,6 +122,24 @@ project_gh() {
 	GIT_DIR="$repo/.git" gh "$@"
 }
 
+# Print the count of commits in $branch not yet reachable from $base. Returns
+# 0 if either ref is missing/empty, so callers can use the result directly in
+# numeric comparisons without extra guards.
+# $1: repo root  $2: base ref  $3: branch name
+unique_commits_against() {
+	local repo="$1" base="$2" branch="$3"
+	git -C "$repo" rev-list --count "$base".."$branch" 2>/dev/null || echo 0
+}
+
+# Print the merged-PR number for $branch, or empty if none. Squash merges
+# produce different commit SHAs, so a "0 unique commits" check alone can
+# miss merged work — this is the secondary check.
+# $1: repo root  $2: branch name
+merged_pr_for_branch() {
+	local repo="$1" branch="$2"
+	project_gh "$repo" pr list --head "$branch" --state merged --json number --jq '.[0].number' 2>/dev/null || true
+}
+
 # Best-effort removal of a worktree directory and its branch.
 #   1. Pre-delete heavy untracked dirs (.venv, node_modules) so `git worktree
 #      remove --force` doesn't trip over them.
@@ -193,7 +211,7 @@ clean_stale_worktrees() {
 			# very likely merged — but verify with a PR check when require_pr.
 			if ! git -C "$repo" show-ref --verify --quiet "refs/remotes/origin/$stale_branch" 2>/dev/null; then
 				if [ "$require_pr" = "yes" ]; then
-					merged_pr=$(project_gh "$repo" pr list --head "$stale_branch" --state merged --json number --jq '.[0].number' 2>/dev/null || true)
+					merged_pr=$(merged_pr_for_branch "$repo" "$stale_branch")
 					if [ -n "$merged_pr" ]; then
 						should_clean=true
 						reason="remote branch gone, PR #$merged_pr merged"
@@ -211,7 +229,7 @@ clean_stale_worktrees() {
 			wt_created=$(branch_created_at "$repo" "$stale_branch")
 			age_hours=$(( ($(date +%s) - wt_created) / 3600 ))
 			if [ "$age_hours" -ge 24 ]; then
-				unique_commits=$(git -C "$repo" rev-list --count "$base_ref".."$stale_branch" 2>/dev/null || echo 0)
+				unique_commits=$(unique_commits_against "$repo" "$base_ref" "$stale_branch")
 				if [ "$unique_commits" -eq 0 ]; then
 					should_clean=true
 					reason="no upstream, no unique commits, ${age_hours}h old"

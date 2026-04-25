@@ -56,11 +56,9 @@ fi
 SAFE_TO_REMOVE=true
 
 if git -C "$REPO_ROOT" show-ref --verify --quiet "refs/heads/$BRANCH" 2>/dev/null; then
-	unique_commits=$(git -C "$REPO_ROOT" rev-list --count "$DEFAULT_BRANCH".."$BRANCH" 2>/dev/null || echo 0)
+	unique_commits=$(unique_commits_against "$REPO_ROOT" "$DEFAULT_BRANCH" "$BRANCH")
 	if [ "$unique_commits" -gt 0 ]; then
-		# Branch has unique commits. Check if a merged PR exists (squash merges produce
-		# different SHAs, so rev-list alone can't detect merged work).
-		merged_pr=$(project_gh "$REPO_ROOT" pr list --head "$BRANCH" --state merged --json number --jq '.[0].number' 2>/dev/null || true)
+		merged_pr=$(merged_pr_for_branch "$REPO_ROOT" "$BRANCH")
 		if [ -n "$merged_pr" ]; then
 			log "✓ Branch $BRANCH has $unique_commits local commit(s) but PR #$merged_pr was merged, safe to remove"
 		else
