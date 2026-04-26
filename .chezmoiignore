@@ -8,6 +8,7 @@ CLAUDE.md
 README.md
 TODO.md
 prod/
+renovate.json
 
 {{- if eq .profile "prod" }}
 # Dev-only files excluded on prod
