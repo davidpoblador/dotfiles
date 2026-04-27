@@ -184,7 +184,6 @@ clean_stale_worktrees "$REPO_ROOT" "$BASE_REF" "$NAME" "no"
 
 # --- symlink auto-memory so all worktrees share the main repo's memory ---
 # Claude sanitizes paths: / -> -, . -> - (so /foo/.claude -> -foo--claude)
-sanitize_path() { echo "$1" | sed 's|/|-|g; s|\.|-|g'; }
 SANITIZED_MAIN=$(sanitize_path "$REPO_ROOT")
 SANITIZED_WT=$(sanitize_path "$WORKTREE_DIR")
 MAIN_MEMORY="$HOME/.claude/projects/$SANITIZED_MAIN/memory"
