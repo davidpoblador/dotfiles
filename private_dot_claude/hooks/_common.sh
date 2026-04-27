@@ -212,6 +212,48 @@ remove_worktree_branch() {
 	fi
 }
 
+# Sanitize an absolute path the same way Claude does for project config dirs:
+# / -> -, . -> -. So /foo/.claude/worktrees/abc becomes
+# -foo--claude-worktrees-abc. Trailing slashes are stripped first so callers
+# can pass directories with or without one.
+# $1: absolute path
+sanitize_path() {
+	local p="${1%/}"
+	echo "$p" | sed 's|/|-|g; s|\.|-|g'
+}
+
+# Returns 0 (true) if any live Claude session has its cwd inside $wt_dir.
+# Reads ~/.claude/sessions/<PID>.json files (Claude writes one per running
+# session) and verifies the PID is alive — stale files survive crashes, so the
+# liveness check is required.
+#
+# When $exclude_session is non-empty, sessions with that sessionId are skipped.
+# Used by the primary remove path to avoid self-blocking on the very session
+# that triggered the ExitWorktree hook.
+#
+# $1: worktree directory  $2: optional sessionId to exclude
+worktree_has_active_session() {
+	local wt_dir="${1%/}" exclude_session="${2:-}" sessions_dir="$HOME/.claude/sessions"
+	local f cwd pid sid
+	[ -d "$sessions_dir" ] || return 1
+	for f in "$sessions_dir"/*.json; do
+		[ -f "$f" ] || continue
+		cwd=$(jq -r '.cwd // empty' "$f" 2>/dev/null)
+		pid=$(jq -r '.pid // empty' "$f" 2>/dev/null)
+		sid=$(jq -r '.sessionId // empty' "$f" 2>/dev/null)
+		[ -n "$cwd" ] && [ -n "$pid" ] || continue
+		if [ -n "$exclude_session" ] && [ "$sid" = "$exclude_session" ]; then
+			continue
+		fi
+		case "$cwd" in
+			"$wt_dir"|"$wt_dir"/*) ;;
+			*) continue ;;
+		esac
+		kill -0 "$pid" 2>/dev/null && return 0
+	done
+	return 1
+}
+
 # Iterate over $repo/.claude/worktrees/* and remove any that are stale.
 # A worktree is stale when:
 #   - its branch had an upstream and the remote branch is now gone (and, if
@@ -288,9 +330,14 @@ clean_stale_worktrees() {
 		fi
 
 		if [ "$should_clean" = true ]; then
-			log "→ Cleaning stale worktree: $stale_name ($reason)"
-			remove_worktree_branch "$repo" "$stale_dir" "$stale_branch"
-			removed=$((removed + 1))
+			if worktree_has_active_session "$stale_dir"; then
+				log "⏭ Keeping worktree: $stale_name (live Claude session in this dir)"
+				kept=$((kept + 1))
+			else
+				log "→ Cleaning stale worktree: $stale_name ($reason)"
+				remove_worktree_branch "$repo" "$stale_dir" "$stale_branch"
+				removed=$((removed + 1))
+			fi
 		else
 			kept=$((kept + 1))
 		fi

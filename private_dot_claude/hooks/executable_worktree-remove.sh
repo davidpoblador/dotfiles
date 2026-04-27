@@ -18,6 +18,12 @@ REPO_ROOT=$(resolve_repo_root "$CLAUDE_PROJECT_DIR")
 WORKTREE_DIR="$REPO_ROOT/.claude/worktrees/$NAME"
 BRANCH="worktree-$NAME"
 
+TRANSCRIPT=$(echo "$INPUT" | jq -r '.transcript_path // empty')
+CURRENT_SESSION=""
+if [ -n "$TRANSCRIPT" ]; then
+	CURRENT_SESSION=$(basename "$TRANSCRIPT" .jsonl)
+fi
+
 setup_logging "[remove]"
 
 echo "" >> "$LOGFILE"
@@ -41,17 +47,6 @@ if ! git -C "$REPO_ROOT" rev-parse --verify HEAD >/dev/null 2>&1; then
 	exit 0
 fi
 
-# In dry-run, the helpers below are already dry-run aware. The only thing
-# left to guard is the project-config rm -rf and the project hook, which we
-# short-circuit by exiting after the cleanup loop.
-if is_dry_run; then
-	log "[dry-run] would remove worktree $NAME (subject to merged-PR check)"
-	log "[dry-run] skipping project-config rm and project hook"
-	update_default_branch "$REPO_ROOT" "$DEFAULT_BRANCH"
-	clean_stale_worktrees "$REPO_ROOT" "$DEFAULT_BRANCH" "$NAME" "yes"
-	exit 0
-fi
-
 # --- check if the branch has unmerged work before removing ---
 SAFE_TO_REMOVE=true
 
@@ -69,6 +64,26 @@ if git -C "$REPO_ROOT" show-ref --verify --quiet "refs/heads/$BRANCH" 2>/dev/nul
 			log "⚠ Branch $BRANCH has $unique_commits unmerged commit(s) and no merge evidence, preserving worktree"
 		fi
 	fi
+fi
+
+if [ "$SAFE_TO_REMOVE" = true ] && worktree_has_active_session "$WORKTREE_DIR" "$CURRENT_SESSION"; then
+	SAFE_TO_REMOVE=false
+	log "⚠ Another live Claude session is running in $NAME, preserving worktree"
+fi
+
+# In dry-run, the helpers below are already dry-run aware. The only thing
+# left to guard is the project-config rm -rf and the project hook, which we
+# short-circuit by exiting after the cleanup loop.
+if is_dry_run; then
+	if [ "$SAFE_TO_REMOVE" = true ]; then
+		log "[dry-run] would remove worktree $NAME"
+	else
+		log "[dry-run] would preserve worktree $NAME"
+	fi
+	log "[dry-run] skipping project-config rm and project hook"
+	update_default_branch "$REPO_ROOT" "$DEFAULT_BRANCH"
+	clean_stale_worktrees "$REPO_ROOT" "$DEFAULT_BRANCH" "$NAME" "yes"
+	exit 0
 fi
 
 if [ "$SAFE_TO_REMOVE" = true ]; then
@@ -95,17 +110,13 @@ if [ "$SAFE_TO_REMOVE" = true ]; then
 	WT_PROJECT=""
 
 	# Try 1: sanitized path (matching Claude's / -> -, . -> - convention)
-	sanitize_path() { echo "$1" | sed 's|/|-|g; s|\.|-|g'; }
 	SANITIZED_WT=$(sanitize_path "$WORKTREE_DIR")
 	[ -d "$HOME/.claude/projects/$SANITIZED_WT" ] && WT_PROJECT="$HOME/.claude/projects/$SANITIZED_WT"
 
 	# Try 2: transcript_path from the payload contains the project dir name
-	if [ -z "$WT_PROJECT" ]; then
-		TRANSCRIPT=$(echo "$INPUT" | jq -r '.transcript_path // empty')
-		if [ -n "$TRANSCRIPT" ]; then
-			PROJ_FROM_TRANSCRIPT=$(echo "$TRANSCRIPT" | sed 's|.*/.claude/projects/||; s|/.*||')
-			[ -d "$HOME/.claude/projects/$PROJ_FROM_TRANSCRIPT" ] && WT_PROJECT="$HOME/.claude/projects/$PROJ_FROM_TRANSCRIPT"
-		fi
+	if [ -z "$WT_PROJECT" ] && [ -n "$TRANSCRIPT" ]; then
+		PROJ_FROM_TRANSCRIPT=$(echo "$TRANSCRIPT" | sed 's|.*/.claude/projects/||; s|/.*||')
+		[ -d "$HOME/.claude/projects/$PROJ_FROM_TRANSCRIPT" ] && WT_PROJECT="$HOME/.claude/projects/$PROJ_FROM_TRANSCRIPT"
 	fi
 
 	# Try 3: scan sessions-index.json for matching originalPath
