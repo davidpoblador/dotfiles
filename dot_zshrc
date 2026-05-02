@@ -185,7 +185,20 @@ fi
 # Print directory after zoxide jumps
 export _ZO_ECHO=1
 
-load_if_exists "$HOME/.local/share/mise/shims/starship" 'eval "$("$HOME/.local/share/mise/shims/starship" init zsh)"'
+# starship's init bakes the resolved versioned binary path into PROMPT.
+# When mise upgrades starship, the old path vanishes and existing shells
+# spam "no such file or directory" on every redraw. Re-init when that happens.
+if [[ -x "$HOME/.local/share/mise/shims/starship" ]]; then
+  __starship_init() {
+    eval "$("$HOME/.local/share/mise/shims/starship" init zsh)"
+    [[ "$PROMPT" =~ "(/[^']*/starship)" ]] && __starship_bin="$match[1]"
+  }
+  __starship_heal() {
+    [[ -n "$__starship_bin" && ! -x "$__starship_bin" ]] && __starship_init
+  }
+  __starship_init
+  precmd_functions=(__starship_heal $precmd_functions)
+fi
 
 # Broot - interactive directory tree navigator
 if [[ -f "${XDG_CONFIG_HOME}/broot/launcher/bash/br" ]]; then
