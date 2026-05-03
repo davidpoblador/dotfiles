@@ -31,12 +31,18 @@ else
 	log "⚠ Could not determine default branch, using HEAD"
 fi
 
-# --- guard: empty repo (no commits) cannot support worktrees ---
+# --- empty repo: auto-create an initial empty commit so worktrees work ---
+# `claude -w` is an explicit opt-in to worktree mode; honor it on fresh repos
+# instead of failing. The empty commit is reversible (git reset --soft HEAD~).
 if ! git -C "$REPO_ROOT" rev-parse --verify HEAD >/dev/null 2>&1; then
-	log "⚠ Repository has no commits yet, cannot create worktree"
-	log "  Make an initial commit first: git add <file> && git commit -m 'Initial commit'"
-	echo "Repository has no commits yet. Make an initial commit before using worktree mode." >&2
-	exit 2
+	if is_dry_run; then
+		log "[dry-run] repo has no commits, would create initial empty commit"
+		echo "$WORKTREE_DIR"
+		exit 0
+	fi
+	log "→ Repository has no commits, creating initial empty commit..."
+	git -C "$REPO_ROOT" commit --allow-empty -m "Initial commit" >"$OUT" 2>&1
+	log "✓ Initial empty commit created"
 fi
 
 # In dry-run, skip everything after the (dry-run-aware) default branch update
