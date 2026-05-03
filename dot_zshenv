@@ -9,3 +9,15 @@ skip_global_compinit=1
 
 # Don't quarantine cask apps — avoids the "downloaded from internet" warning
 export HOMEBREW_CASK_OPTS="--no-quarantine"
+
+# Telemetry opt-outs (https://donottrack.sh/). Universal flag plus per-tool
+# variables for CLIs that don't honor DO_NOT_TRACK. Set in zshenv so they
+# also apply to non-interactive shells (scripts, launchd, ssh exec).
+# Homebrew uses HOMEBREW_NO_ANALYTICS, set alongside the rest of brew config in .zshrc.
+export DO_NOT_TRACK=1
+export DOTNET_CLI_TELEMETRY_OPTOUT=1
+export SAM_CLI_TELEMETRY=0
+export AZURE_CORE_COLLECT_TELEMETRY=0
+export GATSBY_TELEMETRY_DISABLED=1
+export STNOUPGRADE=1
+export CLOUDSDK_CORE_DISABLE_USAGE_REPORTING=true
