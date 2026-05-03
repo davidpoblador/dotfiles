@@ -31,16 +31,34 @@ else
 	log "⚠ Could not determine default branch, using HEAD"
 fi
 
-# --- empty repo: auto-create an initial empty commit so worktrees work ---
-# `claude -w` is an explicit opt-in to worktree mode; honor it on fresh repos
-# instead of failing. The empty commit is reversible (git reset --soft HEAD~).
+# --- empty repo / non-repo: auto-init + initial empty commit so worktrees work ---
+# `claude -w` is an explicit opt-in to worktree mode; honor it on fresh
+# repos/dirs instead of failing. For non-repo dirs, refuse to auto-init
+# if there's pre-existing content (other than .claude/) — the user
+# should run `git init` themselves so we don't quietly turn an arbitrary
+# directory into a repo.
 if ! git -C "$REPO_ROOT" rev-parse --verify HEAD >/dev/null 2>&1; then
-	if is_dry_run; then
+	if ! git -C "$REPO_ROOT" rev-parse --git-dir >/dev/null 2>&1; then
+		extras=$(find "$REPO_ROOT" -mindepth 1 -maxdepth 1 ! -name .claude -print -quit 2>/dev/null)
+		if [ -n "$extras" ]; then
+			log "⚠ $REPO_ROOT is not a git repo and contains files; refusing to auto-init"
+			log "  Run \`git init\` there yourself first if you want a worktree"
+			echo "$REPO_ROOT is not a git repo and has existing files. Run 'git init' there first." >&2
+			exit 2
+		fi
+		if is_dry_run; then
+			log "[dry-run] would init git repo and create initial empty commit"
+			echo "$WORKTREE_DIR"
+			exit 0
+		fi
+		log "→ Initializing git repo in $REPO_ROOT..."
+		git -C "$REPO_ROOT" init >"$OUT" 2>&1
+	elif is_dry_run; then
 		log "[dry-run] repo has no commits, would create initial empty commit"
 		echo "$WORKTREE_DIR"
 		exit 0
 	fi
-	log "→ Repository has no commits, creating initial empty commit..."
+	log "→ Creating initial empty commit..."
 	git -C "$REPO_ROOT" commit --allow-empty -m "Initial commit" >"$OUT" 2>&1
 	log "✓ Initial empty commit created"
 fi
