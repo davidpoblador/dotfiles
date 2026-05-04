@@ -96,11 +96,17 @@ setopt APPEND_HISTORY
 # Source cargo env first so mise activate can prepend shims over cargo/bin
 [[ -f "$HOME/.cargo/env" ]] && source "$HOME/.cargo/env"
 
-if command_exists mise; then
-  eval "$(mise activate zsh)"
-elif [[ -f "$HOME/.local/bin/mise" ]]; then
-  eval "$("$HOME/.local/bin/mise" activate zsh)"
+# Cache `mise activate zsh` output; regenerate when mise binary changes.
+_mise_bin=$(command -v mise 2>/dev/null)
+[[ -z "$_mise_bin" && -x "$HOME/.local/bin/mise" ]] && _mise_bin="$HOME/.local/bin/mise"
+if [[ -n "$_mise_bin" ]]; then
+  ensure_dir_exists "${XDG_CACHE_HOME}/zsh"
+  _mise_cache="${XDG_CACHE_HOME}/zsh/mise-activate.zsh"
+  [[ ! -s "$_mise_cache" || "$_mise_bin" -nt "$_mise_cache" ]] && \
+    "$_mise_bin" activate zsh > "$_mise_cache"
+  source "$_mise_cache"
 fi
+unset _mise_bin _mise_cache
 
 # Authenticate GitHub API calls (mise, gh extension installs, etc.) to avoid
 # the 60/hour unauthenticated rate limit. Runs after mise activate so that a
@@ -184,17 +190,26 @@ fi
 export _ZO_ECHO=1
 
 # starship's init bakes the resolved versioned binary path into PROMPT.
-# When mise upgrades starship, the old path vanishes and existing shells
-# spam "no such file or directory" on every redraw. Re-init when that happens.
+# Cache the eval output; the heal hook re-inits if mise prunes that binary.
 if [[ -x "$HOME/.local/share/mise/shims/starship" ]]; then
+  ensure_dir_exists "${XDG_CACHE_HOME}/zsh"
+  _starship_cache="${XDG_CACHE_HOME}/zsh/starship-init.zsh"
   __starship_init() {
-    eval "$("$HOME/.local/share/mise/shims/starship" init zsh)"
+    local cache="${XDG_CACHE_HOME}/zsh/starship-init.zsh"
+    "$HOME/.local/share/mise/shims/starship" init zsh > "$cache"
+    source "$cache"
     [[ "$PROMPT" =~ "(/[^']*/starship)" ]] && __starship_bin="$match[1]"
   }
   __starship_heal() {
     [[ -n "$__starship_bin" && ! -x "$__starship_bin" ]] && __starship_init
   }
-  __starship_init
+  if [[ -s "$_starship_cache" && "$_starship_cache" -nt "$HOME/.local/share/mise/shims/starship" ]]; then
+    source "$_starship_cache"
+    [[ "$PROMPT" =~ "(/[^']*/starship)" ]] && __starship_bin="$match[1]"
+  else
+    __starship_init
+  fi
+  unset _starship_cache
   precmd_functions=(__starship_heal $precmd_functions)
 fi
 
