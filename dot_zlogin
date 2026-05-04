@@ -21,17 +21,19 @@ if [[ -o login ]]; then
   local col=38
   local cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}"
 
+  zmodload zsh/datetime zsh/stat
+
   # Format a file's mtime as "X min ago" / "X h ago" / "yesterday" / "N days ago".
   # Sets reply=(msg seconds). seconds is -1 when the file is missing.
   _relative_time() {
-    local file="$1" now mtime secs msg
-    if [[ ! -f "$file" ]]; then
+    local file="$1" mtime secs msg
+    local -a stat_out
+    if ! zstat -A stat_out +mtime "$file" 2>/dev/null; then
       reply=("never" -1)
       return
     fi
-    now=$(date +%s)
-    mtime=$(date -r "$file" +%s 2>/dev/null || stat -c %Y "$file" 2>/dev/null)
-    secs=$(( now - mtime ))
+    mtime=$stat_out[1]
+    secs=$(( EPOCHSECONDS - mtime ))
     if (( secs < 60 )); then
       msg="just now"
     elif (( secs < 3600 )); then
