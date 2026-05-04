@@ -387,7 +387,9 @@ setopt GLOB_DOTS
 
 # Tool-specific completions (deferred when available)
 # ngrok: only load if it outputs zsh completions (snap version outputs bash only)
-if command_exists ngrok && ngrok completion 2>/dev/null | head -1 | grep -q compdef; then
+if (( $+functions[zsh-defer] )); then
+  zsh-defer -c 'command_exists ngrok && ngrok completion 2>/dev/null | head -1 | grep -q compdef && eval "$(ngrok completion)"'
+elif command_exists ngrok && ngrok completion 2>/dev/null | head -1 | grep -q compdef; then
   eval "$(ngrok completion)"
 fi
 
