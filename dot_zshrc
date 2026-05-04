@@ -385,11 +385,16 @@ fi
 autoload -Uz compinit
 ensure_dir_exists "${XDG_CACHE_HOME}/zsh"
 
-if [[ -n ${XDG_CACHE_HOME}/zsh/zcompdump(#qN.mh+24) ]]; then
-  compinit -d "${XDG_CACHE_HOME}/zsh/zcompdump"
+# -C skips both the security audit and the dump-rebuild check, the cheapest
+# path. Run a full compinit weekly (or when the dump is missing) to refresh
+# the cache and catch fpath dirs that became world-writable.
+_zcompdump="${XDG_CACHE_HOME}/zsh/zcompdump"
+if [[ -s "$_zcompdump" && -z "$_zcompdump"(#qN.mh+168) ]]; then
+  compinit -C -d "$_zcompdump"
 else
-  compinit -C -d "${XDG_CACHE_HOME}/zsh/zcompdump"
+  compinit -d "$_zcompdump"
 fi
+unset _zcompdump
 
 if [[ -s "${XDG_CACHE_HOME}/zsh/zcompdump" && (! -s "${XDG_CACHE_HOME}/zsh/zcompdump.zwc" || "${XDG_CACHE_HOME}/zsh/zcompdump" -nt "${XDG_CACHE_HOME}/zsh/zcompdump.zwc") ]]; then
   zcompile "${XDG_CACHE_HOME}/zsh/zcompdump"
