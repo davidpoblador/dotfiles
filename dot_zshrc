@@ -153,9 +153,10 @@ fpath=("$ANTIDOTE_DIR/functions" $fpath)
 autoload -Uz antidote
 
 _zsh_plugins="${ZDOTDIR:-$HOME}/.zsh_plugins"
+zstyle ':antidote:static' zcompile yes
 if [[ ! ${_zsh_plugins}.zsh -nt ${_zsh_plugins}.txt ]]; then
-  zstyle ':antidote:bundle' zcompile yes
   antidote bundle <"${_zsh_plugins}.txt" >| "${_zsh_plugins}.zsh"
+  zcompile -R -- "${_zsh_plugins}.zsh.zwc" "${_zsh_plugins}.zsh"
 fi
 source "${_zsh_plugins}.zsh"
 unset _zsh_plugins
