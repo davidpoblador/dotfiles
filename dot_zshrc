@@ -141,21 +141,32 @@ fi
 [[ -f "${XDG_CONFIG_HOME}/zsh/catppuccin-macchiato-syntax-highlighting.zsh" ]] && \
   source "${XDG_CONFIG_HOME}/zsh/catppuccin-macchiato-syntax-highlighting.zsh"
 
-# Antidote plugin manager
+# Antidote plugin manager — static-load pattern: avoid sourcing antidote.zsh
+# on every startup; regenerate the bundle only when the manifest changes.
 ANTIDOTE_DIR="${ZDOTDIR:-$HOME}/.antidote"
 if [[ ! -d "$ANTIDOTE_DIR" ]]; then
   git clone --depth 1 https://github.com/mattmc3/antidote.git "$ANTIDOTE_DIR"
   touch "${XDG_CACHE_HOME}/antidote_last_update"
 fi
-source "${ANTIDOTE_DIR}/antidote.zsh"
-antidote load
+
+fpath=("$ANTIDOTE_DIR/functions" $fpath)
+autoload -Uz antidote
+
+_zsh_plugins="${ZDOTDIR:-$HOME}/.zsh_plugins"
+if [[ ! ${_zsh_plugins}.zsh -nt ${_zsh_plugins}.txt ]]; then
+  zstyle ':antidote:bundle' zcompile yes
+  antidote bundle <"${_zsh_plugins}.txt" >| "${_zsh_plugins}.zsh"
+fi
+source "${_zsh_plugins}.zsh"
+unset _zsh_plugins
 
 # zsh-autosuggestions: use palette color 8 (mid-gray in both dark and light themes)
 ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=8'
 
-# Auto-update antidote and plugins weekly in background
+# Auto-update antidote and plugins weekly in background. Touch the manifest
+# so the next shell regenerates the bundle against the updated plugins.
 if [[ $(find "${XDG_CACHE_HOME}/antidote_last_update" -mtime +7 2>/dev/null) ]]; then
-  (git -C "$ANTIDOTE_DIR" pull -q && antidote update -q && touch "${XDG_CACHE_HOME}/antidote_last_update" &) 2>/dev/null
+  (git -C "$ANTIDOTE_DIR" pull -q && antidote update -q && touch "${ZDOTDIR:-$HOME}/.zsh_plugins.txt" "${XDG_CACHE_HOME}/antidote_last_update" &) 2>/dev/null
 fi
 
 ###########################################################
