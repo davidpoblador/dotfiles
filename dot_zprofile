@@ -7,9 +7,3 @@ export CHEZMOI_PROFILE=$(cat "${XDG_CACHE_HOME:-$HOME/.cache}/chezmoi-profile" 2
 
 # Starship config per profile
 export STARSHIP_CONFIG="$HOME/.config/starship-${CHEZMOI_PROFILE}.toml"
-
-# Homebrew (macOS)
-if [[ "$(uname)" == "Darwin" && -x /opt/homebrew/bin/brew ]]; then
-    eval "$(/opt/homebrew/bin/brew shellenv)"
-fi
-
