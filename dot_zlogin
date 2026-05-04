@@ -60,23 +60,23 @@ if [[ -o login ]]; then
 
   # System info
   local users_count=$(who | wc -l | tr -d ' ')
-  local uptime_str up boot days hours mins
+  local uptime_str
   if [[ "$OSTYPE" == darwin* ]]; then
+    local up boot days hours mins
     boot=$(sysctl -n kern.boottime 2>/dev/null)
     boot=${boot#*sec = }
     boot=${boot%%,*}
     up=$(( EPOCHSECONDS - boot ))
+    days=$(( up / 86400 ))
+    hours=$(( (up % 86400) / 3600 ))
+    mins=$(( (up % 3600) / 60 ))
+    if (( days > 0 )); then
+      uptime_str="$days days, ${(l:2::0:)hours}:${(l:2::0:)mins}"
+    else
+      uptime_str="${(l:2::0:)hours}:${(l:2::0:)mins}"
+    fi
   else
-    read up _ < /proc/uptime
-    up=${up%.*}
-  fi
-  days=$(( up / 86400 ))
-  hours=$(( (up % 86400) / 3600 ))
-  mins=$(( (up % 3600) / 60 ))
-  if (( days > 0 )); then
-    uptime_str="$days days, ${(l:2::0:)hours}:${(l:2::0:)mins}"
-  else
-    uptime_str="${(l:2::0:)hours}:${(l:2::0:)mins}"
+    uptime_str=$(uptime -p | sed 's/^up //')
   fi
   local disk_usage=$(df -h / 2>/dev/null | awk 'NR==2 {print $3 "/" $2 " (" $5 ")"}')
   local mem_usage
