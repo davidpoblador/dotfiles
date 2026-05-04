@@ -61,10 +61,10 @@ if [[ -o login ]]; then
   # System info
   local users_count=$(who | wc -l | tr -d ' ')
   local uptime_str
-  if uptime -p &>/dev/null; then
-    uptime_str=$(uptime -p | sed 's/^up //')
-  else
+  if [[ "$OSTYPE" == darwin* ]]; then
     uptime_str=$(uptime | sed -E 's/.*up +//' | sed -E 's/, +[0-9]+ user.*//')
+  else
+    uptime_str=$(uptime -p | sed 's/^up //')
   fi
   local disk_usage=$(df -h / 2>/dev/null | awk 'NR==2 {print $3 "/" $2 " (" $5 ")"}')
   local mem_usage
