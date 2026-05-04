@@ -96,7 +96,7 @@ if [[ -o login ]]; then
   local -a info_lines
   info_lines+=(" \033[2mPowered by\033[0m \033[1mAll Tuner Labs\033[0m \033[2mS.L.\033[0m")
   info_lines+=("")
-  info_lines+=(" \033[2m     Host:\033[0m $(hostname -s)")
+  info_lines+=(" \033[2m     Host:\033[0m ${HOST%%.*}")
   info_lines+=(" \033[2m   Uptime:\033[0m $uptime_str")
   info_lines+=(" \033[2m Sessions:\033[0m $users_count")
   info_lines+=(" \033[2m     Disk:\033[0m $disk_usage")
