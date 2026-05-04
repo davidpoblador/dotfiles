@@ -65,9 +65,7 @@ ensure_dir_exists() {
 # Homebrew Setup                                          #
 ###########################################################
 if command_exists brew; then
-  BREW_PREFIX=$(brew --prefix)
-
-  FPATH="${BREW_PREFIX}/share/zsh/site-functions:${FPATH}"
+  FPATH="${HOMEBREW_PREFIX}/share/zsh/site-functions:${FPATH}"
 
   export HOMEBREW_NO_ANALYTICS=1
   export HOMEBREW_NO_ENV_HINTS=1
