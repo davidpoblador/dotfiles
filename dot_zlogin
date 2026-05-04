@@ -70,7 +70,13 @@ if [[ -o login ]]; then
     mem_usage=$(free -h | awk '/^Mem:/ {print $3 "/" $2}')
   else
     local total=$(sysctl -n hw.memsize 2>/dev/null | awk '{printf "%.0fG", $1/1073741824}')
-    local used=$(ps -caxm -orss= | awk '{sum+=$1} END {printf "%.1fG", sum/1048576}')
+    local used=$(vm_stat 2>/dev/null | awk '
+      /page size of/ { pagesize = $(NF-1) }
+      /^Pages active|^Pages wired|^Pages occupied by compressor/ {
+        gsub(/\./, "", $NF); pages += $NF
+      }
+      END { printf "%.1fG", pages * pagesize / 1073741824 }
+    ')
     mem_usage="${used} / ${total}"
   fi
 
