@@ -10,6 +10,13 @@ TODO.md
 prod/
 renovate.json
 
+# Zed runtime state, not config (embeddings/prompts DBs, scratch tmp files)
+.config/zed/conversations
+.config/zed/embeddings
+.config/zed/prompts
+.config/zed/themes
+.config/zed/.tmp*
+
 {{- if eq .profile "prod" }}
 # Dev-only files excluded on prod
 .codex/
