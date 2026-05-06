@@ -153,8 +153,15 @@ fpath=("$ANTIDOTE_DIR/functions" $fpath)
 autoload -Uz antidote
 
 _zsh_plugins="${ZDOTDIR:-$HOME}/.zsh_plugins"
+if [[ -z "$ANTIDOTE_HOME" ]]; then
+  if [[ "$OSTYPE" == darwin* ]]; then
+    ANTIDOTE_HOME="$HOME/Library/Caches/antidote"
+  else
+    ANTIDOTE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}/antidote"
+  fi
+fi
 zstyle ':antidote:static' zcompile yes
-if [[ ! ${_zsh_plugins}.zsh -nt ${_zsh_plugins}.txt ]]; then
+if [[ ! ${_zsh_plugins}.zsh -nt ${_zsh_plugins}.txt ]] || [[ ! -d "$ANTIDOTE_HOME" ]]; then
   antidote bundle <"${_zsh_plugins}.txt" >| "${_zsh_plugins}.zsh"
   zcompile -R -- "${_zsh_plugins}.zsh.zwc" "${_zsh_plugins}.zsh"
 fi
