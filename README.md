@@ -16,7 +16,7 @@ sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply davidpoblador --prompt
 
 Chezmoi prompts for email, full name, and profile. Hit Enter on profile to accept
 the default (`dev`). Chezmoi will install Homebrew packages, mise tools (uv, bun,
-go, etc.), agent skills, and deploy configs.
+go, etc.), and deploy configs.
 
 After bootstrap, import existing shell history into atuin:
 
@@ -75,7 +75,6 @@ atuin import auto
 
 ```bash
 chezmoi update              # Pull latest dotfiles and apply
-skills-update               # Update agent skills and commit manifest to chezmoi
 bubu                        # Update Homebrew packages
 ```
 
@@ -92,8 +91,8 @@ Mise tools auto-upgrade daily in the background via `.zshrc`.
 | `.config/git/`, `.gitignore_global` | Git config |
 | `.config/gh/` | GitHub CLI |
 | `.config/bat/`, `.config/lazygit/` | CLI tools |
-| `.claude/` | Claude Code settings, hooks, skills symlinks |
-| `.agents/` | Agent skills (only manifest tracked, skills restored via `bunx`) |
+| `.claude/` | Claude Code settings and hooks |
+| `.agents/` | Shared `AGENTS.md` / `CLAUDE.md` consumed by every agent via symlink |
 | `.docker/` | Docker daemon config |
 | `.ssh/` | SSH config (no keys) |
 | `.vimrc` | Vim config |
@@ -361,112 +360,15 @@ All plugins except zsh-defer are lazy-loaded with `kind:defer`.
 | `gnb <branch>` | Checkout main, pull, create new branch |
 | `cdm` | cd to main worktree of current git repo |
 | `rep [name]` | cd to `~/repos` or `~/repos/<name>` |
-| `skills-add <source> [--skill <name>]` | Add a skill to every configured agent and propagate via chezmoi |
-| `skills-update` | Update agent skills, regenerate manifest, commit to chezmoi |
-
-## Agent skills
-
-Skills are managed by `bunx skills`, not chezmoi. Chezmoi tracks
-`.agents/skills.list` — a manifest of `<source>\t<skill>` pairs that
-`run_after_update-skills.sh` reconciles into installed skills on every
-`chezmoi apply`. The `bunx`-maintained `.agents/.skill-lock.json` is
-runtime state: it lives on disk, gets rewritten on every `bunx` add/update,
-and is ignored by chezmoi.
-
-Every skill is wired to the same set of agents on every machine. The list
-lives in one place — the `AGENTS` array at the top of
-`run_after_update-skills.sh`. It currently wires:
-
-- `claude-code` — Anthropic's Claude Code CLI
-- `codex` — OpenAI Codex CLI
-- `gemini-cli` — Google's Gemini CLI
-- `github-copilot` — GitHub Copilot
-- `opencode` — the open-source `opencode` agent
-- `openclaw` — OpenClaw, a cross-platform personal AI assistant ([openclaw/openclaw](https://github.com/openclaw/openclaw))
-
-Skill content is cloned once into `~/.agents/skills/<name>`; each agent
-gets a symlink back to it from its own skill dir (e.g.
-`~/.claude/skills/<name>`, `~/.openclaw/skills/<name>`, …).
-
-> **Codex is "universal"-mode in bunx.** `bunx skills add --agent codex`
-> does not populate `~/.codex/skills/`; codex picks up skills via the
-> shared `~/.agents/skills/` tree referenced from `~/.codex/AGENTS.md`.
-> That's by bunx design — it still counts as "wired" for codex.
-
-When you edit the `AGENTS=(...)` line at the top of
-`run_after_update-skills.sh`, the next `chezmoi apply` detects the change
-(via a cached hash of the list) and re-runs `bunx skills add` for every
-skill so new agents get wired retroactively.
-
-```bash
-skills-add <repo> [--skill <name>]   # Add + propagate in one shot
-skills-update                        # Update all skills + regenerate manifest + commit
-bunx skills update -g -y             # Just update skills (no chezmoi sync)
-bunx skills ls -g                    # List installed global skills
-skills-manifest                      # Regenerate ~/.agents/skills.list from the lockfile
-```
-
-Typical workflow when adding a skill on any machine:
-
-```bash
-skills-add <repo> --skill <name>
-```
-
-Then on every other machine: `git pull && chezmoi apply`. The reconcile
-script installs newly-added skills and evicts any bunx-tracked skill that
-leaves the manifest (content, lockfile entry, and every agent wiring in
-one shot, via `bunx skills remove`). Skills delivered outside bunx (e.g.
-`notify-master`) are absent from the lockfile and stay untouched. To
-change which agents get wired, edit the `AGENTS=(...)` line at the top of
-`run_after_update-skills.sh`. Valid names come from `bunx skills` —
-running `bunx skills add <repo> --agent foo --skill bar -g -y` with an
-invalid agent prints the full list of accepted identifiers.
-
-On a fresh machine, chezmoi delivers `skills.list`; the `run_after` script
-then installs every entry and wires it to every agent in `AGENTS`.
-
-## Telegram notifications
-
-The `notify-master` skill lets agents ping David on Telegram when asked
-(e.g. "notify your master when you have an answer"). It ships on both dev
-and prod profiles.
-
-Chezmoi installs:
-
-| Path | What |
-|---|---|
-| `~/.claude/skills/notify-master/SKILL.md` | Skill definition that tells agents to call `notify-master` |
-| `~/.local/bin/notify-master` | Shell script that posts to the Telegram Bot API |
-| `~/.config/notify-master/env.example` | Template for per-machine credentials |
-
-Credentials are **never** tracked in this (public) repo. Per machine:
-
-```bash
-# 1. Create a bot via @BotFather on Telegram, copy the token.
-# 2. Send any message to the bot from your account, then visit
-#    https://api.telegram.org/bot<TOKEN>/getUpdates
-#    to find your numeric chat id.
-# 3. Configure:
-cp ~/.config/notify-master/env.example ~/.config/notify-master/env
-chmod 600 ~/.config/notify-master/env
-$EDITOR ~/.config/notify-master/env   # fill in TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID
-
-# 4. Smoke test:
-notify-master "hello from $(hostname)"
-```
-
-Until the env file exists, `chezmoi apply` prints a one-line reminder and
-the `notify-master` command exits non-zero with a clear stderr message —
-agents will report that the ping did not go through.
 
 ## Profiles
 
 Chezmoi uses a `profile` variable to switch between dev and prod configs:
 
-| Profile | Shell | Starship | Mise tools | Skills |
-|---|---|---|---|---|
-| `dev` (default) | zsh + antidote + plugins | Catppuccin Macchiato, powerline | Full (bun, node, go, rust, etc.) | Yes |
-| `prod` | bash + aliases | Red hostname, compact | Minimal (uv, gh, starship) | No |
+| Profile | Shell | Starship | Mise tools |
+|---|---|---|---|
+| `dev` (default) | zsh + antidote + plugins | Catppuccin Macchiato, powerline | Full (bun, node, go, rust, etc.) |
+| `prod` | bash + aliases | Red hostname, compact | Minimal (uv, gh, starship) |
 
 The profile is set once during `chezmoi init` and persists in `~/.config/chezmoi/chezmoi.toml`.
 

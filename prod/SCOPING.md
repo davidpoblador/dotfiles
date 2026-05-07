@@ -99,4 +99,3 @@ chezmoi update
 
 - System packages (apt): managed during host provisioning
 - Docker, tailscale: installed at system level
-- Agent skills: not needed on prod

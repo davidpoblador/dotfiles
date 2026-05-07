@@ -1,1 +1,6 @@
 .local/bin/wallpaper-info
+.agents/skills.list
+.local/bin/skills-manifest
+.claude/skills/notify-master
+.local/bin/notify-master
+.config/notify-master/env.example

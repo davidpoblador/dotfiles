@@ -1,5 +1,5 @@
-# Skills are managed by `bunx skills`, not chezmoi. Only the manifest is tracked;
-# the lockfile is runtime state rewritten on every bunx add/update.
+# Skills are managed entirely by `bunx skills`, outside chezmoi. Guard against
+# accidentally pulling bunx state into the source via `chezmoi re-add ~/.agents`.
 .agents/skills
 .agents/.skill-lock.json
 

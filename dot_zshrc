@@ -358,32 +358,6 @@ alias dcl='docker compose logs -f --tail 100'
 dlogs() { docker logs -f --tail 100 "$1"; }   # Follow container logs
 dexec() { docker exec -it "$1" /bin/sh; }    # Shell into a container
 
-# Agent skills: update, regenerate manifest, sync to chezmoi, commit, push
-if command_exists bunx; then
-  skills-update() {
-      bunx skills update -g -y
-      skills-manifest
-      chezmoi add ~/.agents/skills.list
-      local chezmoi_dir
-      chezmoi_dir="$(chezmoi source-path)"
-      if git -C "$chezmoi_dir" diff --quiet -- dot_agents/skills.list; then
-          echo "Skills manifest already up to date."
-      else
-          git -C "$chezmoi_dir" add dot_agents/skills.list
-          git -C "$chezmoi_dir" commit -m "skills: update manifest"
-          git -C "$chezmoi_dir" push
-          echo "Manifest committed and pushed."
-      fi
-  }
-
-  # Add a skill and propagate via chezmoi in one shot.
-  # Usage: skills-add <source> [--skill <name> ...]
-  skills-add() {
-      bunx skills add "$@" --agent claude-code --agent codex --agent gemini-cli --agent github-copilot --agent opencode -g -y || return
-      skills-update
-  }
-fi
-
 # Dotfile management
 alias cma='chezmoi add'
 alias cmc='chezmoi cd'
