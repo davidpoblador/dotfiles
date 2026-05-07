@@ -358,6 +358,20 @@ alias dcl='docker compose logs -f --tail 100'
 dlogs() { docker logs -f --tail 100 "$1"; }   # Follow container logs
 dexec() { docker exec -it "$1" /bin/sh; }    # Shell into a container
 
+# Add a global agent skill and wire it into every agent we use.
+# Usage: skills-add <source> [--skill <name> ...]
+if command_exists bunx; then
+  skills-add() {
+      bunx skills add "$@" \
+          --agent claude-code \
+          --agent codex \
+          --agent gemini-cli \
+          --agent github-copilot \
+          --agent opencode \
+          -g -y
+  }
+fi
+
 # Dotfile management
 alias cma='chezmoi add'
 alias cmc='chezmoi cd'
