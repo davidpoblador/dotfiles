@@ -270,6 +270,10 @@ WORDCHARS='*?_-.[]~=&;!#$%^(){}<>'
 # Type a directory path to cd into it without typing "cd"
 setopt AUTO_CD
 
+# Disable `=cmd` path-substitution so a bare `===` token (common as a visual
+# separator in `cmd; echo ===; other`) doesn't trigger `(eval):1: == not found`
+setopt NO_EQUALS
+
 ###########################################################
 # Final PATH Adjustments                                  #
 ###########################################################
