@@ -154,7 +154,7 @@
       "WebSearch"
     ],
     "deny": [],
-    "defaultMode": "bypassPermissions"
+    "defaultMode": "auto"
   },
   "enableAllProjectMcpServers": true,
   "hooks": {
