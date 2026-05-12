@@ -73,6 +73,22 @@ fi
 
 
 ###########################################################
+# Telemetry Opt-outs                                      #
+###########################################################
+# https://donottrack.sh/ — universal flag plus per-tool overrides for CLIs
+# that don't honor DO_NOT_TRACK. Kept in .zshrc (interactive shells only) so
+# subshells spawned by `claude` don't inherit DO_NOT_TRACK=1 from a global
+# default and opt claude out of telemetry against our wishes.
+export DO_NOT_TRACK=1
+export DOTNET_CLI_TELEMETRY_OPTOUT=1
+export SAM_CLI_TELEMETRY=0
+export AZURE_CORE_COLLECT_TELEMETRY=0
+export GATSBY_TELEMETRY_DISABLED=1
+export STNOUPGRADE=1
+export CLOUDSDK_CORE_DISABLE_USAGE_REPORTING=true
+
+
+###########################################################
 # History Configuration                                   #
 ###########################################################
 
@@ -485,7 +501,9 @@ reset-term() {
 }
 
 # Ghostty occasionally doesn't receive the keyboard-mode pop on `claude` exit.
-# Also scrub DO_NOT_TRACK so claude isn't opted out via the global zshenv default.
+# Also scrub DO_NOT_TRACK so claude itself isn't opted out via the interactive
+# default above (subshells spawned by claude don't source .zshrc, so they're
+# already clean).
 if command_exists claude; then
   claude() {
       env -u DO_NOT_TRACK command claude "$@"
