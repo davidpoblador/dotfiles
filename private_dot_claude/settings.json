@@ -217,11 +217,16 @@
     }
   },
   "alwaysThinkingEnabled": true,
+  "voice": {
+    "enabled": true,
+    "mode": "tap"
+  },
   "showThinkingSummaries": true,
   "skipDangerousModePermissionPrompt": true,
   "teammateMode": "tmux",
   "remoteControlAtStartup": true,
   "inputNeededNotifEnabled": true,
   "agentPushNotifEnabled": true,
-  "skipAutoPermissionPrompt": true
+  "skipAutoPermissionPrompt": true,
+  "voiceEnabled": true
 }
