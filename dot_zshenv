@@ -13,15 +13,3 @@ export HOMEBREW_CASK_OPTS="--no-quarantine"
 # expose: config lives in synced secrets (server hostname is private).
 # The script falls back to ~/.config/expose.env when this is unset.
 export EXPOSE_CONFIG="$HOME/sync/secrets/expose.env"
-
-# Telemetry opt-outs (https://donottrack.sh/). Universal flag plus per-tool
-# variables for CLIs that don't honor DO_NOT_TRACK. Set in zshenv so they
-# also apply to non-interactive shells (scripts, launchd, ssh exec).
-# Homebrew uses HOMEBREW_NO_ANALYTICS, set alongside the rest of brew config in .zshrc.
-export DO_NOT_TRACK=1
-export DOTNET_CLI_TELEMETRY_OPTOUT=1
-export SAM_CLI_TELEMETRY=0
-export AZURE_CORE_COLLECT_TELEMETRY=0
-export GATSBY_TELEMETRY_DISABLED=1
-export STNOUPGRADE=1
-export CLOUDSDK_CORE_DISABLE_USAGE_REPORTING=true
