@@ -10,6 +10,8 @@ window-padding-x = 4
 window-padding-y = 4
 shell-integration = zsh
 macos-titlebar-style = tabs
+# Left Option = Alt (for alt+N shortcuts, escape sequences); right Option keeps macOS accent input
+macos-option-as-alt = left
 # Ghostty defaults plus extra box-drawing chars for TUI column separators
 selection-word-chars = " 	'\"│`|:;,()[]{}<>$┤┈├┊┆┇┅┋"
 window-inherit-working-directory = false
