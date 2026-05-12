@@ -480,6 +480,8 @@ reset-term() {
 if command_exists claude; then
   claude() {
       command claude "$@"
+      local rc=$?
       reset-term
+      return $rc
   }
 fi
