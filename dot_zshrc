@@ -477,9 +477,10 @@ reset-term() {
 }
 
 # Ghostty occasionally doesn't receive the keyboard-mode pop on `claude` exit.
+# Also scrub DO_NOT_TRACK so claude isn't opted out via the global zshenv default.
 if command_exists claude; then
   claude() {
-      command claude "$@"
+      env -u DO_NOT_TRACK command claude "$@"
       local rc=$?
       reset-term
       return $rc
