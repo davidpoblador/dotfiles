@@ -380,7 +380,15 @@ if command_exists bunx; then
           --agent gemini-cli \
           --agent github-copilot \
           --agent opencode \
-          -g -y
+          -g -y || return
+
+      local wishlist="$HOME/.agents/skills.wishlist"
+      local entry="$*"
+      if [[ ! -f "$wishlist" ]] || ! grep -qFx -- "$entry" "$wishlist"; then
+          echo "$entry" >> "$wishlist"
+          echo "[skills-add] appended to $wishlist"
+          echo "[skills-add] run: chezmoi re-add $wishlist && cd \$(chezmoi source-path) && git status"
+      fi
   }
 
   # Install the curated set of agent skills from ~/.agents/skills.wishlist
