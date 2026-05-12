@@ -1,0 +1,148 @@
+#!/usr/bin/env bash
+# ABOUTME: Wraps a localhost service and publishes it at <name>.lab.alltuner.com via frpc.
+# ABOUTME: Reads ~/.config/expose.env (or $EXPOSE_CONFIG) for server endpoint and domain.
+
+set -euo pipefail
+
+ADJECTIVES=(
+  quiet brave eager fluffy gentle jolly kind lucky merry nimble
+  proud silly snappy sturdy swift tame witty zesty crisp dapper
+)
+NOUNS=(
+  otter heron badger ferret koala lemur marmot newt panda quokka
+  ramen sushi miso tofu plum cedar maple ginger basil thyme
+)
+
+usage() {
+  cat <<'USAGE'
+expose — wrap a localhost service and publish it via lab.alltuner.com
+
+USAGE:
+  expose [--name NAME] [--random=words|hex] --port PORT
+  expose [--name NAME] [--random=words|hex] -- COMMAND [ARGS...]
+
+EXAMPLES:
+  expose --port 8484
+  expose --name myapp --port 8484
+  expose -- uv run python webserver.py
+  expose --name api -- npm run dev
+USAGE
+}
+
+die() { printf 'expose: %s\n' "$*" >&2; exit 1; }
+
+gen_name() {
+  local kind=${1:-words}
+  case "$kind" in
+    hex)
+      od -An -N4 -tx1 /dev/urandom | tr -d ' \n'
+      ;;
+    words)
+      local adj noun hex
+      adj=${ADJECTIVES[RANDOM % ${#ADJECTIVES[@]}]}
+      noun=${NOUNS[RANDOM % ${#NOUNS[@]}]}
+      hex=$(od -An -N2 -tx1 /dev/urandom | tr -d ' \n')
+      printf '%s-%s-%s' "$adj" "$noun" "$hex"
+      ;;
+    *)
+      die "unknown --random kind: $kind (use 'words' or 'hex')"
+      ;;
+  esac
+}
+
+wait_for_port() {
+  local pgid=$1 deadline=$((SECONDS + 30)) pids port
+  while (( SECONDS < deadline )); do
+    pids=$(pgrep -g "$pgid" 2>/dev/null | paste -sd, - || true)
+    if [[ -n $pids ]]; then
+      port=$(lsof -nP -iTCP -sTCP:LISTEN -a -p "$pids" 2>/dev/null \
+        | awk 'NR>1 { n=split($9, a, ":"); print a[n]; exit }')
+      [[ -n ${port:-} ]] && { printf '%s' "$port"; return 0; }
+    fi
+    sleep 0.3
+  done
+  return 1
+}
+
+# ---- arg parse ----
+RANDOM_KIND=words
+NAME=""
+PORT=""
+CMD=()
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --name) NAME=${2:-}; shift 2 ;;
+    --port) PORT=${2:-}; shift 2 ;;
+    --random) RANDOM_KIND=${2:-}; shift 2 ;;
+    --random=*) RANDOM_KIND=${1#*=}; shift ;;
+    -h|--help) usage; exit 0 ;;
+    --) shift; CMD=("$@"); break ;;
+    -*) die "unknown option: $1" ;;
+    *) die "stray positional argument: $1 (did you mean -- COMMAND ...?)" ;;
+  esac
+done
+
+if [[ -z $PORT && ${#CMD[@]} -eq 0 ]]; then
+  usage; exit 1
+fi
+if [[ -n $PORT && ${#CMD[@]} -gt 0 ]]; then
+  die "pass either --port or -- COMMAND, not both"
+fi
+
+# ---- config ----
+CFG=${EXPOSE_CONFIG:-${XDG_CONFIG_HOME:-$HOME/.config}/expose.env}
+[[ -f $CFG ]] || die "no config at $CFG (see expose/etc/expose.env.example)"
+# shellcheck disable=SC1090
+source "$CFG"
+: "${EXPOSE_SERVER:?missing in $CFG}"
+: "${EXPOSE_PORT:?missing in $CFG}"
+: "${EXPOSE_DOMAIN:?missing in $CFG}"
+
+command -v frpc >/dev/null \
+  || die "frpc not on PATH (brew install frpc / apt install frpc)"
+
+# ---- name + url ----
+[[ -z $NAME ]] && NAME=$(gen_name "$RANDOM_KIND")
+URL="https://${NAME}.${EXPOSE_DOMAIN}"
+
+if [[ -n $PORT ]]; then
+  printf '→ %s\n' "$URL"
+  exec frpc http \
+    --server-addr "$EXPOSE_SERVER" \
+    --server-port "$EXPOSE_PORT" \
+    --local-port "$PORT" \
+    --sd "$NAME" \
+    --proxy-name "$NAME"
+fi
+
+# ---- active mode ----
+set -m
+"${CMD[@]}" &
+CMD_PID=$!
+CMD_PGID=$(ps -o pgid= -p "$CMD_PID" | tr -d ' ')
+
+cleanup() {
+  local status=$?
+  trap - EXIT INT TERM
+  [[ -n ${FRPC_PID:-} ]] && kill "$FRPC_PID" 2>/dev/null || true
+  kill -- -"$CMD_PGID" 2>/dev/null || true
+  exit "$status"
+}
+trap cleanup EXIT INT TERM
+
+printf 'waiting for `%s` to bind a port...\n' "${CMD[*]}"
+if ! PORT=$(wait_for_port "$CMD_PGID"); then
+  die "timed out waiting for a listening port"
+fi
+printf 'detected port %s → %s\n' "$PORT" "$URL"
+
+frpc http \
+  --server-addr "$EXPOSE_SERVER" \
+  --server-port "$EXPOSE_PORT" \
+  --local-port "$PORT" \
+  --sd "$NAME" \
+  --proxy-name "$NAME" &
+FRPC_PID=$!
+
+wait "$CMD_PID"
