@@ -10,6 +10,10 @@ skip_global_compinit=1
 # Don't quarantine cask apps — avoids the "downloaded from internet" warning
 export HOMEBREW_CASK_OPTS="--no-quarantine"
 
+# expose: config lives in synced secrets (server hostname is private).
+# The script falls back to ~/.config/expose.env when this is unset.
+export EXPOSE_CONFIG="$HOME/sync/secrets/expose.env"
+
 # Telemetry opt-outs (https://donottrack.sh/). Universal flag plus per-tool
 # variables for CLIs that don't honor DO_NOT_TRACK. Set in zshenv so they
 # also apply to non-interactive shells (scripts, launchd, ssh exec).
