@@ -195,7 +195,6 @@
     "command": "~/.claude/statusline-command.sh"
   },
   "enabledPlugins": {
-    "context-mode@claude-context-mode": true,
     "astral@astral-sh": true,
     "rust-analyzer-lsp@claude-plugins-official": true,
     "typescript-lsp@claude-plugins-official": true,
@@ -218,5 +217,5 @@
   "showThinkingSummaries": true,
   "skipDangerousModePermissionPrompt": true,
   "teammateMode": "tmux",
-  "remoteControlAtStartup": false
+  "remoteControlAtStartup": true
 }
