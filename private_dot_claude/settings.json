@@ -190,6 +190,9 @@
       }
     ]
   },
+  "worktree": {
+    "baseRef": "fresh"
+  },
   "statusLine": {
     "type": "command",
     "command": "~/.claude/statusline-command.sh"
@@ -217,5 +220,7 @@
   "showThinkingSummaries": true,
   "skipDangerousModePermissionPrompt": true,
   "teammateMode": "tmux",
-  "remoteControlAtStartup": true
+  "remoteControlAtStartup": true,
+  "inputNeededNotifEnabled": true,
+  "agentPushNotifEnabled": true
 }
