@@ -223,9 +223,13 @@ find /tmp -maxdepth 1 -name 'worktree-hooks-*.log' -mtime +7 -delete 2>/dev/null
 # The trailing \e\\ is the OSC string terminator (ESC + backslash); the
 # literal `\\` is two chars in the single-quoted format and printf decodes
 # them to a single `\` — shellcheck SC1003 misreads it as quote-escaping.
+#
+# $TARGET_TTY (set by setup_logging) falls back to $CLAUDE_INVOKER_TTY
+# when /dev/tty is unreachable, e.g. when this hook runs under a detached
+# agent-team teammate that has no controlling terminal of its own.
 ABS_WORKTREE_DIR=$(cd "$WORKTREE_DIR" && pwd -P)
 # shellcheck disable=SC1003
-printf '\e]7;file://%s%s\e\\' "$HOSTNAME" "$ABS_WORKTREE_DIR" >/dev/tty 2>/dev/null || true
+printf '\e]7;file://%s%s\e\\' "$HOSTNAME" "$ABS_WORKTREE_DIR" >"$TARGET_TTY" 2>/dev/null || true
 
 # stdout = path only
 echo "$WORKTREE_DIR"

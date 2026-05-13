@@ -21,10 +21,14 @@
 #                              age-based cleanup picks them up.
 
 # Initialize logging state. Defines:
-#   $LOGFILE — daily log under /tmp; appended to in addition to stdout
-#   $OUT     — /dev/tty when HOOK_DEBUG=1, else /dev/null (used to silence
-#              chatty subcommands while still capturing failures via log())
-#   log()    — prints "$timestamp $tag $msg" to stderr-via-tty and LOGFILE
+#   $LOGFILE    — daily log under /tmp; appended to in addition to stdout
+#   $TARGET_TTY — $CLAUDE_INVOKER_TTY if set (so detached agent-team
+#                 teammates can still reach the user's terminal), else
+#                 /dev/tty
+#   $OUT        — $TARGET_TTY when HOOK_DEBUG=1, else /dev/null (used to
+#                 silence chatty subcommands while still capturing failures
+#                 via log())
+#   log()       — prints "$timestamp $tag $msg" to $TARGET_TTY and LOGFILE
 # $1: tag string included in every log line (e.g. "[create]" / "[remove]")
 setup_logging() {
 	# Promoted to a global so log() can read it after setup_logging returns
@@ -32,8 +36,9 @@ setup_logging() {
 	LOG_TAG="$1"
 	LOGFILE="/tmp/worktree-hooks-$(date '+%Y-%m-%d').log"
 	rotate_log_if_oversized "$LOGFILE" "${HOOK_LOG_MAX_BYTES:-5242880}"
+	TARGET_TTY="${CLAUDE_INVOKER_TTY:-/dev/tty}"
 	if [ "${HOOK_DEBUG:-0}" = "1" ]; then
-		OUT=/dev/tty
+		OUT="$TARGET_TTY"
 	else
 		OUT=/dev/null
 	fi
@@ -41,7 +46,7 @@ setup_logging() {
 	# Defined here, called from caller scope after we return — invisible to
 	# static analysis, hence the disables for "unreachable" / "unused".
 	# shellcheck disable=SC2317,SC2329
-	log() { echo "$(date '+%Y-%m-%d %H:%M:%S') $LOG_TAG $*" | tee -a "$LOGFILE" >/dev/tty 2>/dev/null || true; }
+	log() { echo "$(date '+%Y-%m-%d %H:%M:%S') $LOG_TAG $*" | tee -a "$LOGFILE" >"$TARGET_TTY" 2>/dev/null || true; }
 	# Same shape, file-only — for verbose lines we don't want on screen.
 	# shellcheck disable=SC2317,SC2329
 	log_quiet() { echo "$(date '+%Y-%m-%d %H:%M:%S') $LOG_TAG $*" >> "$LOGFILE"; }
