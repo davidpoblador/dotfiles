@@ -24,11 +24,58 @@
 #                              "worktree-hooks-*.log" name so the existing
 #                              age-based cleanup picks them up.
 
+# True if a `claude` process has $1 as its controlling tty. Lets us detect a
+# stale $CLAUDE_INVOKER_TTY whose original claude session has long since
+# exited.
+# $1: tty short name (no /dev/ prefix), e.g. "ttys001"
+tty_has_claude() {
+	# pgrep -t on BSD is unreliable (silently returns no match even when
+	# `ps -t` shows the process), so use ps + grep here despite SC2009.
+	# shellcheck disable=SC2009
+	ps -t "$1" -o command= 2>/dev/null | grep -qE '(^|/)claude( |$)'
+}
+
+# Print the tty path most likely to host the user's interactive claude pane.
+# CLAUDE_INVOKER_TTY (set by the zsh `claude()` wrapper) is the preferred
+# source but goes stale when claude reuses a persistent daemon spawned from
+# a different pane — the daemon caches the launcher's env and feeds it to
+# every subprocess for its lifetime, so all hooks see the original tty even
+# from sessions started later in a different pane. Fall back to scanning
+# running `claude` processes for one with a real controlling tty (freshest
+# wins, since multi-pane disambiguation isn't recoverable without it).
+# Prints /dev/tty if nothing matches.
+resolve_user_tty() {
+	if [ -n "${CLAUDE_INVOKER_TTY:-}" ] && [ -c "$CLAUDE_INVOKER_TTY" ] \
+		&& tty_has_claude "${CLAUDE_INVOKER_TTY#/dev/}"; then
+		echo "$CLAUDE_INVOKER_TTY"
+		return 0
+	fi
+	# Convert ps's etime ([[dd-]hh:]mm:ss) to seconds via awk so a numeric
+	# sort gives us the most-recently-started claude (smallest elapsed time).
+	local tname
+	tname=$(ps -eo etime=,tty=,command= 2>/dev/null | awk '
+		$2 ~ /^(ttys|tty[0-9]|pts)/ && $3 ~ /(^|\/)claude$/ {
+			e=$1; n=0
+			if (match(e, /-/)) { n+=substr(e,1,RSTART-1)*86400; e=substr(e,RSTART+1) }
+			nc=split(e, p, ":")
+			if      (nc==3) n+=p[1]*3600+p[2]*60+p[3]
+			else if (nc==2) n+=p[1]*60+p[2]
+			else            n+=p[1]
+			print n, $2
+		}' | sort -k1,1n | head -1 | awk '{print $2}')
+	if [ -n "$tname" ]; then
+		echo "/dev/$tname"
+	else
+		echo /dev/tty
+	fi
+}
+
 # Initialize logging state. Defines:
 #   $LOGFILE    — daily log under /tmp; appended to in addition to stdout
-#   $TARGET_TTY — $CLAUDE_INVOKER_TTY if set (so detached agent-team
-#                 teammates can still reach the user's terminal), else
-#                 /dev/tty
+#   $TARGET_TTY — resolve_user_tty() result (CLAUDE_INVOKER_TTY when fresh,
+#                 else a scanned claude pane, else /dev/tty) so OSC 7 and
+#                 HOOK_DEBUG log mirrors reach the user's real pane even
+#                 when the daemon's env is stale
 #   $OUT        — $TARGET_TTY when HOOK_DEBUG=1, else /dev/null (used to
 #                 silence chatty subcommands while still capturing failures
 #                 via log())
@@ -41,7 +88,7 @@ setup_logging() {
 	LOG_TAG="$1"
 	LOGFILE="/tmp/worktree-hooks-$(date '+%Y-%m-%d').log"
 	rotate_log_if_oversized "$LOGFILE" "${HOOK_LOG_MAX_BYTES:-5242880}"
-	TARGET_TTY="${CLAUDE_INVOKER_TTY:-/dev/tty}"
+	TARGET_TTY=$(resolve_user_tty)
 	DRY_RUN="${HOOK_DRY_RUN:-0}"
 	# Defined here, called from caller scope after we return — invisible to
 	# static analysis, hence the disables for "unreachable" / "unused".
