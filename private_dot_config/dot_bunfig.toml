@@ -1,0 +1,6 @@
+[install]
+minimumReleaseAge = 172800
+minimumReleaseAgeExcludes = [
+  "@alltuner/vibetuner",
+  "@alltuner/vibetuner-jinja",
+]
