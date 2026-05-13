@@ -158,6 +158,16 @@
   },
   "enableAllProjectMcpServers": true,
   "hooks": {
+    "CwdChanged": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/cwd-changed-osc7.sh"
+          }
+        ]
+      }
+    ],
     "WorktreeCreate": [
       {
         "hooks": [
