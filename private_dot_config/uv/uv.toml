@@ -1,0 +1,4 @@
+exclude-newer = "2 days"
+
+[exclude-newer-package]
+vibetuner = false
