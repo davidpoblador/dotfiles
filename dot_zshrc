@@ -65,6 +65,11 @@ ensure_dir_exists() {
 # Homebrew Setup                                          #
 ###########################################################
 if command_exists brew; then
+  # Re-run shellenv: /etc/zprofile's path_helper runs after .zshenv and
+  # pushes /opt/homebrew/bin behind /usr/bin, making Apple's git win over
+  # the Homebrew one (and breaking newer completions like `git chd<TAB>`).
+  eval "$(brew shellenv)"
+
   FPATH="${HOMEBREW_PREFIX}/share/zsh/site-functions:${FPATH}"
 
   export HOMEBREW_NO_ANALYTICS=1
