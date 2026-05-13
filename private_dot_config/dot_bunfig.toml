@@ -1,4 +1,6 @@
 [install]
+linker = "isolated"
+globalStore = true
 minimumReleaseAge = 172800
 minimumReleaseAgeExcludes = [
   "@alltuner/vibetuner",
