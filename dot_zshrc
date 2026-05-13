@@ -504,9 +504,21 @@ reset-term() {
 # Also scrub DO_NOT_TRACK so claude itself isn't opted out via the interactive
 # default above (subshells spawned by claude don't source .zshrc, so they're
 # already clean).
+#
+# Capture this shell's tty path and pass it down as CLAUDE_INVOKER_TTY.
+# Detached agent-team teammates spawned by claude have no controlling tty
+# of their own, so hooks running under them can't write OSC sequences to
+# /dev/tty (those writes silently no-op). The hooks fall back to
+# $CLAUDE_INVOKER_TTY to reach the user's actual terminal — e.g. so
+# WorktreeCreate can update Ghostty's OSC 7 cwd tracking.
 if command_exists claude; then
   claude() {
-      env -u DO_NOT_TRACK command claude "$@"
+      local tty_path
+      if tty_path=$(tty 2>/dev/null); then
+          env -u DO_NOT_TRACK CLAUDE_INVOKER_TTY="$tty_path" command claude "$@"
+      else
+          env -u DO_NOT_TRACK command claude "$@"
+      fi
       local rc=$?
       reset-term
       return $rc
