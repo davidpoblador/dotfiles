@@ -10,7 +10,11 @@
 #     each helper signature small and readable.
 #
 # Environment variables read:
-#   HOOK_DEBUG=1            — surface chatty subcommand output on the tty.
+#   HOOK_DEBUG=1            — mirror log() and chatty subcommand output to
+#                              the tty. Off by default so hook narration
+#                              stays in the logfile and doesn't bleed into
+#                              the Claude TUI of the running session that
+#                              triggered the hook.
 #   HOOK_DRY_RUN=1          — log destructive operations as "[dry-run] would ..."
 #                              instead of executing them. Useful for debugging
 #                              the cleanup loop without nuking real worktrees:
@@ -28,7 +32,8 @@
 #   $OUT        — $TARGET_TTY when HOOK_DEBUG=1, else /dev/null (used to
 #                 silence chatty subcommands while still capturing failures
 #                 via log())
-#   log()       — prints "$timestamp $tag $msg" to $TARGET_TTY and LOGFILE
+#   log()       — appends "$timestamp $tag $msg" to LOGFILE; also mirrors to
+#                 $TARGET_TTY when HOOK_DEBUG=1
 # $1: tag string included in every log line (e.g. "[create]" / "[remove]")
 setup_logging() {
 	# Promoted to a global so log() can read it after setup_logging returns
@@ -37,17 +42,23 @@ setup_logging() {
 	LOGFILE="/tmp/worktree-hooks-$(date '+%Y-%m-%d').log"
 	rotate_log_if_oversized "$LOGFILE" "${HOOK_LOG_MAX_BYTES:-5242880}"
 	TARGET_TTY="${CLAUDE_INVOKER_TTY:-/dev/tty}"
-	if [ "${HOOK_DEBUG:-0}" = "1" ]; then
-		OUT="$TARGET_TTY"
-	else
-		OUT=/dev/null
-	fi
 	DRY_RUN="${HOOK_DRY_RUN:-0}"
 	# Defined here, called from caller scope after we return — invisible to
 	# static analysis, hence the disables for "unreachable" / "unused".
-	# shellcheck disable=SC2317,SC2329
-	log() { echo "$(date '+%Y-%m-%d %H:%M:%S') $LOG_TAG $*" | tee -a "$LOGFILE" >"$TARGET_TTY" 2>/dev/null || true; }
-	# Same shape, file-only — for verbose lines we don't want on screen.
+	# Default to logfile-only: Claude Code's hook contract is stdin=payload,
+	# stdout=protocol, stderr=surfaced — writing to /dev/tty bypasses that
+	# and bleeds into the running session's TUI. HOOK_DEBUG=1 opts back in.
+	if [ "${HOOK_DEBUG:-0}" = "1" ]; then
+		OUT="$TARGET_TTY"
+		# shellcheck disable=SC2317,SC2329
+		log() { echo "$(date '+%Y-%m-%d %H:%M:%S') $LOG_TAG $*" | tee -a "$LOGFILE" >"$TARGET_TTY" 2>/dev/null || true; }
+	else
+		OUT=/dev/null
+		# shellcheck disable=SC2317,SC2329
+		log() { echo "$(date '+%Y-%m-%d %H:%M:%S') $LOG_TAG $*" >> "$LOGFILE"; }
+	fi
+	# Always file-only, even under HOOK_DEBUG — for payload dumps and other
+	# noise we never want on the tty.
 	# shellcheck disable=SC2317,SC2329
 	log_quiet() { echo "$(date '+%Y-%m-%d %H:%M:%S') $LOG_TAG $*" >> "$LOGFILE"; }
 }
