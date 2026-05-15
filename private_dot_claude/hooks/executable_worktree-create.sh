@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Ignore the user's ~/.config/uv/uv.toml so options like `exclude-newer`
+# don't get snapshotted into the worktree's uv.lock and show up as
+# phantom drift vs. the version on the default branch.
+export UV_NO_CONFIG=1
+
 # shellcheck source=_common.sh
 source "$(dirname "$0")/_common.sh"
 
