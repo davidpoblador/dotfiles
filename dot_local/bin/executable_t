@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# ABOUTME: Opens a Ghostty split-right at the current shell's cwd via AppleScript.
+# ABOUTME: Designed for use behind Claude Code's `!` shell prefix (e.g. `! t`).
+set -euo pipefail
+
+osascript - "$PWD" >/dev/null <<'EOF'
+on run argv
+  set cwd to item 1 of argv
+  tell application "Ghostty"
+    split (focused terminal of selected tab of front window) direction right with configuration {initial working directory:cwd}
+  end tell
+end run
+EOF
