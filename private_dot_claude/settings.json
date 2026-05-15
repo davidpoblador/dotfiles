@@ -173,6 +173,10 @@
         "hooks": [
           {
             "type": "command",
+            "command": "~/.claude/hooks/user-prompt-split.sh"
+          },
+          {
+            "type": "command",
             "command": "~/.claude/hooks/cwd-changed-osc7.sh"
           }
         ]
