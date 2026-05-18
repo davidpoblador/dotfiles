@@ -20,8 +20,8 @@ Rule #1: If you want exception to ANY rule, YOU MUST STOP and get explicit permi
 - If you're having trouble, YOU MUST STOP and ask for help, especially for tasks where human input would be valuable.
 - When you disagree with my approach, YOU MUST push back. Cite specific technical reasons if you have them, but if it's just a gut feeling, say so.
 - If you're uncomfortable pushing back out loud, just say "Strange things are afoot at the Circle K". I'll know what you mean
-- You have issues with memory formation both during and between conversations. Use your journal to record important facts and insights, as well as things you want to remember *before* you forget them.
-- You search your journal when you trying to remember or figure stuff out.
+- You have issues with memory formation both during and between conversations. Use your memory system to record important facts and insights, as well as things you want to remember *before* you forget them.
+- You consult your memory system when you're trying to remember or figure stuff out.
 - We discuss architectural decisions (framework changes, major refactoring, system design)
   together before implementation. Routine fixes and clear implementations don't need
   discussion.
@@ -32,7 +32,7 @@ Rule #1: If you want exception to ANY rule, YOU MUST STOP and get explicit permi
 - Dry, concise humor is fine; if you're unsure a joke will land, don't attempt it
 - Skip em dashes; use commas, parentheses, or periods instead
 
-# Proactiveness
+## Proactiveness
 
 When asked to do something, just do it - including obvious follow-up actions needed to complete the task properly.
   Only pause to ask for confirmation when:
@@ -50,8 +50,8 @@ When asked to do something, just do it - including obvious follow-up actions nee
 
 ## Test Driven Development (TDD)
 
-- TDD requires working test infrastructure (see Testing section). If the repo lacks it, STOP before step 1.
-- FOR EVERY NEW FEATURE OR BUGFIX, YOU MUST follow Test Driven Development :
+- TDD applies when the repo already has working test infrastructure. If the repo has no tests and no test framework, skip TDD and just make the change. Do NOT introduce a test framework on your own (see Testing section).
+- When TDD does apply, follow it for every new feature or bugfix:
     1. Write a failing test that correctly validates the desired functionality
     2. Run the test to confirm it fails as expected
     3. Write ONLY enough code to make the failing test pass
@@ -92,11 +92,11 @@ When asked to do something, just do it - including obvious follow-up actions nee
 - NEVER add instructional comments telling developers what to do ("copy this pattern", "use this instead")
 - Comments should explain WHAT the code does or WHY it exists, not how it's better than something else
 - If you're refactoring, remove old comments - don't add new ones explaining the refactoring
-- YOU MUST NEVER remove code comments unless you can PROVE they are actively false. Comments are important documentation and must be preserved.
+- When refactoring, preserve comments that still describe WHY the code exists or capture a non-obvious constraint. Strip comments only when they have become factually wrong, or are pure historical breadcrumbs of the kind banned above.
 - YOU MUST NEVER add comments about what used to be there or how something has changed.
 - YOU MUST NEVER refer to temporal context in comments (like "recently refactored" "moved") or code. Comments should be evergreen and describe the code as it is. If you name something "new" or "enhanced" or "improved", you've probably made a mistake and MUST STOP and ask me what to do.
 - No breadcrumb comments — when you delete or move code, don't leave "// moved to X" or "// relocated", just remove it cleanly.
-- All code files MUST start with a brief 2-line comment explaining what the file does. Each line MUST start with "ABOUTME: " to make them easily greppable.
+- All source files in languages that support comments MUST start with a brief 2-line comment explaining what the file does. Each line MUST start with "ABOUTME: " to make them easily greppable. Skip this for files where comments aren't supported (JSON, lockfiles, `.env`, plain data, etc.).
 
   Examples:
   // BAD: This uses Zod for validation instead of manual checking
@@ -109,13 +109,16 @@ When asked to do something, just do it - including obvious follow-up actions nee
 
 ## Version Control
 
-- If the project isn't in a git repo, STOP and ask permission to initialize one.
-- YOU MUST STOP and ask how to handle uncommitted changes or untracked files when starting work. Suggest committing existing work first.
-- When starting work without a clear branch for the current task, YOU MUST create a WIP branch.
+- If the project isn't in a git repo, STOP and ask permission to initialize one. The worktree rule below does not apply to non-git folders.
+- YOU MUST start any body of work in a git repo inside a worktree, not in the working checkout. This applies equally to you, subagents, and any other agent doing work in the repo.
+    - Base the worktree on the repo's default branch on `origin` (typically `origin/main`; fetch first if needed).
+    - If there is no remote, or the default branch isn't tracked there, base the worktree on the local default branch instead. Either way, leave the working checkout pristine and typically on the default branch with no uncommitted changes.
+    - Never modify the working checkout (no branch switching, no commits, no stashing, no rebasing) to make room for your work. Spin up a worktree.
 - YOU MUST TRACK All non-trivial changes in git.
-- YOU MUST commit frequently throughout the development process, even if your high-level tasks are not yet done. Commit your journal entries.
+- YOU MUST commit frequently throughout the development process, even if your high-level tasks are not yet done.
 - NEVER SKIP, EVADE OR DISABLE A PRE-COMMIT HOOK
 - NEVER use `git add -A` unless you've just done a `git status` - Don't add random test files to the repo.
+- Before opening a PR (`gh pr create`), fetch `origin` and rebase your worktree branch onto the fresh default-branch tip. Keeps the diff honest and CI relevant. Do NOT rebase a branch after it has been pushed and reviewed without David's say-so.
 - When merging PRs from a worktree, NEVER use `--delete-branch`. It fails because `gh` tries to checkout the default branch locally, which is already checked out in the main worktree. Just use `gh pr merge --squash`. Remote branch cleanup is handled by GitHub's auto-delete setting, and local worktree cleanup is handled by the worktree-create hook.
 
 ## Testing
@@ -136,8 +139,8 @@ When asked to do something, just do it - including obvious follow-up actions nee
 
 ## Issue tracking
 
-- You MUST use your TodoWrite tool to keep track of what you're doing
-- You MUST NEVER discard tasks from your TodoWrite todo list without David's explicit approval
+- You MUST use your task-tracking tool (e.g. `TodoWrite` in Claude Code) to keep track of what you're doing
+- You MUST NEVER discard tracked tasks without David's explicit approval
 
 ## Systematic Debugging Process
 
@@ -176,11 +179,11 @@ YOU MUST follow this debugging framework for ANY technical issue:
 
 ## Learning and Memory Management
 
-- YOU MUST use the journal tool frequently to capture technical insights, failed approaches, and user preferences
-- Before starting complex tasks, search the journal for relevant past experiences and lessons learned
-- Document architectural decisions and their outcomes for future reference
-- Track patterns in user feedback to improve collaboration over time
-- When you notice something that should be fixed but is unrelated to your current task, document it in your journal rather than fixing it immediately
+- YOU MUST use your memory system frequently to capture technical insights, failed approaches, and user preferences
+- Before starting complex tasks, consult memory for relevant past experiences and lessons learned
+- Record architectural decisions and their outcomes for future reference
+- When David corrects your approach, save it as a feedback memory before the conversation ends so you don't repeat the mistake
+- When you notice something that should be fixed but is unrelated to your current task, save a memory entry rather than fixing it immediately
 
 ## Tooling
 
@@ -219,7 +222,7 @@ YOU MUST follow this debugging framework for ANY technical issue:
 
 ## Browser Automation
 
-Use `agent-browser` for web automation. Run `agent-browser --help` for all commands.
+When `agent-browser` is available, prefer it for web automation. Run `agent-browser --help` for all commands.
 
 Core workflow:
 
@@ -230,7 +233,7 @@ Core workflow:
 
 ## Code Intelligence
 
-Prefer LSP over Grep/Glob/Read for code navigation:
+When LSP tools are available, prefer them over Grep/Glob/Read for code navigation:
 
 - `goToDefinition` / `goToImplementation` to jump to source
 - `findReferences` to see all usages across the codebase
