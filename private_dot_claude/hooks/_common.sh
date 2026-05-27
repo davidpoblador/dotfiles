@@ -199,8 +199,11 @@ branch_is_squash_merged_into() {
 # Best-effort removal of a worktree directory and its branch.
 #   1. Pre-delete heavy untracked dirs (.venv, node_modules) so `git worktree
 #      remove --force` doesn't trip over them.
-#   2. Run `git worktree remove --force`; on failure, fall back to rm -rf +
-#      `worktree prune` so we never leave a half-removed worktree.
+#   2. Run `git worktree remove --force`; on failure, prune git's bookkeeping
+#      and warn — but leave the directory alone. Matches Claude Code 2.1.147's
+#      built-in cleanup behavior, which dropped the rm -rf fallback to avoid
+#      destroying gitignored or in-progress files when remove fails for an
+#      unexpected reason.
 #   3. Delete the local branch if it still exists.
 #   4. Clear core.worktree if it pointed at the removed dir (an old git bug
 #      could leave that pointer dangling).
@@ -215,7 +218,7 @@ remove_worktree_branch() {
 	fi
 	rm -rf "$wt_dir/.venv" "$wt_dir/node_modules"
 	git -C "$repo" worktree remove --force "$wt_dir" >"$OUT" 2>&1 || {
-		rm -rf "$wt_dir"
+		log "⚠ git worktree remove --force failed for $wt_dir; leaving directory in place"
 		git -C "$repo" worktree prune >"$OUT" 2>&1 || true
 	}
 	if git -C "$repo" show-ref --verify --quiet "refs/heads/$branch" 2>/dev/null; then
