@@ -24,13 +24,27 @@ log_quiet "    payload: $(jq -c . <<< "$INPUT" 2>/dev/null || echo "$INPUT" | tr
 
 mkdir -p "$REPO_ROOT/.claude/worktrees"
 
-# --- ensure main/master is up to date with remote ---
+# --- pick base ref: prefer origin's tip, fall back to local default branch ---
+# Branching from origin/<default-branch> means the worktree always starts at
+# the remote tip without touching the user's local default-branch ref or
+# working tree. update_default_branch (heavier: update-ref + reset) is still
+# used by the remove + session-end paths where refreshing local main IS the
+# point.
 DEFAULT_BRANCH=$(detect_default_branch "$REPO_ROOT")
 if [ -n "$DEFAULT_BRANCH" ]; then
-	log "→ Fetching origin and updating $DEFAULT_BRANCH..."
-	update_default_branch "$REPO_ROOT" "$DEFAULT_BRANCH"
-	BASE_REF="$DEFAULT_BRANCH"
-	is_dry_run || log "✓ $DEFAULT_BRANCH is up to date"
+	if is_dry_run; then
+		log "[dry-run] would fetch origin/$DEFAULT_BRANCH"
+	else
+		log "→ Fetching origin/$DEFAULT_BRANCH..."
+		git -C "$REPO_ROOT" fetch origin "$DEFAULT_BRANCH" >"$OUT" 2>&1 \
+			|| log "⚠ fetch failed, falling back to local $DEFAULT_BRANCH"
+	fi
+	if git -C "$REPO_ROOT" show-ref --verify --quiet "refs/remotes/origin/$DEFAULT_BRANCH" 2>/dev/null; then
+		BASE_REF="origin/$DEFAULT_BRANCH"
+	else
+		BASE_REF="$DEFAULT_BRANCH"
+	fi
+	is_dry_run || log "✓ Base ref: $BASE_REF"
 else
 	BASE_REF="HEAD"
 	log "⚠ Could not determine default branch, using HEAD"
