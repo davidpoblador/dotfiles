@@ -346,10 +346,15 @@ clean_stale_worktrees() {
 			fi
 		else
 			# Never pushed. Only clean if it's old AND has no unique commits,
-			# so we never silently throw away in-progress local work.
+			# so we never silently throw away in-progress local work. A 0
+			# timestamp means the creation time is unknown (no reflog); treat
+			# that as too-young-to-clean rather than infinitely old, so missing
+			# data never lets us delete a worktree.
 			wt_created=$(branch_created_at "$repo" "$stale_branch")
 			age_hours=$(( ($(date +%s) - wt_created) / 3600 ))
-			if [ "$age_hours" -ge 24 ]; then
+			if [ "$wt_created" -le 0 ]; then
+				log "⏭ Keeping stale worktree: $stale_name (unknown creation time)"
+			elif [ "$age_hours" -ge 24 ]; then
 				unique_commits=$(unique_commits_against "$repo" "$base_ref" "$stale_branch")
 				if [ "$unique_commits" -eq 0 ]; then
 					should_clean=true
