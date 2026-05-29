@@ -374,6 +374,12 @@ alias cccy='claude --dangerously-skip-permissions'
 alias cccwy='claude --dangerously-skip-permissions -w'
 alias agents='cd ~/repos && claude agents'
 
+# Launch a background dig exploration in the digs workbench; topic inline
+digs() {
+    ( cd ~/repos/digs 2>/dev/null || { echo "digs: ~/repos/digs not found" >&2; exit 1; }
+      claude --bg "$*" )
+}
+
 # GitHub
 alias ghw='gh repo view --web'
 alias ghp='gh pr list --web'
