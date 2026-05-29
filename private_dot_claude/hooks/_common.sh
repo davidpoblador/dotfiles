@@ -295,7 +295,7 @@ clean_stale_worktrees() {
 	[ -d "$dir" ] || return 0
 	git -C "$repo" fetch origin --prune >"$OUT" 2>&1 || true
 
-	local stale_dir stale_name stale_branch has_upstream should_clean reason
+	local stale_dir stale_name stale_branch upstream has_upstream should_clean reason
 	local merged_pr wt_created age_hours unique_commits
 	local removed=0 kept=0 scanned=0
 	for stale_dir in "$dir"/*/; do
@@ -305,7 +305,19 @@ clean_stale_worktrees() {
 		[ "$stale_name" = "$skip" ] && continue
 		scanned=$((scanned + 1))
 
-		has_upstream=$(git -C "$repo" for-each-ref --format='%(upstream)' "refs/heads/$stale_branch" 2>/dev/null)
+		# A branch made with `git worktree add -b <name> origin/<default>`
+		# inherits origin/<default> as its upstream via branch.autoSetupMerge
+		# (on by default). That is NOT evidence the branch was ever pushed —
+		# so only count an upstream that points at the branch's own remote ref.
+		# Otherwise a fresh, never-pushed worktree takes the "pushed then remote
+		# gone" path, looks squash-merged (no unique commits vs base), and gets
+		# deleted mid-run.
+		upstream=$(git -C "$repo" for-each-ref --format='%(upstream)' "refs/heads/$stale_branch" 2>/dev/null)
+		if [ "$upstream" = "refs/remotes/origin/$stale_branch" ]; then
+			has_upstream="$upstream"
+		else
+			has_upstream=""
+		fi
 		should_clean=false
 		reason=""
 
