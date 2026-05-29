@@ -14,6 +14,15 @@ fi
 mise install -y 2>&1 | grep -vE "^mise all tools are installed$" || true
 mise upgrade -y 2>&1 | grep -vE "^mise All tools are up to date$" || true
 
+# Warn about tools installed but not pinned in config (e.g. left behind by
+# `mise use -g`, which chezmoi overwrites on apply). Don't auto-remove: some
+# may be wanted and belong in config/mise/config.toml.tmpl instead.
+if ! mise prune --tools --dry-run-code >/dev/null 2>&1; then
+  echo "[mise] installed but not pinned in config:"
+  mise ls --prunable
+  echo "[mise] add wanted ones to mise/config.toml.tmpl, drop the rest with: mise prune --tools"
+fi
+
 # Disable Go telemetry uploads (https://donottrack.sh/). Go has no env-var
 # equivalent; the setting persists in ~/.config/go/telemetry/mode.
 if command -v go &>/dev/null; then
