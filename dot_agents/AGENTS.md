@@ -120,6 +120,7 @@ When asked to do something, just do it - including obvious follow-up actions nee
 - NEVER use `git add -A` unless you've just done a `git status` - Don't add random test files to the repo.
 - Before opening a PR (`gh pr create`), fetch `origin` and rebase your worktree branch onto the fresh default-branch tip. Keeps the diff honest and CI relevant. Do NOT rebase a branch after it has been pushed and reviewed without David's say-so.
 - When merging PRs from a worktree, NEVER use `--delete-branch`. It fails because `gh` tries to checkout the default branch locally, which is already checked out in the main worktree. Just use `gh pr merge --squash`. Remote branch cleanup is handled by GitHub's auto-delete setting, and local worktree cleanup is handled by the worktree-create hook.
+- After a PR merges successfully, bring the main working checkout up to date without being asked: switch it to the default branch and fast-forward to the merged tip (`git -C <main checkout> switch main && git -C <main checkout> pull`). Don't make me ask for this every time.
 
 ## Testing
 
