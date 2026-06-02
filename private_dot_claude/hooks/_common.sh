@@ -109,13 +109,16 @@ detect_default_branch() {
 }
 
 # Fast-forward $branch in $repo to origin's tip. Always safe to call: if the
-# working tree has uncommitted changes we only reset the index (preserving
-# the user's edits); we --hard reset only when the tree was already clean.
+# working tree has uncommitted changes we reset only the index and preserve
+# every locally-edited file; we --hard reset only when the tree was already
+# clean. On a dirty tree we additionally sync forward the files the new
+# commits changed that had no local edits, so a just-merged PR's own files
+# don't linger as phantom "reversions" in the main checkout.
 # Logs progress through the caller's log() — caller is responsible for the
 # surrounding "✓ Fetching..." / "✓ up to date" announcements.
 # $1: repo root  $2: branch name (no refs/heads/ prefix)
 update_default_branch() {
-	local repo="$1" branch="$2" was_clean=false
+	local repo="$1" branch="$2" was_clean=false old_head new_head
 	if is_dry_run; then
 		log "[dry-run] would fetch + fast-forward $branch in $repo"
 		return 0
@@ -123,6 +126,7 @@ update_default_branch() {
 	if git -C "$repo" diff --quiet 2>/dev/null && git -C "$repo" diff --cached --quiet 2>/dev/null; then
 		was_clean=true
 	fi
+	old_head=$(git -C "$repo" rev-parse HEAD 2>/dev/null || true)
 	git -C "$repo" fetch origin "$branch" >"$OUT" 2>&1 || log "⚠ fetch failed, continuing with local $branch"
 	git -C "$repo" update-ref "refs/heads/$branch" "refs/remotes/origin/$branch" 2>"$OUT" \
 		|| log "⚠ update-ref failed, continuing with local $branch"
@@ -133,6 +137,24 @@ update_default_branch() {
 	else
 		git -C "$repo" reset --quiet >"$OUT" 2>&1 || true
 		log "⚠ Working tree had local changes, preserved them (index reset only)"
+		# A mixed reset advances HEAD + index to the new tip but never touches
+		# the working tree, so files the new commits changed are left at their
+		# old content and surface as phantom "reversions" of the just-merged
+		# work. Sync exactly those files forward — but only the ones with no
+		# local edits, so genuine in-progress work stays untouched.
+		new_head=$(git -C "$repo" rev-parse HEAD 2>/dev/null || true)
+		if [ -n "$old_head" ] && [ -n "$new_head" ] && [ "$old_head" != "$new_head" ]; then
+			local f synced=0
+			while IFS= read -r f; do
+				[ -n "$f" ] || continue
+				# Clean relative to the old tip means the working copy was never
+				# edited locally; safe to fast-forward to the new index content.
+				if git -C "$repo" diff --quiet "$old_head" -- "$f" 2>/dev/null; then
+					git -C "$repo" checkout -- "$f" >"$OUT" 2>&1 && synced=$((synced + 1)) || true
+				fi
+			done < <(git -C "$repo" diff --name-only "$old_head" "$new_head" 2>/dev/null)
+			[ "$synced" -gt 0 ] && log "✓ Synced $synced cleanly-merged file(s) forward, preserved local edits"
+		fi
 	fi
 }
 
