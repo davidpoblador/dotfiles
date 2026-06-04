@@ -131,7 +131,6 @@ Mise tools auto-upgrade daily in the background via `.zshrc`.
 | knock | Port-knock client |
 | lazydocker | Docker TUI |
 | litecli | SQLite CLI with autocomplete |
-| ngrok | Secure tunnels to localhost (cask) |
 | qrencode | QR code generator |
 | rsync | File sync |
 | sc-im | Terminal spreadsheet editor |
