@@ -201,8 +201,7 @@ Mise tools auto-upgrade daily in the background via `.zshrc`.
 | Package | Description |
 |---|---|
 | gcloud-cli | Google Cloud SDK (cask) |
-| docker-desktop | Docker (cask) |
-| docker-completion | Docker shell completions |
+| docker-desktop | Docker Desktop (cask) — ships the docker CLI and shell completions |
 
 #### Fonts
 
