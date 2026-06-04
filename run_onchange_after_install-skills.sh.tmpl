@@ -1,0 +1,14 @@
+{{- if eq .chezmoi.os "darwin" -}}
+#!/bin/bash
+# ABOUTME: Install agent skills whenever the wishlist changes (and on a fresh machine).
+# ABOUTME: chezmoi re-runs this script when the wishlist hash below changes.
+set -euo pipefail
+
+# skills.wishlist hash: {{ include "dot_agents/skills.wishlist" | sha256sum }}
+
+if command -v bunx >/dev/null 2>&1 && [ -x "${HOME}/.local/bin/skills-bootstrap" ]; then
+  "${HOME}/.local/bin/skills-bootstrap"
+else
+  echo "skills: bunx or skills-bootstrap not ready yet; will install on next 'chezmoi apply'" >&2
+fi
+{{ end -}}
