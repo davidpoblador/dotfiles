@@ -62,6 +62,23 @@ cache_eval() {
   source "$cache"
 }
 
+# Install a command's zsh completion as an autoloaded fpath function so its
+# (often large) body loads lazily on first completion instead of being sourced
+# into every shell. Regenerate when the binary changes, dropping the compdump
+# so the next compinit re-registers it. Must run before compinit.
+# Usage: ensure_completion <cmd> <binary> <generate args...>
+ensure_completion() {
+  local name=$1 bin=$2; shift 2
+  local src; src=$(command -v "$bin" 2>/dev/null) || return
+  local dir="${XDG_DATA_HOME}/zsh/completions"
+  ensure_dir_exists "$dir"
+  local comp="$dir/_$name"
+  if [[ ! -s "$comp" || "$src" -nt "$comp" ]]; then
+    "$bin" "$@" > "$comp"
+    rm -f "${XDG_CACHE_HOME}/zsh/zcompdump"
+  fi
+}
+
 ensure_dir_exists() {
   if [[ ! -d "$1" ]]; then
     mkdir -p "$1"
@@ -441,6 +458,13 @@ if [[ -d "$HOME/.docker/completions" ]]; then
   fpath=("$HOME/.docker/completions" $fpath)
 fi
 
+# Tool completions installed as lazy-autoloaded fpath functions. uv ships a
+# ~6800-line completion; autoloading defers that parse until first use instead
+# of sourcing it into every shell. Generated before compinit so it registers.
+fpath=("${XDG_DATA_HOME}/zsh/completions" $fpath)
+ensure_completion uv uv generate-shell-completion zsh
+ensure_completion uvx uvx --generate-shell-completion zsh
+
 autoload -Uz compinit
 ensure_dir_exists "${XDG_CACHE_HOME}/zsh"
 
@@ -466,15 +490,6 @@ zstyle ':completion:*' menu select
 
 # Show dotfiles in tab completion
 setopt GLOB_DOTS
-
-# Tool-specific completions (deferred when available)
-if (( $+functions[zsh-defer] )); then
-  zsh-defer -c 'cache_eval uvx uvx --generate-shell-completion zsh'
-  zsh-defer -c 'cache_eval uv uv generate-shell-completion zsh'
-else
-  cache_eval uvx uvx --generate-shell-completion zsh
-  cache_eval uv uv generate-shell-completion zsh
-fi
 
 # Google Cloud SDK completions
 if [[ -n "$GCP_SDK_PATH" && -d "$GCP_SDK_PATH" ]]; then
