@@ -398,39 +398,23 @@ alias dcl='docker compose logs -f --tail 100'
 dlogs() { docker logs -f --tail 100 "$1"; }   # Follow container logs
 dexec() { docker exec -it "$1" /bin/sh; }    # Shell into a container
 
-# Add a global agent skill and wire it into every agent we use.
+# Add an agent skill to the wishlist, then install it into every agent we use.
+# Records intent in the chezmoi-managed wishlist source and applies it, so the
+# wishlist stays the single source of truth (commit it afterwards). The install
+# itself runs via `skills-bootstrap` (~/.local/bin), shared with the chezmoi hook.
 # Usage: skills-add <source> [--skill <name> ...]
-if command_exists bunx; then
+if command_exists chezmoi; then
   skills-add() {
-      bunx skills add "$@" \
-          --agent claude-code \
-          --agent codex \
-          --agent gemini-cli \
-          --agent github-copilot \
-          --agent opencode \
-          -g -y || return
-
-      local wishlist="$HOME/.agents/skills.wishlist"
-      local entry="$*"
-      if [[ ! -f "$wishlist" ]] || ! grep -qFx -- "$entry" "$wishlist"; then
-          echo "$entry" >> "$wishlist"
-          echo "[skills-add] appended to $wishlist"
-          echo "[skills-add] run: chezmoi re-add $wishlist && cd \$(chezmoi source-path) && git status"
+      local src entry
+      src="$(chezmoi source-path "$HOME/.agents/skills.wishlist")" || return
+      entry="$*"
+      if grep -qFx -- "$entry" "$src"; then
+          echo "[skills-add] already in wishlist: $entry"
+      else
+          echo "$entry" >> "$src"
+          echo "[skills-add] added to wishlist: $entry (commit it in \$(chezmoi cd))"
       fi
-  }
-
-  # Install the curated set of agent skills from ~/.agents/skills.wishlist
-  # (chezmoi-managed). Idempotent — safe to re-run, bunx refreshes existing.
-  skills-bootstrap() {
-      local wishlist="$HOME/.agents/skills.wishlist"
-      if [[ ! -f "$wishlist" ]]; then
-          echo "skills-bootstrap: no wishlist at $wishlist" >&2
-          return 1
-      fi
-      while IFS= read -r line; do
-          [[ -z "$line" || "$line" == \#* ]] && continue
-          skills-add ${=line}
-      done < "$wishlist"
+      chezmoi apply "$HOME/.agents/skills.wishlist" && skills-bootstrap
   }
 fi
 
