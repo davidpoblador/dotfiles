@@ -396,24 +396,33 @@ skills-bootstrap
 refreshes existing skills — so it's also how you apply wishlist changes and how a
 fresh machine gets the full set.
 
-### Add or remove a skill
+### Add a skill
 
-The wishlist goes through a PR like everything else here:
+```bash
+skills-add <source> --skill <name> [--skill <name> ...]
+# e.g. skills-add anthropics/skills --skill skill-creator
+```
 
-1. Edit `dot_agents/skills.wishlist` (add a `source --skill name` line, or delete
-   one) and merge the PR.
-2. Pull the change into the chezmoi source and apply it. The source is a separate
-   checkout (`~/.local/share/chezmoi`), so pull it first:
+`skills-add` (`~/.local/bin`) does the whole round trip: it installs the skill
+into every agent, merges the entry into the wishlist source (located via
+`chezmoi source-path`), applies it to the live copy, and commits + pushes the
+change with `chezmoi git`. It pushes **directly to the default branch** — no PR,
+by design for this curated file. The source may be a bare `owner/repo` slug or a
+full GitHub URL, and re-adding a skill that's already listed is a no-op.
 
-   ```bash
-   git -C ~/.local/share/chezmoi pull
-   chezmoi apply ~/.agents/skills.wishlist
-   ```
-3. Install the new set: `skills-bootstrap`.
+To add a skill by hand instead: `chezmoi cd`, edit `dot_agents/skills.wishlist`,
+then `chezmoi apply ~/.agents/skills.wishlist` and `skills-bootstrap`.
 
-Removing a line from the wishlist stops future re-installs but does **not** delete
-the already-installed skill. Remove it explicitly with
-`bunx skills remove <skill> -g`.
+### Remove a skill
+
+Delete its line (or `--skill` token) from the wishlist source (`chezmoi cd`, edit
+`dot_agents/skills.wishlist`), then `chezmoi apply ~/.agents/skills.wishlist`.
+That stops future re-installs but does **not** uninstall what's already there —
+remove that explicitly:
+
+```bash
+bunx skills remove <skill> -g
+```
 
 ### Update skills
 
