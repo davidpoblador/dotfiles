@@ -224,14 +224,36 @@ YOU MUST follow this debugging framework for ANY technical issue:
 
 ## Browser Automation
 
-When `agent-browser` is available, prefer it for web automation. Run `agent-browser --help` for all commands.
+Default to `agent-browser` for web automation. It's a CLI you shell out to (not an
+MCP server), so it costs no idle tool-schema tokens and returns compact, ref-based
+accessibility-tree output. For version-matched guidance, run
+`agent-browser skills get core --full` before driving it — that content always
+matches the installed binary, so it never goes stale.
 
-Core workflow:
+Core loop:
 
-1. `agent-browser open <url>` - Navigate to page
-2. `agent-browser snapshot -i` - Get interactive elements with refs (@e1, @e2)
-3. `agent-browser click @e1` / `fill @e2 "text"` - Interact using refs
-4. Re-snapshot after page changes
+1. `agent-browser open <url>` - navigate
+2. `agent-browser snapshot -i` - interactive elements only, each with a ref (@e1, @e2)
+3. `agent-browser click @e1` / `fill @e2 "text"` - act by ref
+4. Re-snapshot after the page changes; `batch` chains multiple steps in one spawn
+
+Session state persists per project automatically (a PreToolUse hook sets
+`AGENT_BROWSER_SESSION_NAME` from the repo root), so cookies and logins survive
+across commands.
+
+Anti-detection posture is set globally in `~/.agent-browser/config.json`: real
+Google Chrome (not the bundled Chrome for Testing), headed, and a dedicated
+persistent profile (`~/.agent-browser/profile`) that warms a genuine fingerprint
+and its own logins over time. This defeats basic detection only — agent-browser
+does no local fingerprint spoofing. For sites with hard anti-bot (Cloudflare,
+DataDome), use a cloud stealth provider instead (`-p browserless` with
+`BROWSERLESS_STEALTH=true`, or `-p kernel` with `KERNEL_STEALTH=true`; both need a
+provider API key). Headed needs a graphical login session, so it won't render in
+headless or pure-SSH contexts.
+
+Reach for Playwright MCP or chrome-devtools-mcp instead when you need what
+agent-browser lacks: network interception, PDF generation, or a non-Chromium
+browser (agent-browser is Chrome-only).
 
 ## Code Intelligence
 
