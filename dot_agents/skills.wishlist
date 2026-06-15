@@ -1,5 +1,6 @@
 alltuner/skills --skill vacant
 anthropics/skills --skill frontend-design
+cloudflare/skills --skill cloudflare
 microsoft/azure-skills --skill microsoft-foundry
 pbakaus/impeccable --skill impeccable
 shadcn/ui --skill shadcn
