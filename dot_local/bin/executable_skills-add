@@ -77,13 +77,14 @@ awk -v src="${src}" -v add="${skills[*]}" '
   }
   { print }
   END { if (!done) { line = src; for (k = 1; k <= na; k++) line = line " --skill " A[k]; print line } }
-' "${wishlist}" | LC_ALL=C sort > "${tmp}" && mv "${tmp}" "${wishlist}"
+' "${wishlist}" | LC_ALL=C sort > "${tmp}"
 
 # Nothing to do if the skill was already listed.
-if chezmoi git -- diff --quiet -- "${wishlist}"; then
+if cmp -s "${tmp}" "${wishlist}"; then
   echo "skills-add: ${src} (${skills[*]}) already in the wishlist; installed, nothing to commit."
   exit 0
 fi
+mv "${tmp}" "${wishlist}"
 
 # 3. Sync the live copy, then commit + push the wishlist via chezmoi.
 chezmoi apply "${target}"
