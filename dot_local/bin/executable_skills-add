@@ -1,0 +1,119 @@
+#!/usr/bin/env bash
+# ABOUTME: Install an agent skill now and open a PR adding it to the wishlist.
+# ABOUTME: Runs `bunx skills add` for all agents, then merges the entry into the
+# ABOUTME: chezmoi-tracked skills.wishlist via a throwaway git worktree and a PR.
+set -euo pipefail
+
+usage() {
+  cat >&2 <<'USAGE'
+usage: skills-add <source> --skill <name> [--skill <name> ...]
+  e.g. skills-add anthropics/skills --skill skill-creator
+       skills-add https://github.com/anthropics/skills --skill skill-creator
+
+Installs the skill into every agent and opens a PR adding it to
+dot_agents/skills.wishlist. Set DOTFILES_REPO to override the repo path
+(default: ~/repos/dotfiles).
+USAGE
+}
+
+[ "$#" -ge 3 ] || { usage; exit 2; }
+
+repo="${DOTFILES_REPO:-${HOME}/repos/dotfiles}"
+wishlist_rel="dot_agents/skills.wishlist"
+
+for cmd in bunx git gh awk; do
+  command -v "${cmd}" >/dev/null 2>&1 || { echo "skills-add: required command '${cmd}' not found" >&2; exit 1; }
+done
+[ -f "${repo}/${wishlist_rel}" ] || {
+  echo "skills-add: no wishlist at ${repo}/${wishlist_rel} (set DOTFILES_REPO)" >&2
+  exit 1
+}
+
+# Normalize the source to owner/repo, accepting a bare slug or a GitHub URL.
+src="$1"; shift
+src="${src#https://github.com/}"
+src="${src#http://github.com/}"
+src="${src#git@github.com:}"
+src="${src%.git}"
+src="${src%/}"
+
+# Remaining args are skill flags; keep them verbatim for bunx and collect the
+# names for the wishlist entry.
+bunx_args=("$@")
+skills=()
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --skill|-s) shift; [ "$#" -gt 0 ] || { echo "skills-add: --skill needs a name" >&2; exit 2; }
+                skills+=("$1") ;;
+    --skill=*)  skills+=("${1#--skill=}") ;;
+  esac
+  shift
+done
+[ "${#skills[@]}" -ge 1 ] || { echo "skills-add: pass at least one --skill <name>" >&2; usage; exit 2; }
+
+# Clean up the throwaway worktree (and its branch, unless we pushed it).
+wt=""
+branch=""
+pushed=0
+cleanup() {
+  [ -n "${wt}" ] && git -C "${repo}" worktree remove --force "${wt}" 2>/dev/null || true
+  [ -n "${branch}" ] && [ "${pushed}" -eq 0 ] && git -C "${repo}" branch -D "${branch}" 2>/dev/null || true
+}
+trap cleanup EXIT
+
+# 1. Install into every agent, globally. Idempotent.
+echo "skills-add: installing ${src} (${skills[*]}) into all agents..."
+bunx skills add "${src}" "${bunx_args[@]}" \
+  --agent claude-code \
+  --agent codex \
+  --agent gemini-cli \
+  --agent github-copilot \
+  --agent opencode \
+  -g -y
+
+# 2. Open a PR adding the entry to the wishlist, in an isolated worktree so the
+#    working checkout is never touched.
+default="$(git -C "${repo}" symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null | sed 's#^origin/##')"
+default="${default:-main}"
+git -C "${repo}" fetch -q origin
+
+branch="skills-add-${skills[0]}"
+wt="$(mktemp -d)/${branch}"
+git -C "${repo}" worktree add -q -b "${branch}" "${wt}" "origin/${default}"
+
+wl="${wt}/${wishlist_rel}"
+# Merge the new skills into the source's existing line (deduped), or append a new
+# line, then keep the file sorted by source for clean diffs.
+awk -v src="${src}" -v add="${skills[*]}" '
+  BEGIN { na = split(add, A, " ") }
+  $1 == src && !done {
+    delete seen; n = 0
+    for (i = 2; i <= NF; i++)
+      if ($i == "--skill" && (i + 1) <= NF) { s = $(++i); if (!(s in seen)) { seen[s] = 1; ORD[++n] = s } }
+    for (k = 1; k <= na; k++) { s = A[k]; if (!(s in seen)) { seen[s] = 1; ORD[++n] = s } }
+    line = src; for (k = 1; k <= n; k++) line = line " --skill " ORD[k]
+    print line; done = 1; next
+  }
+  { print }
+  END { if (!done) { line = src; for (k = 1; k <= na; k++) line = line " --skill " A[k]; print line } }
+' "${wl}" | LC_ALL=C sort > "${wl}.tmp" && mv "${wl}.tmp" "${wl}"
+
+if git -C "${wt}" diff --quiet -- "${wishlist_rel}"; then
+  echo "skills-add: ${src} (${skills[*]}) already in the wishlist; installed, nothing to PR."
+  exit 0
+fi
+
+git -C "${wt}" add "${wishlist_rel}"
+git -C "${wt}" commit -q -m "skills: add ${skills[*]} from ${src}"
+git -C "${wt}" push -q -u origin "${branch}"
+pushed=1
+
+pr_url="$(cd "${wt}" && gh pr create \
+  --title "skills: add ${skills[*]} from ${src}" \
+  --body "Adds \`${src}\` (${skills[*]}) to the skills wishlist. Installed locally via \`skills-add\`.")"
+
+echo
+echo "skills-add: installed and opened PR:"
+echo "  ${pr_url}"
+echo "after merge, sync the tracked wishlist (the skill is already installed):"
+echo "  git -C \"\${HOME}/.local/share/chezmoi\" pull && chezmoi apply ~/.agents/skills.wishlist"

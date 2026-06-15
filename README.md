@@ -396,24 +396,41 @@ skills-bootstrap
 refreshes existing skills — so it's also how you apply wishlist changes and how a
 fresh machine gets the full set.
 
-### Add or remove a skill
+### Add a skill
 
-The wishlist goes through a PR like everything else here:
+```bash
+skills-add <source> --skill <name> [--skill <name> ...]
+# e.g. skills-add anthropics/skills --skill skill-creator
+```
 
-1. Edit `dot_agents/skills.wishlist` (add a `source --skill name` line, or delete
-   one) and merge the PR.
-2. Pull the change into the chezmoi source and apply it. The source is a separate
-   checkout (`~/.local/share/chezmoi`), so pull it first:
+`skills-add` (`~/.local/bin`) does the whole round trip: installs the skill into
+every agent, then merges the entry into the wishlist and opens a PR for it (the
+git work happens in a throwaway worktree, so the working checkout is untouched).
+The skill is live immediately from the install — the PR just persists it. It does
+**not** auto-merge; review and merge the PR yourself, then sync the tracked
+wishlist (the skill is already installed):
 
-   ```bash
-   git -C ~/.local/share/chezmoi pull
-   chezmoi apply ~/.agents/skills.wishlist
-   ```
-3. Install the new set: `skills-bootstrap`.
+```bash
+git -C ~/.local/share/chezmoi pull
+chezmoi apply ~/.agents/skills.wishlist
+```
 
-Removing a line from the wishlist stops future re-installs but does **not** delete
-the already-installed skill. Remove it explicitly with
-`bunx skills remove <skill> -g`.
+The source may be a bare `owner/repo` slug or a full GitHub URL; re-adding a skill
+that's already listed is a no-op. Set `DOTFILES_REPO` to override the repo path
+(default `~/repos/dotfiles`).
+
+To add a skill by hand instead, edit `dot_agents/skills.wishlist`, merge the PR,
+then run the two sync commands above followed by `skills-bootstrap`.
+
+### Remove a skill
+
+Delete its line (or `--skill` token) from `dot_agents/skills.wishlist` and merge
+the PR. That stops future re-installs but does **not** uninstall what's already
+there — remove that explicitly:
+
+```bash
+bunx skills remove <skill> -g
+```
 
 ### Update skills
 
