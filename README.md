@@ -403,30 +403,22 @@ skills-add <source> --skill <name> [--skill <name> ...]
 # e.g. skills-add anthropics/skills --skill skill-creator
 ```
 
-`skills-add` (`~/.local/bin`) does the whole round trip: installs the skill into
-every agent, then merges the entry into the wishlist and opens a PR for it (the
-git work happens in a throwaway worktree, so the working checkout is untouched).
-The skill is live immediately from the install — the PR just persists it. It does
-**not** auto-merge; review and merge the PR yourself, then sync the tracked
-wishlist (the skill is already installed):
+`skills-add` (`~/.local/bin`) does the whole round trip: it installs the skill
+into every agent, merges the entry into the wishlist source (located via
+`chezmoi source-path`), applies it to the live copy, and commits + pushes the
+change with `chezmoi git`. It pushes **directly to the default branch** — no PR,
+by design for this curated file. The source may be a bare `owner/repo` slug or a
+full GitHub URL, and re-adding a skill that's already listed is a no-op.
 
-```bash
-git -C ~/.local/share/chezmoi pull
-chezmoi apply ~/.agents/skills.wishlist
-```
-
-The source may be a bare `owner/repo` slug or a full GitHub URL; re-adding a skill
-that's already listed is a no-op. Set `DOTFILES_REPO` to override the repo path
-(default `~/repos/dotfiles`).
-
-To add a skill by hand instead, edit `dot_agents/skills.wishlist`, merge the PR,
-then run the two sync commands above followed by `skills-bootstrap`.
+To add a skill by hand instead: `chezmoi cd`, edit `dot_agents/skills.wishlist`,
+then `chezmoi apply ~/.agents/skills.wishlist` and `skills-bootstrap`.
 
 ### Remove a skill
 
-Delete its line (or `--skill` token) from `dot_agents/skills.wishlist` and merge
-the PR. That stops future re-installs but does **not** uninstall what's already
-there — remove that explicitly:
+Delete its line (or `--skill` token) from the wishlist source (`chezmoi cd`, edit
+`dot_agents/skills.wishlist`), then `chezmoi apply ~/.agents/skills.wishlist`.
+That stops future re-installs but does **not** uninstall what's already there —
+remove that explicitly:
 
 ```bash
 bunx skills remove <skill> -g
