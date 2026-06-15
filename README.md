@@ -92,7 +92,7 @@ Mise tools auto-upgrade daily in the background via `.zshrc`.
 | `.config/gh/` | GitHub CLI |
 | `.config/bat/`, `.config/lazygit/` | CLI tools |
 | `.claude/` | Claude Code settings and hooks |
-| `.agents/` | Shared `AGENTS.md`/`CLAUDE.md` and the agent-skills wishlist, consumed by every agent via symlink |
+| `.agents/` | Shared `AGENTS.md`/`CLAUDE.md`, consumed by every agent via symlink |
 | `.docker/` | Docker daemon config |
 | `.ssh/` | SSH config (no keys) |
 | `.vimrc` | Vim config |
@@ -358,58 +358,6 @@ All plugins except zsh-defer are lazy-loaded with `kind:defer`.
 | `gnb <branch>` | Checkout main, pull, create new branch |
 | `cdm` | cd to main worktree of current git repo |
 | `rep [name]` | cd to `~/repos` or `~/repos/<name>` |
-
-## Agent skills
-
-[Agent skills](https://skills.sh) are reusable bundles of procedural knowledge
-that coding agents load on demand. They're installed once into every agent on the
-machine — Claude Code, Codex, Gemini CLI, GitHub Copilot, OpenCode — using the
-`skills` CLI (run via `bunx`). One copy lives in `~/.agents/skills/<skill>` and
-each agent's skill directory symlinks to it, so there's a single physical copy per
-skill.
-
-The curated set is declared in `~/.agents/skills.wishlist` (chezmoi-managed), which
-is the **single source of truth**. Each line is a source repo plus the skills to
-pull from it:
-
-```
-anthropics/skills --skill frontend-design
-pbakaus/impeccable --skill impeccable --skill layout --skill shape
-stripe/ai --skill stripe-best-practices --skill stripe-projects --skill upgrade-stripe
-```
-
-### Adding a skill
-
-```bash
-skills-add <source> [--skill <name> ...]
-# e.g. skills-add anthropics/skills --skill mcp-builder
-```
-
-`skills-add` appends the entry to the wishlist (writing to the chezmoi source),
-applies it, and installs the skill into every agent. Commit the wishlist afterwards
-to persist it — `cmc` (`chezmoi cd`), then commit and push.
-
-### Installing the whole set
-
-```bash
-skills-bootstrap        # (re)install everything in the wishlist; idempotent
-```
-
-You rarely run this by hand. A chezmoi `run_onchange` hook runs it automatically
-whenever the wishlist changes and on a fresh machine, so a freshly-bootstrapped
-machine ends up with exactly the declared set. Installed skills also refresh daily
-in the background (`bunx skills update`, via `.zshrc`).
-
-### Browsing and inspecting
-
-```bash
-bunx skills find <query>    # search the skills.sh registry
-bunx skills ls              # list what's installed
-```
-
-Resolved sources and content hashes are tracked in `~/.agents/.skill-lock.json`.
-That file is deliberately **not** chezmoi-managed — the wishlist is what reproduces
-the set, the lock is just the CLI's bookkeeping.
 
 ## Profiles
 
