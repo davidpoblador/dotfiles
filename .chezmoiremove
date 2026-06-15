@@ -1,7 +1,5 @@
 .local/bin/wallpaper-info
 .agents/skills.list
-.agents/skills.wishlist
-.local/bin/skills-bootstrap
 .local/bin/skills-manifest
 .claude/skills/notify-master
 .local/bin/notify-master
