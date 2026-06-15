@@ -178,14 +178,6 @@ if command_exists brew; then
   fi
 fi
 
-# Auto-update agent skills daily in background (non-blocking)
-if command_exists bunx; then
-  if [[ ! -f "${XDG_CACHE_HOME}/skills_last_update" ]] || [[ $(find "${XDG_CACHE_HOME}/skills_last_update" -mtime +1 2>/dev/null) ]]; then
-    echo "[skills] Updating in the background..."
-    { bunx skills update -g -y >/dev/null 2>&1 && touch "${XDG_CACHE_HOME}/skills_last_update" } &!
-  fi
-fi
-
 ###########################################################
 # Plugins (antidote + zsh-defer, when available)          #
 ###########################################################
@@ -421,26 +413,6 @@ alias dcl='docker compose logs -f --tail 100'
 
 dlogs() { docker logs -f --tail 100 "$1"; }   # Follow container logs
 dexec() { docker exec -it "$1" /bin/sh; }    # Shell into a container
-
-# Add an agent skill to the wishlist, then install it into every agent we use.
-# Records intent in the chezmoi-managed wishlist source and applies it, so the
-# wishlist stays the single source of truth (commit it afterwards). The install
-# itself runs via `skills-bootstrap` (~/.local/bin), shared with the chezmoi hook.
-# Usage: skills-add <source> [--skill <name> ...]
-if command_exists chezmoi; then
-  skills-add() {
-      local src entry
-      src="$(chezmoi source-path "$HOME/.agents/skills.wishlist")" || return
-      entry="$*"
-      if grep -qFx -- "$entry" "$src"; then
-          echo "[skills-add] already in wishlist: $entry"
-      else
-          echo "$entry" >> "$src"
-          echo "[skills-add] added to wishlist: $entry (commit it in \$(chezmoi cd))"
-      fi
-      chezmoi apply "$HOME/.agents/skills.wishlist" && skills-bootstrap
-  }
-fi
 
 # Dotfile management
 alias cma='chezmoi add'
