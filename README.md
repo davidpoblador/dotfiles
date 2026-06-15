@@ -92,7 +92,7 @@ Mise tools auto-upgrade daily in the background via `.zshrc`.
 | `.config/gh/` | GitHub CLI |
 | `.config/bat/`, `.config/lazygit/` | CLI tools |
 | `.claude/` | Claude Code settings and hooks |
-| `.agents/` | Shared `AGENTS.md`/`CLAUDE.md`, consumed by every agent via symlink |
+| `.agents/` | Shared `AGENTS.md`/`CLAUDE.md` and the agent-skills wishlist, consumed by every agent via symlink |
 | `.docker/` | Docker daemon config |
 | `.ssh/` | SSH config (no keys) |
 | `.vimrc` | Vim config |
@@ -358,6 +358,39 @@ All plugins except zsh-defer are lazy-loaded with `kind:defer`.
 | `gnb <branch>` | Checkout main, pull, create new branch |
 | `cdm` | cd to main worktree of current git repo |
 | `rep [name]` | cd to `~/repos` or `~/repos/<name>` |
+
+## Agent skills
+
+[Agent skills](https://skills.sh) are reusable bundles of procedural knowledge
+that coding agents load on demand. They're installed globally into every agent on
+the machine — Claude Code, Codex, Gemini CLI, GitHub Copilot, OpenCode — with the
+`skills` CLI (run via `bunx`).
+
+The curated set lives in `~/.agents/skills.wishlist`, a chezmoi-managed plain-text
+list that is the single source of truth. Each line is a source repo plus the skills
+to pull from it:
+
+```
+anthropics/skills --skill frontend-design
+pbakaus/impeccable --skill impeccable --skill layout --skill shape
+stripe/ai --skill stripe-best-practices --skill stripe-projects --skill upgrade-stripe
+```
+
+Install (or reinstall) the whole set with the bootstrap script — it reads the
+wishlist and runs `bunx skills add` for each entry. It's idempotent, so re-running
+just refreshes:
+
+```bash
+skills-bootstrap
+```
+
+To add a skill: append a line to the wishlist (`cmc` to `chezmoi cd`, edit
+`dot_agents/skills.wishlist`, commit), `chezmoi apply`, then run `skills-bootstrap`.
+Nothing runs automatically — installs happen only when you invoke the script.
+
+Installed skills and the `~/.agents/.skill-lock.json` lockfile are bunx's runtime
+state, deliberately **not** chezmoi-managed; the wishlist is what reproduces the set
+on a new machine.
 
 ## Profiles
 
