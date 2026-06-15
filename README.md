@@ -364,33 +364,81 @@ All plugins except zsh-defer are lazy-loaded with `kind:defer`.
 [Agent skills](https://skills.sh) are reusable bundles of procedural knowledge
 that coding agents load on demand. They're installed globally into every agent on
 the machine — Claude Code, Codex, Gemini CLI, GitHub Copilot, OpenCode — with the
-`skills` CLI (run via `bunx`).
+`skills` CLI (run via `bunx`). One canonical copy lives at `~/.agents/skills/<skill>`
+and each agent's skills directory (e.g. `~/.claude/skills/<skill>`) is a symlink to
+it, so there's a single physical copy per skill.
 
-The curated set lives in `~/.agents/skills.wishlist`, a chezmoi-managed plain-text
-list that is the single source of truth. Each line is a source repo plus the skills
-to pull from it:
+### The wishlist is the source of truth
+
+The curated set is declared in `~/.agents/skills.wishlist`, a chezmoi-managed
+plain-text file (source: `dot_agents/skills.wishlist`). It is the **only** thing
+that reproduces the skill set on a new machine. Each non-blank, non-`#` line is a
+source repo followed by the skills to pull from it:
 
 ```
 anthropics/skills --skill frontend-design
-pbakaus/impeccable --skill impeccable --skill layout --skill shape
+pbakaus/impeccable --skill impeccable
+shadcn/ui --skill shadcn
 stripe/ai --skill stripe-best-practices --skill stripe-projects --skill upgrade-stripe
 ```
 
-Install (or reinstall) the whole set with the bootstrap script — it reads the
-wishlist and runs `bunx skills add` for each entry. It's idempotent, so re-running
-just refreshes:
+Nothing installs automatically. The wishlist is just intent; skills land on the
+machine only when you run `skills-bootstrap` (below).
+
+### Install (or reinstall) everything
 
 ```bash
 skills-bootstrap
 ```
 
-To add a skill: append a line to the wishlist (`cmc` to `chezmoi cd`, edit
-`dot_agents/skills.wishlist`, commit), `chezmoi apply`, then run `skills-bootstrap`.
-Nothing runs automatically — installs happen only when you invoke the script.
+`skills-bootstrap` (`~/.local/bin`) reads the wishlist and runs `bunx skills add …
+-g` for each line, installing into every agent. It's idempotent — re-running just
+refreshes existing skills — so it's also how you apply wishlist changes and how a
+fresh machine gets the full set.
 
-Installed skills and the `~/.agents/.skill-lock.json` lockfile are bunx's runtime
-state, deliberately **not** chezmoi-managed; the wishlist is what reproduces the set
-on a new machine.
+### Add or remove a skill
+
+The wishlist goes through a PR like everything else here:
+
+1. Edit `dot_agents/skills.wishlist` (add a `source --skill name` line, or delete
+   one) and merge the PR.
+2. Pull the change into the chezmoi source and apply it. The source is a separate
+   checkout (`~/.local/share/chezmoi`), so pull it first:
+
+   ```bash
+   git -C ~/.local/share/chezmoi pull
+   chezmoi apply ~/.agents/skills.wishlist
+   ```
+3. Install the new set: `skills-bootstrap`.
+
+Removing a line from the wishlist stops future re-installs but does **not** delete
+the already-installed skill. Remove it explicitly with
+`bunx skills remove <skill> -g`.
+
+### Update skills
+
+```bash
+bunx skills update -g
+```
+
+Pulls the latest version of every installed skill. If a skill has been deleted
+upstream, the update warns and offers to remove the now-orphaned local copy — say
+yes, and drop the corresponding entry from the wishlist so bootstrap stops
+requesting it.
+
+### Browse and inspect
+
+```bash
+bunx skills find <query>    # search the skills.sh registry
+bunx skills ls -g           # list installed global skills and their agents
+```
+
+### Runtime state vs. source of truth
+
+The installed skills under `~/.agents/skills/` and the
+`~/.agents/.skill-lock.json` lockfile are bunx's runtime state, deliberately
+**not** chezmoi-managed (`.chezmoiignore` guards against re-adding them). The
+wishlist is the reproducible source; the lockfile is just the CLI's bookkeeping.
 
 ## Profiles
 
