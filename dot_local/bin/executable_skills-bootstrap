@@ -15,7 +15,10 @@ if [ ! -f "${wishlist}" ]; then
   exit 0
 fi
 
-while IFS= read -r line; do
+# Read the wishlist on fd 3 so bunx keeps the real stdin; otherwise bunx
+# drains the rest of the file through its prompts and only the first entry
+# installs.
+while IFS= read -r line <&3; do
   case "${line}" in
     ''|\#*) continue ;;
   esac
@@ -28,4 +31,4 @@ while IFS= read -r line; do
     --agent github-copilot \
     --agent opencode \
     -g -y
-done < "${wishlist}"
+done 3< "${wishlist}"
