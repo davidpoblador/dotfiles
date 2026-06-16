@@ -348,7 +348,7 @@ All plugins except zsh-defer are lazy-loaded with `kind:defer`.
 |---|---|
 | `cma` | `chezmoi add` |
 | `cmc` | `chezmoi cd` |
-| `bubu` | `brew update && brew upgrade` |
+| `bubu` | `brew update && brew upgrade --yes` |
 
 ### Shell functions
 

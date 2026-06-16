@@ -402,7 +402,7 @@ alias ghp='gh pr list --web'
 alias ghpr='gh pr view --web'
 
 # System maintenance
-command_exists brew && alias bubu='brew update && brew upgrade'
+command_exists brew && alias bubu='brew update && brew upgrade --yes'
 
 # Docker
 alias dps='docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"'
