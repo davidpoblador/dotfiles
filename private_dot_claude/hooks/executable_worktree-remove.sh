@@ -6,8 +6,12 @@ source "$(dirname "$0")/_common.sh"
 
 INPUT=$(cat)
 
-# WorktreeRemove payload has worktree_path (not name)
-NAME=$(echo "$INPUT" | jq -r '.worktree_path // empty' | xargs basename 2>/dev/null || true)
+# WorktreeRemove payload carries worktree_path (no name). Derive the namespaced
+# name by stripping the worktrees prefix — basename would drop the namespace
+# segment (dig/<slug> -> <slug>) and target a path/branch that doesn't exist.
+WT_PATH=$(echo "$INPUT" | jq -r '.worktree_path // empty')
+NAME="${WT_PATH%/}"
+NAME="${NAME##*/.claude/worktrees/}"
 if [ -z "$NAME" ]; then
 	echo "[$(date '+%H:%M:%S')] [remove] ERROR: Could not extract worktree name" \
 		>> "/tmp/worktree-hooks-$(date '+%Y-%m-%d').log"
@@ -15,8 +19,13 @@ if [ -z "$NAME" ]; then
 fi
 
 REPO_ROOT=$(resolve_repo_root "$CLAUDE_PROJECT_DIR")
+# Rebuild the path from the canonical repo root rather than the payload, which
+# may carry an uncanonicalized path that won't match git's records.
 WORKTREE_DIR="$REPO_ROOT/.claude/worktrees/$NAME"
-BRANCH="worktree-$NAME"
+# Branch comes straight from git's record of the worktree; fall back to the
+# create-hook convention if the worktree is no longer registered.
+BRANCH=$(list_worktrees "$REPO_ROOT" | awk -F'\t' -v p="$WORKTREE_DIR" '$1 == p { print $2; exit }')
+[ -n "$BRANCH" ] || BRANCH="worktree-$NAME"
 
 TRANSCRIPT=$(echo "$INPUT" | jq -r '.transcript_path // empty')
 CURRENT_SESSION=""

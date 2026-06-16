@@ -91,6 +91,21 @@ resolve_repo_root() {
 	echo "${root:-$from}"
 }
 
+# Print every registered worktree as "<path>\t<branch>", one per line, with the
+# branch stripped of its refs/heads/ prefix (empty for detached/bare entries).
+# Authoritative via `git worktree list --porcelain`, so namespaced worktree
+# paths (e.g. .claude/worktrees/dig/<slug>) survive intact where a basename or
+# fixed-depth glob would mangle them.
+# $1: repo root
+list_worktrees() {
+	local repo="$1"
+	git -C "$repo" worktree list --porcelain 2>/dev/null | awk '
+		/^worktree / { if (wt != "") print wt "\t" b; wt = substr($0, 10); b = "" }
+		/^branch /   { b = substr($0, 8); sub(/^refs\/heads\//, "", b) }
+		END          { if (wt != "") print wt "\t" b }
+	'
+}
+
 # Print the repo's default branch name (no refs/ prefix).
 # Prefers origin/HEAD's symbolic ref, falls back to local main, then master.
 # Empty output means no default branch could be determined.
@@ -320,10 +335,16 @@ clean_stale_worktrees() {
 	local stale_dir stale_name stale_branch upstream has_upstream should_clean reason
 	local merged_pr wt_created age_hours unique_commits
 	local removed=0 kept=0 scanned=0
-	for stale_dir in "$dir"/*/; do
-		[ -d "$stale_dir" ] || continue
-		stale_name=$(basename "$stale_dir")
-		stale_branch="worktree-$stale_name"
+	# Enumerate worktrees authoritatively from git rather than globbing a fixed
+	# depth, so namespaced worktrees (.claude/worktrees/dig/<slug>) are visible
+	# and their real branch (with slashes) comes straight from git.
+	while IFS=$'\t' read -r stale_dir stale_branch; do
+		case "$stale_dir" in
+			"$dir"/*) ;;
+			*) continue ;;
+		esac
+		[ -d "$stale_dir" ] && [ -n "$stale_branch" ] || continue
+		stale_name="${stale_dir#"$dir"/}"
 		[ "$stale_name" = "$skip" ] && continue
 		scanned=$((scanned + 1))
 
@@ -399,7 +420,7 @@ clean_stale_worktrees() {
 		else
 			kept=$((kept + 1))
 		fi
-	done
+	done < <(list_worktrees "$repo")
 	if [ "$scanned" -gt 0 ]; then
 		log "✓ Cleanup loop: scanned $scanned, removed $removed, kept $kept"
 	fi
