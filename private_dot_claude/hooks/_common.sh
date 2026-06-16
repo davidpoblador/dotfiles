@@ -209,28 +209,59 @@ unique_commits_against() {
 # Print the merged-PR number for $branch, or empty if none. Squash merges
 # produce different commit SHAs, so a "0 unique commits" check alone can
 # miss merged work — this is the secondary check.
+#
+# The local branch carries the create-hook's "worktree-" prefix, but the PR
+# head on GitHub is the de-prefixed name the push used (e.g. local
+# worktree-dig/<slug> vs head dig/<slug>). Query both heads; this only ever
+# confirms a genuinely merged PR, so it never loosens the safety guard.
 # $1: repo root  $2: branch name
 merged_pr_for_branch() {
-	local repo="$1" branch="$2"
-	project_gh "$repo" pr list --head "$branch" --state merged --json number --jq '.[0].number' 2>/dev/null || true
+	local repo="$1" branch="$2" head pr
+	for head in "$branch" "${branch#worktree-}"; do
+		pr=$(project_gh "$repo" pr list --head "$head" --state merged --json number --jq '.[0].number' 2>/dev/null || true)
+		if [ -n "$pr" ]; then
+			echo "$pr"
+			return 0
+		fi
+		[ "$branch" = "${branch#worktree-}" ] && break
+	done
+	# Always succeed: callers run under `set -e` and use this in bare
+	# assignments, relying on the empty-string output (not the exit code).
+	return 0
 }
 
-# Returns 0 (true) if every commit in $branch has an equivalent already in
-# $base by patch-id — i.e., the branch was squash-merged or rebased into
-# $base. Returns 1 if any commit is genuinely unique to $branch, or if the
-# command fails (conservative: prefer "not merged" on uncertainty).
+# Returns 0 (true) if $branch's work is already in $base — squash-merged or
+# rebased — and 1 if any of it is genuinely unique to $branch, or on command
+# failure (conservative: prefer "not merged" on uncertainty).
 #
-# `git cherry $base $branch` lists commits in $branch not in $base, prefixed
-# with "+" (no patch-id match in $base) or "-" (patch-id present in $base).
-# Any "+" line means real divergence; all-"-" or empty output means merged.
+# Two checks, both remote-agnostic so the hooks can detect merged work without
+# GitHub:
 #
-# This is the remote-agnostic equivalent of "is there a merged PR?", so the
-# hooks no longer need GitHub to detect squash-merged work.
+#   1. `git cherry $base $branch` matches commits one-by-one by patch-id,
+#      prefixing the missing ones with "+". This catches rebase merges and the
+#      squash of a *single* commit. But a squash of N commits collapses them
+#      into one union-diff commit on $base, so no individual patch-id matches
+#      and every branch commit shows as "+".
+#
+#   2. For that multi-commit squash, compare the patch-id of the branch's whole
+#      diff (merge-base..branch) against each commit added to $base since the
+#      branch diverged. The squash commit carries exactly that union diff, so
+#      its patch-id matches. patch-id ignores line offsets, so $base advancing
+#      underneath the branch doesn't defeat it.
 # $1: repo root  $2: base ref  $3: branch name
 branch_is_squash_merged_into() {
-	local repo="$1" base="$2" branch="$3" out
+	local repo="$1" base="$2" branch="$3" out mb branch_pid c cpid
 	out=$(git -C "$repo" cherry "$base" "$branch" 2>/dev/null) || return 1
-	! grep -q '^+ ' <<< "$out"
+	grep -q '^+ ' <<< "$out" || return 0
+
+	mb=$(git -C "$repo" merge-base "$base" "$branch" 2>/dev/null) || return 1
+	branch_pid=$(git -C "$repo" diff "$mb" "$branch" 2>/dev/null | git -C "$repo" patch-id --stable 2>/dev/null | awk '{print $1}')
+	[ -n "$branch_pid" ] || return 1
+	for c in $(git -C "$repo" rev-list -n 100 "$base" "^$mb" 2>/dev/null); do
+		cpid=$(git -C "$repo" show "$c" 2>/dev/null | git -C "$repo" patch-id --stable 2>/dev/null | awk '{print $1}')
+		[ "$cpid" = "$branch_pid" ] && return 0
+	done
+	return 1
 }
 
 # Best-effort removal of a worktree directory and its branch.
