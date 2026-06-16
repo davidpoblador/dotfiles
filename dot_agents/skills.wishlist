@@ -3,6 +3,7 @@ alltuner/skills --skill vacant
 anthropics/skills --skill frontend-design
 astral-sh/claude-code-plugins --skill uv --skill ty --skill ruff
 cloudflare/skills --skill cloudflare
+fastapi/fastapi --skill fastapi
 microsoft/azure-skills --skill microsoft-foundry
 pbakaus/impeccable --skill impeccable
 shadcn/ui --skill shadcn
