@@ -1,5 +1,5 @@
 
-alltuner/skills --skill vacant
+alltuner/skills --skill vacant --skill selfmail
 anthropics/skills --skill frontend-design
 astral-sh/claude-code-plugins --skill uv --skill ty --skill ruff
 cloudflare/skills --skill cloudflare
