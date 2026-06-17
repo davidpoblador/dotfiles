@@ -343,11 +343,15 @@ worktree_has_active_session() {
 
 # Iterate over $repo/.claude/worktrees/* and remove any that are stale.
 # A worktree is stale when:
+#   - its work is already in $base_ref (squash/rebase merged) or a merged PR
+#     exists for it — the same check the targeted remove path uses, so the
+#     sweep mops up merged worktrees the explicit removal skipped (remote branch
+#     lingering, or pushed under a de-prefixed head), OR
 #   - its branch had an upstream and the remote branch is now gone (and, if
 #     $require_pr=yes, a merged PR exists for it), OR
 #   - it was never pushed, has no unique commits beyond $base_ref, and was
 #     created more than 24 hours ago.
-# Worktrees with unpushed unique commits are always preserved.
+# Worktrees with unpushed, unmerged unique commits are always preserved.
 #
 # $1 repo            — repo root
 # $2 base_ref        — branch the unique-commit count is measured against,
@@ -383,11 +387,13 @@ clean_stale_worktrees() {
 		# inherits origin/<default> as its upstream via branch.autoSetupMerge
 		# (on by default). That is NOT evidence the branch was ever pushed —
 		# so only count an upstream that points at the branch's own remote ref.
-		# Otherwise a fresh, never-pushed worktree takes the "pushed then remote
-		# gone" path, looks squash-merged (no unique commits vs base), and gets
-		# deleted mid-run.
+		# The push may target a de-prefixed head (worktree-dig/<slug> pushes to
+		# origin/dig/<slug>), so accept that ref too. Otherwise a fresh,
+		# never-pushed worktree takes the "pushed then remote gone" path, looks
+		# squash-merged (no unique commits vs base), and gets deleted mid-run.
 		upstream=$(git -C "$repo" for-each-ref --format='%(upstream)' "refs/heads/$stale_branch" 2>/dev/null)
-		if [ "$upstream" = "refs/remotes/origin/$stale_branch" ]; then
+		if [ "$upstream" = "refs/remotes/origin/$stale_branch" ] \
+			|| [ "$upstream" = "refs/remotes/origin/${stale_branch#worktree-}" ]; then
 			has_upstream="$upstream"
 		else
 			has_upstream=""
@@ -395,7 +401,32 @@ clean_stale_worktrees() {
 		should_clean=false
 		reason=""
 
-		if [ -n "$has_upstream" ]; then
+		# Primary check, mirroring the targeted remove path: if the branch's
+		# work is already in $base_ref (squash/rebase merged) or a merged PR
+		# exists, it's safe to clean regardless of upstream/remote state. This
+		# catches merged worktrees that linger because their remote branch was
+		# never deleted, or because they pushed under a de-prefixed head, so the
+		# upstream/age heuristics below never opened the gate. Guard on
+		# unique_commits>0: branch_is_squash_merged_into reports a zero-commit
+		# branch as merged (empty `git cherry`), which would sweep a fresh
+		# worktree that has no work yet.
+		unique_commits=$(unique_commits_against "$repo" "$base_ref" "$stale_branch")
+		if [ "$unique_commits" -gt 0 ]; then
+			if branch_is_squash_merged_into "$repo" "$base_ref" "$stale_branch"; then
+				should_clean=true
+				reason="all commits already in $base_ref (squash/rebase merged)"
+			else
+				merged_pr=$(merged_pr_for_branch "$repo" "$stale_branch")
+				if [ -n "$merged_pr" ]; then
+					should_clean=true
+					reason="PR #$merged_pr merged"
+				fi
+			fi
+		fi
+
+		# Fallback heuristics, only when the merge check above didn't already
+		# decide. These guard never-pushed local work from being swept.
+		if [ "$should_clean" != true ] && [ -n "$has_upstream" ]; then
 			# Pushed at some point. If the remote branch is gone, the work is
 			# very likely merged. Verify in this order:
 			#   1. git cherry — portable, catches squash/rebase merges
@@ -418,7 +449,7 @@ clean_stale_worktrees() {
 					reason="remote branch gone"
 				fi
 			fi
-		else
+		elif [ "$should_clean" != true ]; then
 			# Never pushed. Only clean if it's old AND has no unique commits,
 			# so we never silently throw away in-progress local work. A 0
 			# timestamp means the creation time is unknown (no reflog); treat
@@ -429,7 +460,6 @@ clean_stale_worktrees() {
 			if [ "$wt_created" -le 0 ]; then
 				log "⏭ Keeping stale worktree: $stale_name (unknown creation time)"
 			elif [ "$age_hours" -ge 24 ]; then
-				unique_commits=$(unique_commits_against "$repo" "$base_ref" "$stale_branch")
 				if [ "$unique_commits" -eq 0 ]; then
 					should_clean=true
 					reason="no upstream, no unique commits, ${age_hours}h old"
