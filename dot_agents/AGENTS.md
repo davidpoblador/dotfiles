@@ -239,17 +239,29 @@ Core loop:
 
 Session state persists per project automatically (a PreToolUse hook sets
 `AGENT_BROWSER_SESSION_NAME` from the repo root), so cookies and logins survive
-across commands.
+across commands. The same hook gates the window (headed only in an interactive
+desktop session; headless in background jobs, SSH, and non-GUI contexts, so
+automation never spawns stray Chrome windows) and clears a stale Chrome lock
+left by a crashed session so the next launch isn't wedged.
 
 Anti-detection posture is set globally in `~/.agent-browser/config.json`: real
-Google Chrome (not the bundled Chrome for Testing), headed, and a dedicated
-persistent profile (`~/.agent-browser/profile`) that warms a genuine fingerprint
-and its own logins over time. This defeats basic detection only — agent-browser
-does no local fingerprint spoofing. For sites with hard anti-bot (Cloudflare,
-DataDome), use a cloud stealth provider instead (`-p browserless` with
+Google Chrome (not the bundled Chrome for Testing) and a dedicated persistent
+profile (`~/.agent-browser/profile`) that warms a genuine fingerprint and its
+own logins over time. This defeats basic detection only — agent-browser does no
+local fingerprint spoofing. For sites with hard anti-bot (Cloudflare, DataDome),
+use a cloud stealth provider instead (`-p browserless` with
 `BROWSERLESS_STEALTH=true`, or `-p kernel` with `KERNEL_STEALTH=true`; both need a
-provider API key). Headed needs a graphical login session, so it won't render in
-headless or pure-SSH contexts.
+provider API key).
+
+Running agent-browser by hand outside Claude defaults to headless (the config),
+since the headed gating lives in the hook; pass `--headed` (or
+`AGENT_BROWSER_HEADED=true`) for a window. All sessions share the one profile
+dir, and Chrome allows only one process per profile, so two repos driving the
+browser at the same time collide on its lock. That's rare, so the shared profile
+stays the default (it keeps one warm fingerprint and shared logins). If you
+genuinely need concurrent sessions, give one its own dir with
+`AGENT_BROWSER_PROFILE=~/.agent-browser/profiles/<name>` (it then warms its own
+fingerprint and won't share logins).
 
 Reach for Playwright MCP or chrome-devtools-mcp instead when you need what
 agent-browser lacks: network interception, PDF generation, or a non-Chromium
