@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# ABOUTME: PreToolUse hook that injects AGENT_BROWSER_SESSION_NAME into agent-browser commands.
-# ABOUTME: Derives session name from the main git repo root (not worktree) for per-project persistence.
+# ABOUTME: PreToolUse hook for agent-browser: injects a per-project session name and
+# ABOUTME: clears a stale Chrome SingletonLock so a crashed session can't wedge later launches.
 set -euo pipefail
 
 INPUT=$(cat)
@@ -13,6 +13,14 @@ COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // empty')
 
 # agent-browser must be installed
 command -v agent-browser >/dev/null 2>&1 || exit 0
+
+# Clear a stale Chrome SingletonLock so a crashed session doesn't wedge every later
+# launch. All sessions share one profile (one Chrome per user-data-dir); remove the
+# lock only when no live process still holds it, so we never disturb a running browser.
+PROFILE="$HOME/.agent-browser/profile"
+if [ -L "$PROFILE/SingletonLock" ] && ! pgrep -f "$PROFILE" >/dev/null 2>&1; then
+  rm -f "$PROFILE"/Singleton{Lock,Cookie,Socket}
+fi
 
 # Already has a session name set — don't override
 [[ "$COMMAND" == *AGENT_BROWSER_SESSION_NAME* ]] && exit 0
