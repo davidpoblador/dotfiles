@@ -49,3 +49,11 @@ fi
 
 update_default_branch "$REPO_ROOT" "$DEFAULT_BRANCH"
 log "✓ Updated $DEFAULT_BRANCH in $REPO_ROOT"
+
+# Opportunistically sweep merged/stale sibling worktrees. `claude agents` /
+# central-coordinator teardowns skip WorktreeRemove, so without this their
+# merged worktrees never get cleaned. Skip the worktree this session ran in —
+# its teardown is the harness's job, and the still-live session would guard it
+# anyway — and require merge evidence before removing (defensive).
+SKIP_NAME="${CWD#"$REPO_ROOT/.claude/worktrees/"}"
+clean_stale_worktrees "$REPO_ROOT" "$DEFAULT_BRANCH" "$SKIP_NAME" "yes"
