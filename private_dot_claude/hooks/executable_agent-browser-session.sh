@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# ABOUTME: PreToolUse hook for agent-browser: injects a per-project session name and
-# ABOUTME: clears a stale Chrome SingletonLock so a crashed session can't wedge later launches.
+# ABOUTME: PreToolUse hook for agent-browser: injects a per-project session name, gates the
+# ABOUTME: headed window to interactive desktop sessions, and clears a stale Chrome lock.
 set -euo pipefail
 
 INPUT=$(cat)
@@ -35,7 +35,19 @@ MAIN_ROOT=$(dirname "$MAIN_GIT")
 SESSION_NAME=$(basename "$MAIN_ROOT" | tr -cs '[:alnum:]-' '-' | sed 's/^-//;s/-$//')
 [ -n "$SESSION_NAME" ] || exit 0
 
-jq -n --arg cmd "AGENT_BROWSER_SESSION_NAME=$SESSION_NAME $COMMAND" '{
+PREFIX="AGENT_BROWSER_SESSION_NAME=$SESSION_NAME"
+
+# Show a real browser window only in an interactive desktop session. Background jobs,
+# SSH, and non-GUI contexts default to headless so they never spawn stray windows on
+# someone's screen. An explicit headed choice already in the command always wins.
+if [[ "$COMMAND" != *AGENT_BROWSER_HEADED* && "$COMMAND" != *--headed* ]] \
+   && [ -z "${CLAUDE_JOB_DIR:-}" ] \
+   && [ -z "${SSH_CONNECTION:-}" ] && [ -z "${SSH_TTY:-}" ] \
+   && [ "$(launchctl managername 2>/dev/null)" = "Aqua" ]; then
+  PREFIX="$PREFIX AGENT_BROWSER_HEADED=true"
+fi
+
+jq -n --arg cmd "$PREFIX $COMMAND" '{
   hookSpecificOutput: {
     hookEventName: "PreToolUse",
     updatedInput: { command: $cmd }
