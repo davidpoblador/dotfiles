@@ -19,8 +19,8 @@ Take the changes above all the way to a merged, cleaned-up state. Do not stop pa
 2. If on the default branch, create a feature branch first. Otherwise use the current branch.
 3. Create ONE commit with a lowercase, imperative, concise subject. End the message with the trailer:
    `Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>`
-4. Push the branch: `git push -u origin <branch>`.
-5. Open a PR with `gh pr create` — title from the commit subject, body summarizing the change.
+4. Push the branch. EnterWorktree creates the local branch with a `worktree-` prefix that must NOT reach the remote, so push to the de-prefixed name: with `B` = current branch, the remote name is `${B#worktree-}`. Push with the explicit refspec `git push -u origin HEAD:${B#worktree-}` (for a non-worktree branch the two names are identical, so this is always correct).
+5. Open a PR with `gh pr create --head ${B#worktree-}` — title from the commit subject, body summarizing the change. The `--head` is required: without it `gh` infers the prefixed local branch, which has no remote counterpart, and errors.
 6. Squash-merge it: `gh pr merge --squash`. NEVER pass `--delete-branch` from a worktree (it fails trying to checkout the default branch that the main worktree already holds).
 7. Return the session to the main checkout and bring it up to date:
    - If this session created the current worktree (via EnterWorktree), call `ExitWorktree` with action `remove`. Squash-merge leaves the local branch looking unmerged by ancestry, so after confirming the working tree is clean and the change is on `origin/<default>`, pass `discard_changes: true`.
