@@ -85,7 +85,7 @@ Mise tools auto-upgrade daily in the background via `.zshrc`.
 | Path | What |
 |---|---|
 | `.zshrc`, `.zprofile`, `.zsh_plugins.txt` | Shell config, plugins (antidote + zsh-defer) |
-| `.config/mise/config.toml` | Global dev tools: bun, node, go, rust, just, ruff, etc. |
+| `.config/mise/config.toml` | Global dev tools: bun, go, rust, just, ruff, etc. |
 | `.config/starship.toml` | Prompt |
 | `.config/ghostty/`, `.config/tmux/` | Terminal |
 | `.config/git/`, `.gitignore_global` | Git config |
@@ -101,118 +101,106 @@ Mise tools auto-upgrade daily in the background via `.zshrc`.
 
 ### Homebrew packages
 
-#### Terminal and shell
+#### Shell and terminal
 
 | Package | Description |
 |---|---|
-| antidote | Zsh plugin manager |
 | chezmoi | Dotfile manager |
 | mas | Mac App Store CLI |
-| mise | Dev tool version manager |
 | tmux | Terminal multiplexer |
-| uv | Python package manager |
 | zsh-completions | Additional zsh completions |
 | zsh-syntax-highlighting | Syntax highlighting for zsh |
+| ghostty | Terminal emulator (cask) |
 
-#### System tools
+#### Everyday CLI utilities
 
 | Package | Description |
 |---|---|
+| chafa | Render images as ANSI art |
 | curl | HTTP client |
 | d2 | Declarative diagramming language |
-| dive | Docker image layer explorer |
 | duckdb | In-process SQL analytics engine |
 | ffmpeg | Audio/video processing |
+| fileicon | Set custom file and folder icons |
 | fx | Terminal JSON viewer |
 | imagemagick | Image manipulation |
 | jless | Read-only JSON viewer with vim keybindings |
+| jnv | Interactive jq |
 | jq | JSON processor |
-| jnv | Interactive JSON filter with jq |
 | knock | Port-knock client |
-| lazydocker | Docker TUI |
 | litecli | SQLite CLI with autocomplete |
+| mosh | Latency-tolerant SSH replacement |
+| pv | Pipe progress meter |
 | qrencode | QR code generator |
 | rsync | File sync |
 | sc-im | Terminal spreadsheet editor |
 | shfmt | Shell script formatter |
 | silicon | Code screenshot generator |
+| telnet | Telnet client |
 | tokei | Code stats by language |
 | tree | Directory listing |
-| watchexec | File watcher / command runner |
+| watchexec | Run commands on file changes |
+| watchman | File-watching service (RN / Xcode tooling) |
 | wget | HTTP client |
-| yq | YAML processor |
+| yq | YAML/XML/TOML processor |
+| yt-dlp | Video downloader |
 
-#### Build dependencies
+#### Modern Unix replacements
+
+| Package | Replaces | Description |
+|---|---|---|
+| broot | tree/find | Interactive directory navigator |
+| cheat | man (examples) | Community-driven cheatsheets |
+| curlie | curl | curl with httpie-style output |
+| duff | diff (files) | Duplicate file finder |
+| gping | ping | Ping with graph |
+| httpie | curl | HTTP client with intuitive syntax |
+| procs | ps | Process viewer |
+| the_silver_searcher | grep | Fast code search (ag) |
+| tlrc | man/tldr | Simplified man pages |
+
+#### Build toolchain
 
 | Package | Description |
 |---|---|
 | cmake | Build system generator |
 | coreutils | GNU core utilities |
+| create-dmg | macOS DMG builder (release scripts) |
 | protobuf | Protocol Buffers compiler |
 | sentencepiece | Text tokenizer |
-
-#### AI
-
-| Package | Description |
-|---|---|
-| agent-browser | Browser automation for AI agents |
-| llm | CLI for LLMs |
-| ollama | Local LLM runner |
 
 #### Git
 
 | Package | Description |
 |---|---|
-| gh | GitHub CLI |
-| git | Version control |
+| git | Version control (newer than macOS ships) |
 | git-absorb | Auto-fixup staged changes into prior commits |
-| git-delta | Syntax-highlighting pager for diffs |
-| difftastic | Structural diff tool (`git difftool`) |
-| git-lfs | Large file storage |
-| lazygit | Git TUI |
 | tig | Git text-mode interface |
 
-#### Modern CLI replacements
-
-| Package | Replaces | Description |
-|---|---|---|
-| bat | cat | Syntax-highlighted file viewer |
-| bottom | top/htop | System monitor |
-| broot | tree/find | Interactive directory navigator |
-| cheat | man (examples) | Community-driven cheatsheets |
-| curlie | curl | curl with httpie-style output |
-| duff | diff (files) | Duplicate file finder |
-| dust | du | Disk usage analyzer |
-| fd | find | File finder |
-| fzf | -- | Fuzzy finder |
-| gping | ping | Ping with graph |
-| httpie | curl | HTTP client with intuitive syntax |
-| lsd | ls | File listing with icons and colors |
-| procs | ps | Process viewer |
-| ripgrep | grep | Fast text search |
-| starship | -- | Cross-shell prompt |
-| the_silver_searcher | grep | Fast code search (ag) |
-| tlrc | man/tldr | Simplified man pages |
-| zoxide | cd | Smarter directory jumping (z) |
-
-#### Cloud and containers
+#### AI tooling
 
 | Package | Description |
 |---|---|
-| gcloud-cli | Google Cloud SDK (cask) |
-| docker-desktop | Docker Desktop (cask) — ships the docker CLI and shell completions |
+| agent-browser | Browser automation for AI agents |
+| gemini-cli | Google Gemini CLI |
+| ant | CLI for the Claude Platform (cask) |
+| copilot-cli | GitHub Copilot CLI (cask) |
+| macwhisper | Local Whisper transcription (cask) |
+
+#### Apps (casks)
+
+| Package | Description |
+|---|---|
+| bitwarden | Password manager |
+| docker-desktop | Docker Desktop (ships the docker CLI and shell completions) |
+| obsidian | Markdown-based knowledge base |
+| raycast | Launcher / Spotlight replacement |
 
 #### Fonts
 
 | Package |
 |---|
 | font-jetbrains-mono-nerd-font |
-
-#### Notes
-
-| Package | Description |
-|---|---|
-| obsidian | Markdown-based knowledge base |
 
 #### Mac App Store
 
@@ -226,27 +214,69 @@ Mise tools auto-upgrade daily in the background via `.zshrc`.
 | Slack | Team communication |
 | Xcode | Apple development tools |
 
+### Installed outside Homebrew and mise
+
+Each of these has its own installer wired into a `run_` script or `.zshrc`.
+
+| Tool | Install method | Description |
+|---|---|---|
+| mise | curl (`mise.jdx.dev`) | Dev tool version manager |
+| antidote | git clone | Zsh plugin manager |
+| claude | curl (`claude.ai/install.sh`) | Claude Code CLI |
+| gcloud-cli | curl tarball | Google Cloud SDK |
+| alltuner | uv tool (private repo) | Internal CLI from `alltuner/infrastructure` |
+| codex | bun install -g (`@openai/codex`) | OpenAI Codex CLI |
+
 ### Mise-managed dev tools
+
+Installed on all profiles:
 
 | Tool | Description |
 |---|---|
-| awscli | AWS CLI |
+| ast-grep | Structural code search and rewrite |
+| atuin | Shell history search (SQLite-backed) |
+| bat | cat replacement with syntax highlighting |
+| bottom | top/htop replacement |
 | bun | JavaScript runtime and package manager |
+| delta | Syntax-highlighting diff pager |
+| difftastic | Structural diff tool (`git difftool`) |
+| dive | Docker image layer explorer |
+| dust | du replacement |
+| fd | find replacement |
+| frp | Fast reverse proxy |
+| fzf | Fuzzy finder |
 | gh | GitHub CLI |
+| git-lfs | Large file storage |
+| glow | Markdown renderer |
 | go | Go programming language |
-| gopls | Go language server |
+| hugo | Static site generator |
 | just | Command runner (like make) |
+| lazydocker | Docker TUI |
+| lazygit | Git TUI |
+| lsd | ls replacement with icons |
+| restic | Backup tool |
+| ripgrep | grep replacement |
+| shellcheck | Shell script linter |
+| starship | Cross-shell prompt |
+| uv | Python package manager |
+| zoxide | cd replacement (z) |
+
+Dev profile only:
+
+| Tool | Description |
+|---|---|
+| actionlint | GitHub Actions linter |
+| awscli | AWS CLI |
+| cf | Cloudflare CLI |
+| gopls | Go language server |
+| mise-completions-sync | Auto-sync mise tool completions to zsh |
 | mongosh | MongoDB shell |
-| node | Node.js runtime |
+| prek | Git hook manager (pre-commit alternative) |
+| ruff | Python linter and formatter |
 | rust | Rust programming language |
 | rust-analyzer | Rust language server |
-| zig | Zig programming language |
-| ruff | Python linter and formatter |
 | ty | Python type checker |
-| actionlint | GitHub Actions linter |
-| atuin | Shell history search (SQLite-backed) |
-| prek | Presentation tool |
-| completions-sync | Auto-sync mise tool completions to zsh |
+| zig | Zig programming language |
 
 Mise also auto-installs dependencies on `cd`: runs `uv sync` when `uv.lock` exists without `.venv`, and `bun install` when `bun.lock` exists without `node_modules`.
 
