@@ -10,5 +10,4 @@ pbakaus/impeccable --skill impeccable
 resend/resend-skills --skill resend
 shadcn/ui --skill shadcn
 stripe/ai --skill stripe-best-practices --skill stripe-projects --skill upgrade-stripe
-vercel-labs/agent-browser --skill agent-browser
 vercel-labs/skills --skill find-skills

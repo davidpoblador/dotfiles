@@ -181,7 +181,6 @@ Mise tools auto-upgrade daily in the background via `.zshrc`.
 
 | Package | Description |
 |---|---|
-| agent-browser | Browser automation for AI agents |
 | gemini-cli | Google Gemini CLI |
 | ant | CLI for the Claude Platform (cask) |
 | copilot-cli | GitHub Copilot CLI (cask) |

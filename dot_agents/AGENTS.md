@@ -224,48 +224,25 @@ YOU MUST follow this debugging framework for ANY technical issue:
 
 ## Browser Automation
 
-Default to `agent-browser` for web automation. It's a CLI you shell out to (not an
-MCP server), so it costs no idle tool-schema tokens and returns compact, ref-based
-accessibility-tree output. For version-matched guidance, run
-`agent-browser skills get core --full` before driving it — that content always
-matches the installed binary, so it never goes stale.
+Use Claude Code's first-party Chrome integration. It connects the CLI to a real
+Chrome via the official extension and native messaging — no MCP server, no
+third-party CLI.
 
-Core loop:
+Setup:
 
-1. `agent-browser open <url>` - navigate
-2. `agent-browser snapshot -i` - interactive elements only, each with a ref (@e1, @e2)
-3. `agent-browser click @e1` / `fill @e2 "text"` - act by ref
-4. Re-snapshot after the page changes; `batch` chains multiple steps in one spawn
+1. Install the [Claude in Chrome](https://chromewebstore.google.com/detail/claude/fcoeoabgfenejglbffodgkkbkcdhcgfn)
+   extension (works with Chrome and Edge).
+2. Start Claude Code with `claude --chrome`. The native messaging host config is
+   installed automatically on first use.
+3. To keep it on by default, run `/chrome` and choose "Enabled by default" (this
+   keeps the browser tools loaded, which costs context).
 
-Session state persists per project automatically (a PreToolUse hook sets
-`AGENT_BROWSER_SESSION_NAME` from the repo root), so cookies and logins survive
-across commands. The same hook gates the window (headed only in an interactive
-desktop session; headless in background jobs, SSH, and non-GUI contexts, so
-automation never spawns stray Chrome windows) and clears a stale Chrome lock
-left by a crashed session so the next launch isn't wedged.
+It drives a visible Chrome window, reuses sessions you're already logged into,
+navigates/clicks/fills, and reads console logs for debugging. Site permissions
+live in the extension settings.
 
-Anti-detection posture is set globally in `~/.agent-browser/config.json`: real
-Google Chrome (not the bundled Chrome for Testing) and a dedicated persistent
-profile (`~/.agent-browser/profile`) that warms a genuine fingerprint and its
-own logins over time. This defeats basic detection only — agent-browser does no
-local fingerprint spoofing. For sites with hard anti-bot (Cloudflare, DataDome),
-use a cloud stealth provider instead (`-p browserless` with
-`BROWSERLESS_STEALTH=true`, or `-p kernel` with `KERNEL_STEALTH=true`; both need a
-provider API key).
-
-Running agent-browser by hand outside Claude defaults to headless (the config),
-since the headed gating lives in the hook; pass `--headed` (or
-`AGENT_BROWSER_HEADED=true`) for a window. All sessions share the one profile
-dir, and Chrome allows only one process per profile, so two repos driving the
-browser at the same time collide on its lock. That's rare, so the shared profile
-stays the default (it keeps one warm fingerprint and shared logins). If you
-genuinely need concurrent sessions, give one its own dir with
-`AGENT_BROWSER_PROFILE=~/.agent-browser/profiles/<name>` (it then warms its own
-fingerprint and won't share logins).
-
-Reach for Playwright MCP or chrome-devtools-mcp instead when you need what
-agent-browser lacks: network interception, PDF generation, or a non-Chromium
-browser (agent-browser is Chrome-only).
+Requires a direct Anthropic plan (Pro/Max/Team/Enterprise) — not available on
+Bedrock, Vertex, or Foundry, and not supported on WSL.
 
 ## Code Intelligence
 

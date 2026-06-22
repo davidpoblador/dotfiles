@@ -69,45 +69,6 @@
       "mcp__mongodb__find",
       "mcp__mongodb__indexes",
       "mcp__mongodb__listCollections",
-      "mcp__playwright__browser_click",
-      "mcp__playwright__browser_close",
-      "mcp__playwright__browser_console_messages",
-      "mcp__playwright__browser_evaluate",
-      "mcp__playwright__browser_file_upload",
-      "mcp__playwright__browser_fill_form",
-      "mcp__playwright__browser_handle_dialog",
-      "mcp__playwright__browser_hover",
-      "mcp__playwright__browser_install",
-      "mcp__playwright__browser_navigate",
-      "mcp__playwright__browser_navigate_back",
-      "mcp__playwright__browser_network_requests",
-      "mcp__playwright__browser_press_key",
-      "mcp__playwright__browser_select_option",
-      "mcp__playwright__browser_snapshot",
-      "mcp__playwright__browser_tabs",
-      "mcp__playwright__browser_take_screenshot",
-      "mcp__playwright__browser_type",
-      "mcp__playwright__browser_wait_for",
-      "mcp__plugin_playwright_playwright__browser_click",
-      "mcp__plugin_playwright_playwright__browser_close",
-      "mcp__plugin_playwright_playwright__browser_console_messages",
-      "mcp__plugin_playwright_playwright__browser_evaluate",
-      "mcp__plugin_playwright_playwright__browser_file_upload",
-      "mcp__plugin_playwright_playwright__browser_fill_form",
-      "mcp__plugin_playwright_playwright__browser_handle_dialog",
-      "mcp__plugin_playwright_playwright__browser_hover",
-      "mcp__plugin_playwright_playwright__browser_install",
-      "mcp__plugin_playwright_playwright__browser_navigate",
-      "mcp__plugin_playwright_playwright__browser_navigate_back",
-      "mcp__plugin_playwright_playwright__browser_network_requests",
-      "mcp__plugin_playwright_playwright__browser_press_key",
-      "mcp__plugin_playwright_playwright__browser_select_option",
-      "mcp__plugin_playwright_playwright__browser_snapshot",
-      "mcp__plugin_playwright_playwright__browser_tabs",
-      "mcp__plugin_playwright_playwright__browser_take_screenshot",
-      "mcp__plugin_playwright_playwright__browser_type",
-      "mcp__plugin_playwright_playwright__browser_wait_for",
-      "mcp__playwriter__execute",
       "Read(~/Desktop/*.png)",
       "WebFetch(domain:beanie-odm.dev)",
       "WebFetch(domain:bun.com)",
@@ -228,17 +189,6 @@
           {
             "type": "command",
             "command": "~/.claude/hooks/session-end-update-main.sh"
-          }
-        ]
-      }
-    ],
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/agent-browser-session.sh"
           }
         ]
       }
