@@ -5,7 +5,6 @@ ast-grep/agent-skill --skill ast-grep
 astral-sh/claude-code-plugins --skill uv --skill ty --skill ruff
 cloudflare/skills --skill cloudflare
 fastapi/fastapi --skill fastapi
-microsoft/azure-skills --skill microsoft-foundry
 pbakaus/impeccable --skill impeccable
 resend/resend-skills --skill resend
 shadcn/ui --skill shadcn
