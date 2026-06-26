@@ -55,5 +55,13 @@ log "✓ Updated $DEFAULT_BRANCH in $REPO_ROOT"
 # merged worktrees never get cleaned. Skip the worktree this session ran in —
 # its teardown is the harness's job, and the still-live session would guard it
 # anyway — and require merge evidence before removing (defensive).
+#
+# This sweep is best-effort. Its many unguarded git calls can fail transiently
+# when the harness mutates a worktree concurrently (e.g. a session resuming in
+# the same instant), which under `set -e` would abort the hook with a non-zero
+# exit *after* main is already updated — surfacing as a spurious "SessionEnd
+# hook error". The `|| log` both neutralizes `set -e` for this call and records
+# the failure instead of crashing the hook.
 SKIP_NAME="${CWD#"$REPO_ROOT/.claude/worktrees/"}"
-clean_stale_worktrees "$REPO_ROOT" "$DEFAULT_BRANCH" "$SKIP_NAME" "yes"
+clean_stale_worktrees "$REPO_ROOT" "$DEFAULT_BRANCH" "$SKIP_NAME" "yes" \
+	|| log "⚠ Cleanup sweep failed (non-fatal); $DEFAULT_BRANCH already updated"
