@@ -86,7 +86,7 @@ fi
 # except the cleanup loop — that is what dry-run exists to debug.
 if is_dry_run; then
 	log "[dry-run] would create worktree $WORKTREE_DIR on branch $BRANCH from $BASE_REF"
-	log "[dry-run] skipping per-creation steps (submodules, .env, prek, uv, bun, project hook, memory symlink)"
+	log "[dry-run] skipping per-creation steps (submodules, .env, prek, uv, bun, project hook)"
 	clean_stale_worktrees "$REPO_ROOT" "$BASE_REF" "$NAME" "no"
 	echo "$WORKTREE_DIR"
 	exit 0
@@ -224,16 +224,6 @@ fi
 
 # --- opportunistic cleanup: remove stale worktrees whose remote branch is gone ---
 clean_stale_worktrees "$REPO_ROOT" "$BASE_REF" "$NAME" "no"
-
-# --- symlink auto-memory so all worktrees share the main repo's memory ---
-# Claude sanitizes paths: / -> -, . -> - (so /foo/.claude -> -foo--claude)
-SANITIZED_MAIN=$(sanitize_path "$REPO_ROOT")
-SANITIZED_WT=$(sanitize_path "$WORKTREE_DIR")
-MAIN_MEMORY="$HOME/.claude/projects/$SANITIZED_MAIN/memory"
-WT_PROJECT="$HOME/.claude/projects/$SANITIZED_WT"
-mkdir -p "$MAIN_MEMORY" "$WT_PROJECT"
-ln -sfn "$MAIN_MEMORY" "$WT_PROJECT/memory"
-log "✓ Symlinked auto-memory to main repo"
 
 # --- clean up old log files (keep 7 days) ---
 find /tmp -maxdepth 1 -name 'worktree-hooks-*.log' -mtime +7 -delete 2>/dev/null || true
