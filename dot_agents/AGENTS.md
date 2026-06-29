@@ -261,3 +261,5 @@ Before renaming or changing a function signature, use
 Use Grep/Glob only for text/pattern searches (comments, strings, config values) where LSP doesn't help.
 
 After writing or editing code, check LSP diagnostics before moving on. Fix any type errors or missing imports immediately.
+
+@RTK.md
