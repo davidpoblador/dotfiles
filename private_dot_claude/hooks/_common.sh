@@ -1,5 +1,5 @@
 # shellcheck shell=bash
-# Shared helpers for worktree-remove.sh and session-end-update-main.sh.
+# Shared helpers for worktree-remove.sh.
 # Sourced, not executed.
 #
 # Conventions:
