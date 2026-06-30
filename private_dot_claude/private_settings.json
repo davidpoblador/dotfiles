@@ -125,6 +125,10 @@
           {
             "type": "command",
             "command": "~/.claude/hooks/cwd-changed-osc7.sh"
+          },
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/session-start-setup.sh"
           }
         ]
       }
@@ -159,16 +163,6 @@
           {
             "type": "command",
             "command": "~/.claude/hooks/cwd-changed-osc7.sh"
-          }
-        ]
-      }
-    ],
-    "WorktreeCreate": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/worktree-create.sh"
           }
         ]
       }

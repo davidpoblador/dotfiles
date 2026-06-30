@@ -1,5 +1,5 @@
 # shellcheck shell=bash
-# Shared helpers for worktree-create.sh and worktree-remove.sh.
+# Shared helpers for worktree-remove.sh and session-end-update-main.sh.
 # Sourced, not executed.
 #
 # Conventions:
@@ -18,7 +18,7 @@
 #   HOOK_DRY_RUN=1          — log destructive operations as "[dry-run] would ..."
 #                              instead of executing them. Useful for debugging
 #                              the cleanup loop without nuking real worktrees:
-#                                  HOOK_DRY_RUN=1 echo "$payload" | worktree-create.sh
+#                                  HOOK_DRY_RUN=1 echo "$payload" | worktree-remove.sh
 #   HOOK_LOG_MAX_BYTES=N    — rotate today's log when it exceeds N bytes
 #                              (default 5 MiB). Rotated files keep the
 #                              "worktree-hooks-*.log" name so the existing
