@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# ABOUTME: SessionStart hook — runs a repo's own .hooks/workspace-setup.sh inside
-# ABOUTME: a freshly created worktree, so each project owns its dependency setup.
+# ABOUTME: SessionStart/SubagentStart hook — runs a repo's own .hooks/workspace-setup.sh
+# ABOUTME: in a freshly created worktree, so each project owns its dependency setup.
 set -uo pipefail
 
 INPUT=$(cat)
@@ -8,8 +8,9 @@ SOURCE=$(printf '%s' "$INPUT" | jq -r '.source // "startup"')
 CWD=$(printf '%s' "$INPUT" | jq -r '.cwd // empty')
 [ -n "$CWD" ] && cd "$CWD" 2>/dev/null || true
 
-# Only on a fresh start — that is when a new worktree's first session begins.
-# resume/clear/compact continue an already-set-up tree.
+# Run on a fresh start (a new worktree's first session) and on subagent spawns
+# (SubagentStart carries no source, so it defaults through). A SessionStart
+# resume/clear/compact continues an already-set-up tree, so skip those.
 [ "$SOURCE" = "startup" ] || exit 0
 
 git rev-parse --git-dir >/dev/null 2>&1 || exit 0
