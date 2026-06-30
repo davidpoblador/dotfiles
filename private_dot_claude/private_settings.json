@@ -167,6 +167,16 @@
         ]
       }
     ],
+    "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/session-start-setup.sh"
+          }
+        ]
+      }
+    ],
     "WorktreeRemove": [
       {
         "hooks": [
