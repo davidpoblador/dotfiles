@@ -223,6 +223,7 @@
     }
   },
   "alwaysThinkingEnabled": true,
+  "tui": "fullscreen",
   "voice": {
     "enabled": true,
     "mode": "tap"
@@ -234,6 +235,5 @@
   "inputNeededNotifEnabled": true,
   "agentPushNotifEnabled": true,
   "skipAutoPermissionPrompt": true,
-  "voiceEnabled": true,
-  "tui": "fullscreen"
+  "voiceEnabled": true
 }
