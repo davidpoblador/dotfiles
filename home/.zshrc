@@ -367,8 +367,8 @@ dlogs() { docker logs -f --tail 100 "$1"; }   # Follow container logs
 dexec() { docker exec -it "$1" /bin/sh; }    # Shell into a container
 
 # Dotfile management
-alias cma='chezmoi add'
-alias cmc='chezmoi cd'
+alias dfa='mise -C ~/repos/dotfiles dotfiles apply'
+alias dfc='cd ~/repos/dotfiles'
 
 # System
 alias ports='ss -tlnp'

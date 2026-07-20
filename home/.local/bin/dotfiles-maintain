@@ -19,6 +19,7 @@ case "$(uname -s)" in
 esac
 
 if command -v mise >/dev/null 2>&1 && stale mise_last_update 1380; then
+  mise self-update -y >/dev/null 2>&1
   mise upgrade -y >/dev/null 2>&1 && touch "$CACHE_DIR/mise_last_update"
 fi
 

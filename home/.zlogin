@@ -49,7 +49,7 @@ if [[ -o login && -o interactive ]]; then
   }
 
   local sync_msg sync_secs brew_msg brew_secs
-  _relative_time "$cache_dir/chezmoi_last_apply"
+  _relative_time "$cache_dir/dotfiles_last_apply"
   sync_msg="$reply[1]"; sync_secs=$reply[2]
 
   _relative_time "$cache_dir/brew_last_update"
