@@ -1,0 +1,4 @@
+set background=dark
+set termguicolors
+syntax on
+silent! colorscheme catppuccin_macchiato

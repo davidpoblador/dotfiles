@@ -1,0 +1,1 @@
+../../base/.agents/AGENTS.md

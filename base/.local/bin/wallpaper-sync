@@ -1,0 +1,116 @@
+#!/usr/bin/env bun
+// ABOUTME: picks the best wallpaper per display from ~/Pictures/wallpapers
+// ABOUTME: and sets it with --apply. default is dry-run. idempotent. quiet.
+
+import { setWallpaper, getWallpaper } from 'wallpaper@7.3.0';
+import si from 'systeminformation@5.31.5';
+import { readdir, stat, realpath } from 'node:fs/promises';
+import { join } from 'node:path';
+import { homedir } from 'node:os';
+
+const APPLY = process.argv.includes('--apply');
+const VERBOSE = process.argv.includes('--verbose') || process.argv.includes('-v');
+const WALLPAPER_DIR = join(homedir(), 'Pictures/wallpapers');
+const EXTENSIONS = new Set(['.png', '.jpg', '.jpeg', '.heic', '.tiff', '.tif']);
+
+type WallpaperFile = { path: string; name: string; width: number; height: number; aspect: number };
+
+async function imageDimensions(path: string): Promise<{ width: number; height: number } | null> {
+  const proc = Bun.spawn(['sips', '-g', 'pixelWidth', '-g', 'pixelHeight', path], {
+    stdout: 'pipe', stderr: 'pipe',
+  });
+  const out = await new Response(proc.stdout).text();
+  await proc.exited;
+  if (proc.exitCode !== 0) return null;
+  const w = out.match(/pixelWidth:\s*(\d+)/)?.[1];
+  const h = out.match(/pixelHeight:\s*(\d+)/)?.[1];
+  if (!w || !h) return null;
+  return { width: parseInt(w, 10), height: parseInt(h, 10) };
+}
+
+async function loadWallpapers(): Promise<WallpaperFile[]> {
+  let entries: string[];
+  try { entries = await readdir(WALLPAPER_DIR); } catch { return []; }
+  const results: WallpaperFile[] = [];
+  for (const name of entries) {
+    if (name.startsWith('.')) continue;
+    const ext = name.slice(name.lastIndexOf('.')).toLowerCase();
+    if (!EXTENSIONS.has(ext)) continue;
+    const path = join(WALLPAPER_DIR, name);
+    try {
+      const s = await stat(path);
+      if (!s.isFile()) continue;
+    } catch { continue; }
+    const dims = await imageDimensions(path);
+    if (!dims) continue;
+    results.push({ path, name, ...dims, aspect: dims.width / dims.height });
+  }
+  return results;
+}
+
+function pickFor(display: si.Systeminformation.GraphicsDisplayData, files: WallpaperFile[]): WallpaperFile | null {
+  if (!files.length || !display.resolutionX || !display.resolutionY) return null;
+  const target = display.resolutionX / display.resolutionY;
+  return files.reduce<WallpaperFile | null>((best, f) =>
+    !best || Math.abs(f.aspect - target) < Math.abs(best.aspect - target) ? f : best, null);
+}
+
+async function currentWallpaper(screen: number): Promise<string | null> {
+  try { return await getWallpaper({ screen }); } catch { return null; }
+}
+
+async function samePath(a: string, b: string): Promise<boolean> {
+  if (a === b) return true;
+  try { return (await realpath(a)) === (await realpath(b)); } catch { return false; }
+}
+
+function verbose(msg: string) { if (VERBOSE) console.log(msg); }
+
+const [gfx, files] = await Promise.all([si.graphics(), loadWallpapers()]);
+const displays = gfx.displays ?? [];
+
+verbose(`mode            : ${APPLY ? 'apply' : 'dry-run'}`);
+verbose(`wallpapers dir  : ${WALLPAPER_DIR}`);
+verbose(`wallpaper files : ${files.length}`);
+verbose(`displays        : ${displays.length}`);
+
+if (!files.length || !displays.length) process.exit(0);
+
+const plan = await Promise.all(displays.map(async (d, i) => {
+  const pick = pickFor(d, files);
+  const current = pick ? await currentWallpaper(i) : null;
+  const unchanged = !!(pick && current && await samePath(current, pick.path));
+  return { i, display: d, pick, current, unchanged };
+}));
+
+const changes = plan.filter(p => p.pick && !p.unchanged);
+
+if (VERBOSE) {
+  console.log('');
+  for (const { i, display: d, pick, current, unchanged } of plan) {
+    const tag = `[${i}] ${d.model || '(no model)'}${d.builtin ? ' ⌂' : ''}${d.main ? ' ★' : ''}`;
+    if (!pick) { console.log(`${tag}  skip — no resolution data`); continue; }
+    if (unchanged) { console.log(`${tag}  ok — ${pick.name}`); continue; }
+    const from = current ? current.replace(homedir(), '~') : '(unknown)';
+    console.log(`${tag}  ${APPLY ? 'set' : 'plan'} — ${pick.name} (was: ${from})`);
+  }
+}
+
+if (!changes.length) process.exit(0);
+
+if (!APPLY) {
+  for (const { i, pick } of changes) if (pick) console.log(`[${i}] plan: ${pick.name}`);
+  console.log(`run with --apply to set.`);
+  process.exit(0);
+}
+
+for (const { i, pick } of changes) {
+  if (!pick) continue;
+  try {
+    await setWallpaper(pick.path, { screen: i, scale: 'fill' });
+    console.log(`[${i}] set: ${pick.name}`);
+  } catch (e) {
+    console.error(`[${i}] FAILED: ${(e as Error).message}`);
+    process.exitCode = 1;
+  }
+}

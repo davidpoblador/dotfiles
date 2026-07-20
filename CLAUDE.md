@@ -14,18 +14,16 @@ Before every commit, verify that no file contains:
 
 If something needs a secret, store it with fnox (`fnox set -g NAME value` for
 global, or a project `fnox.toml`): values are age-encrypted inline and safe to
-commit. The global config `home/.config/fnox/config.toml` is a tracked dotfile;
+commit. The global config `dev/.config/fnox/config.toml` is a tracked dotfile;
 `fnox set -g` edits it through the `~/.config/fnox/config.toml` symlink, so
 commit the result via PR. Never commit plaintext secrets, and never read or
 copy `~/sync/secrets/keys.txt` (the age identity).
 
 ## Repo structure
 
-- `home/`: dotfiles deployed to every machine (`[dotfiles]` in `mise.toml`, symlink-each)
-- `home-dev/`: dotfiles deployed to dev machines only (`mise.dev.toml`, loaded when `MISE_ENV=dev`)
-- `templates/`: files rendered per machine (mise template mode)
+- `base/`: dotfiles deployed to every machine (`[dotfiles]` in `mise.toml`, symlink-each)
+- `dev/`: dotfiles deployed to dev machines only (`mise.dev.toml`, loaded when `MISE_ENV=dev`)
 - `mise.toml` / `mise.dev.toml`: `mise bootstrap` config (packages, defaults, repos, services, dotfiles, tasks)
-- `prod/`: planning notes only
 
 ## Conventions
 
@@ -38,7 +36,7 @@ copy `~/sync/secrets/keys.txt` (the age identity).
 ## Shell scripts run by mise bootstrap
 
 macOS ships `/bin/bash` 3.2 and that's what the `#!/bin/bash` shebang in
-`[tasks.bootstrap]` and the `home/.local/bin` scripts resolves to. Anything
+`[tasks.bootstrap]` and the `base/.local/bin` scripts resolves to. Anything
 newer than bash 3.2 will break there. Avoid (or guard) bash-4+ features:
 
 - `declare -A` / associative arrays — use newline-delimited strings and
