@@ -1,0 +1,14 @@
+# ABOUTME: Global fnox secrets config: age-encrypted values live inline here,
+# ABOUTME: safe to commit. Decryption needs the synced key (FNOX_AGE_KEY_FILE).
+
+default_provider = "age"
+
+[daemon]
+enabled = true
+idle_timeout = "8h"
+
+[providers.age]
+type = "age"
+recipients = ["age1j6seutd0m7k2kwrx5udqzs7fdr76x272ysxw3dutcr2s70vvnqmq4uylrw"]
+
+[secrets]

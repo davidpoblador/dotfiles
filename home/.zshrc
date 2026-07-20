@@ -220,10 +220,12 @@ if (( $+functions[zsh-defer] )); then
   zsh-defer -c 'cache_eval fzf fzf --zsh'
   zsh-defer -c 'cache_eval atuin atuin init zsh --disable-up-arrow'
   zsh-defer -c 'cache_eval zoxide zoxide init zsh'
+  zsh-defer -c 'cache_eval fnox fnox activate zsh'
 else
   cache_eval fzf fzf --zsh
   cache_eval atuin atuin init zsh --disable-up-arrow
   cache_eval zoxide zoxide init zsh
+  cache_eval fnox fnox activate zsh
 fi
 
 # Print directory after zoxide jumps
