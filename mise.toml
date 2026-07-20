@@ -240,6 +240,14 @@ run = """
 #!/bin/bash
 set -u
 
+# Seed atuin with pre-existing shell history, once, while its database is
+# still empty (import is not idempotent, so the emptiness check is the guard)
+if command -v atuin >/dev/null 2>&1 &&
+   [ -f "${XDG_DATA_HOME:-$HOME/.local/share}/zsh/history" ] &&
+   ! atuin history list 2>/dev/null | head -1 | grep -q .; then
+  atuin import auto >/dev/null 2>&1 || true
+fi
+
 # alltuner CLI from the private infrastructure repo; --force picks up new
 # commits (requires SSH access to github.com/alltuner)
 if command -v uv >/dev/null 2>&1; then

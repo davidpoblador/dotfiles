@@ -367,8 +367,11 @@ dlogs() { docker logs -f --tail 100 "$1"; }   # Follow container logs
 dexec() { docker exec -it "$1" /bin/sh; }    # Shell into a container
 
 # Dotfile management
-alias dfa='mise -C ~/repos/dotfiles dotfiles apply'
 alias dfc='cd ~/repos/dotfiles'
+alias dfa='mise -C ~/repos/dotfiles dotfiles apply'
+alias dfs='mise -C ~/repos/dotfiles dotfiles status'
+alias dfu='git -C ~/repos/dotfiles pull && mise -C ~/repos/dotfiles dotfiles apply'
+alias dfb='mise -C ~/repos/dotfiles bootstrap --yes'
 
 # System (ss on Linux, lsof fallback on macOS)
 if command_exists ss; then

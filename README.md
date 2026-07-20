@@ -24,12 +24,6 @@ curl -fsSL https://raw.githubusercontent.com/davidpoblador/dotfiles/main/bootstr
 
 ### Dev (macOS)
 
-After bootstrap, import existing shell history into atuin:
-
-```bash
-atuin import auto
-```
-
 To mosh into this Mac, the bootstrap task allows `mosh-server` through the
 application firewall automatically (it re-adds the resolved binary path on
 every run, because brew upgrades invalidate the rule). It needs sudo, so run
@@ -46,19 +40,15 @@ This deploys configs as symlinks into the repo, installs mise tools (starship,
 uv, atuin, delta, etc.), and installs the `alltuner` CLI from the private
 `alltuner/infrastructure` repo (requires SSH access to GitHub from the host).
 
-After bootstrap, import existing shell history into atuin:
-
-```bash
-atuin import auto
-```
-
 ## Day-to-day usage
 
 ```bash
-git -C ~/repos/dotfiles pull   # dotfiles are symlinks into the repo: pull = applied
-dfa                            # mise dotfiles apply (only needed for new/removed files)
-mise -C ~/repos/dotfiles bootstrap --yes   # full converge (packages, defaults, ...)
-bubu                           # update Homebrew packages by hand
+dfu    # sync this machine: pull + apply (pull alone deploys edits; apply covers new/removed files)
+dfs    # what would change (dotfiles status)
+dfb    # full converge: packages, defaults, services, tools
+dfc    # cd into the repo
+dfa    # dotfiles apply only
+bubu   # update Homebrew formulae by hand
 ```
 
 Everything else (mise tools, brew formulae, antidote, the skills mirror)
@@ -72,8 +62,9 @@ auto-updates daily via launchd/systemd timers running `dotfiles-maintain`.
   mirroring its path relative to `~`, then run `dfa`.
 - **Remove** a file: delete it from the tree and remove the leftover symlink
   from `~` yourself (there is no state database).
-- **Add a mac package**: `brew info <name>` first, then a `brew:` or
-  `brew-cask:` entry in `mise.dev.toml`; if mise's cask shim rejects it
+- **Add a mac package**: `brew info <name>` first, then
+  `mise bootstrap packages use brew:<name>` (or `brew-cask:`) — it writes the
+  entry and installs in one step. If mise's cask shim rejects it
   (`auto_updates`, odd artifacts), add a guarded `brew install` to the
   bootstrap task instead.
 - **Add a tool**: pin it in `base/.config/mise/config.toml` (all machines) or
