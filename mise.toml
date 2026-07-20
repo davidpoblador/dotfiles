@@ -1,0 +1,203 @@
+# ABOUTME: mise bootstrap config shared by all machines; macOS sections are
+# ABOUTME: skipped on Linux. Run `mise bootstrap` from this checkout to converge.
+
+[bootstrap.macos.defaults.NSGlobalDomain]
+
+# --- Locale ---
+# Metric units
+AppleMetricUnits = true
+AppleMeasurementUnits = "Centimeters"
+AppleTemperatureUnit = "Celsius"
+
+# 24-hour time everywhere
+AppleICUForce24HourTime = true
+
+# Week starts on Monday (AppleFirstWeekday) is a -dict, which mise cannot
+# express; written by the bootstrap task in mise.dev.toml.
+
+# --- Appearance ---
+# Auto-switch between light and dark mode
+AppleInterfaceStyleSwitchesAutomatically = true
+
+# Accent color: purple
+AppleAccentColor = 5
+
+# Highlight color: custom dark wine (matches wallpaper background)
+AppleHighlightColor = "0.356863 0.137255 0.200000 Other"
+
+# Small sidebar icons (Finder, Mail, System Settings)
+NSTableViewDefaultSizeMode = 1
+
+# --- Keyboard ---
+# Fast key repeat (default 6, min 1)
+KeyRepeat = 1
+
+# Short delay before repeat starts (default 68, min 10)
+InitialKeyRepeat = 15
+
+# Disable press-and-hold accent menu (required for key repeat in many apps)
+ApplePressAndHoldEnabled = false
+
+# Disable autocorrect, smart quotes, smart dashes (bad for code)
+NSAutomaticSpellingCorrectionEnabled = false
+NSAutomaticQuoteSubstitutionEnabled = false
+NSAutomaticDashSubstitutionEnabled = false
+
+# Full keyboard access — Tab cycles through all UI controls, not just text
+AppleKeyboardUIMode = 3
+
+# --- Trackpad ---
+# Tap to click (global half; per-device domains below)
+"com.apple.mouse.tapBehavior" = 1
+
+# Natural scroll direction
+"com.apple.swipescrolldirection" = true
+
+# Mouse tracking speed (current machine value)
+"com.apple.mouse.scaling" = 1.0
+
+# Scroll wheel speed (slower than default)
+"com.apple.scrollwheel.scaling" = 0.5
+
+# --- Cursor ---
+# Text cursor blink rate (default ~500ms on/off)
+NSTextInsertionPointBlinkPeriodOn = 400.0
+NSTextInsertionPointBlinkPeriodOff = 300.0
+
+# Don't enlarge cursor when shaking mouse
+CGDisableCursorLocationMagnification = true
+
+# --- Windows ---
+# Near-instant window resize animation
+NSWindowResizeTime = 0.001
+
+# Save dialogs default to expanded view
+NSNavPanelExpandedStateForSaveMode = true
+
+# Always show file extensions
+AppleShowAllExtensions = true
+
+# Don't auto-restore windows when apps relaunch
+NSQuitAlwaysKeepsWindows = false
+
+# --- Finder (global half) ---
+# Spring-loaded folders open quickly when dragging
+"com.apple.springing.enabled" = true
+"com.apple.springing.delay" = 0.1
+
+# --- Safari (global half) ---
+WebKitDeveloperExtras = true
+
+###########################################################
+# Trackpad                                                #
+###########################################################
+
+# Tap to click (both internal and bluetooth trackpads)
+[bootstrap.macos.defaults."com.apple.AppleMultitouchTrackpad"]
+Clicking = true
+
+[bootstrap.macos.defaults."com.apple.driver.AppleBluetoothMultitouch.trackpad"]
+Clicking = true
+
+###########################################################
+# Dock                                                    #
+###########################################################
+
+[bootstrap.macos.defaults."com.apple.dock"]
+# Speed up autohide animation
+autohide-time-modifier = 0.25
+
+# Dock position
+orientation = "bottom"
+
+# Auto-hide the dock
+autohide = true
+
+# Compact dock tile size
+tilesize = 57
+
+# Hide the "Recent Applications" section in the dock
+show-recents = false
+
+# Minimize animation: suck (faster than genie)
+mineffect = "suck"
+
+# Disable all hot corners (shell `for corner in tl tr bl br` loop, unrolled)
+wvous-tl-corner = 0
+wvous-tl-modifier = 0
+wvous-tr-corner = 0
+wvous-tr-modifier = 0
+wvous-bl-corner = 0
+wvous-bl-modifier = 0
+wvous-br-corner = 0
+wvous-br-modifier = 0
+
+# Don't auto-rearrange Spaces by most recent use
+mru-spaces = false
+
+###########################################################
+# Finder                                                  #
+###########################################################
+
+[bootstrap.macos.defaults."com.apple.finder"]
+# Show path breadcrumb at bottom
+ShowPathbar = true
+
+# Show status bar (file count + free space)
+ShowStatusBar = true
+
+# Default to list view (Nlsv=list, icnv=icon, clmv=column, glyv=gallery)
+FXPreferredViewStyle = "Nlsv"
+
+# New Finder windows open in the home folder
+NewWindowTarget = "PfHm"
+
+# Search current folder by default (not entire Mac)
+FXDefaultSearchScope = "SCcf"
+
+# Don't write .DS_Store on network shares
+[bootstrap.macos.defaults."com.apple.desktopservices"]
+DSDontWriteNetworkStores = true
+
+# Skip the "Are you sure you want to open this?" dialog for downloaded apps
+[bootstrap.macos.defaults."com.apple.LaunchServices"]
+LSQuarantine = false
+
+###########################################################
+# Menu bar                                                #
+###########################################################
+
+# Clock: 24h with seconds, no date
+[bootstrap.macos.defaults."com.apple.menuextra.clock"]
+DateFormat = "HH:mm:ss"
+Show24Hour = true
+ShowSeconds = true
+ShowDate = 2
+IsAnalog = false
+
+# Battery percentage (com.apple.controlcenter) is -currentHost scoped, which
+# mise cannot express; written by the bootstrap task in mise.dev.toml.
+
+###########################################################
+# Safari                                                  #
+###########################################################
+# Only the SandboxBroker half of the Develop-menu pref is writable from the
+# terminal; com.apple.Safari itself (like com.apple.TextEdit) is sandboxed
+# and rejects defaults writes without Full Disk Access.
+
+[bootstrap.macos.defaults."com.apple.Safari.SandboxBroker"]
+ShowDevelopMenu = true
+
+###########################################################
+# Screenshots                                             #
+###########################################################
+
+[bootstrap.macos.defaults."com.apple.screencapture"]
+# Disable window screenshot drop shadow
+disable-shadow = true
+
+# Screenshot format
+type = "png"
+
+# Skip the floating thumbnail preview — save straight to file
+show-thumbnail = false

@@ -120,4 +120,10 @@ fi
 if ! brew list --cask raycast &>/dev/null; then
   brew install --cask raycast
 fi
+
+# macOS defaults mise cannot express: -dict values and -currentHost domains
+# (companions to [bootstrap.macos.defaults] in mise.toml)
+defaults write -g AppleFirstWeekday -dict gregorian 2
+defaults -currentHost write -g com.apple.mouse.tapBehavior -int 1
+defaults -currentHost write com.apple.controlcenter BatteryShowPercentage -bool false
 """
