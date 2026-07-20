@@ -92,6 +92,7 @@
 "brew-cask:gitkraken-cli" = "latest"                 # GitKraken terminal UI
 "brew-cask:obsidian" = "latest"                      # knowledge base
 "brew-cask:responsively" = "latest"                  # multi-viewport browser for responsive dev
+"brew-cask:vlc" = "latest"                           # media player
 
 #
 # Mac App Store apps
@@ -113,6 +114,7 @@
 "~/.ssh" = { source = "home-dev/.ssh", mode = "symlink-each" }
 "~/Library" = { source = "home-dev/Library", mode = "symlink-each" }
 "~/.config/broot" = { source = "home-dev/.config/broot", mode = "symlink-each" }
+"~/.config/fnox" = { source = "home-dev/.config/fnox", mode = "symlink-each" }
 "~/.config/ghostty" = { source = "home-dev/.config/ghostty", mode = "symlink-each" }
 "~/.config/opencode" = { source = "home-dev/.config/opencode", mode = "symlink-each" }
 "~/.config/sc-im" = { source = "home-dev/.config/sc-im", mode = "symlink-each" }
