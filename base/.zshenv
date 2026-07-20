@@ -1,6 +1,9 @@
 # Skip system compinit in /etc/zsh/zshrc (we run our own in .zshrc)
 skip_global_compinit=1
 
+# Startup timing: .zshrc reports if an interactive shell starts slowly
+zmodload zsh/datetime 2>/dev/null && typeset -gF _shell_t0=$EPOCHREALTIME
+
 # Ensure brew/user binaries are on PATH for non-interactive shells (e.g. mosh,
 # scp, launchd agents). brew first so mise shims end up in front of it.
 [[ -x /opt/homebrew/bin/brew ]] && eval "$(/opt/homebrew/bin/brew shellenv)"
