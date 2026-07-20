@@ -6,12 +6,11 @@ Personal dotfiles managed with [mise](https://mise.jdx.dev/) (`mise bootstrap` +
 
 | Path | What |
 |---|---|
-| `home/` | Dotfiles deployed to **every** machine, mirroring their paths under `~` (one `symlink-each` entry in `mise.toml`: each file is individually symlinked, unmanaged files coexist) |
-| `home-dev/` | Dotfiles deployed to **dev machines (macs) only**, via per-directory entries in `mise.dev.toml` |
+| `base/` | Dotfiles for **every** machine, mirroring their paths under `~` (one `symlink-each` entry in `mise.toml`: each file is individually symlinked, unmanaged files coexist) |
+| `dev/` | Dotfiles deployed to **dev machines (macs) only**, via per-directory entries in `mise.dev.toml` |
 | `mise.toml` | Bootstrap config for all machines: dotfiles mapping, repos, macOS defaults, launchd/systemd units, the imperative bootstrap task |
 | `mise.dev.toml` | Dev-only additions, loaded when `MISE_ENV=dev`: brew/cask/mas packages, dev dotfile trees |
 | `bootstrap.sh` | curl-able one-command machine setup |
-| `prod/` | Historical planning notes, nothing is deployed from it |
 
 ## Fresh machine setup
 
@@ -69,7 +68,7 @@ auto-updates daily via launchd/systemd timers running `dotfiles-maintain`.
 
 - **Edit** a managed file: just edit it (live file and repo file are the same
   thing through the symlink), commit via PR, `git pull` on the other machines.
-- **Add** a file: place it under `home/` (all machines) or `home-dev/` (macs),
+- **Add** a file: place it under `base/` (all machines) or `dev/` (macs),
   mirroring its path relative to `~`, then run `dfa`.
 - **Remove** a file: delete it from the tree and remove the leftover symlink
   from `~` yourself (there is no state database).
@@ -77,7 +76,7 @@ auto-updates daily via launchd/systemd timers running `dotfiles-maintain`.
   `brew-cask:` entry in `mise.dev.toml`; if mise's cask shim rejects it
   (`auto_updates`, odd artifacts), add a guarded `brew install` to the
   bootstrap task instead.
-- **Add a tool**: pin it in `home/.config/mise/config.toml` (all machines) or
+- **Add a tool**: pin it in `base/.config/mise/config.toml` (all machines) or
   `config.dev.toml` (macs).
 
 Two rules that bite: new scripts need `chmod +x` before committing (systemd
@@ -106,14 +105,14 @@ worktree path.
 
 The full inventory (brew formulae, casks, App Store apps, mise tools, zsh
 plugins, aliases and functions) lives in [TOOLS.md](TOOLS.md). Declarations:
-packages in `mise.dev.toml`, tools in `home/.config/mise/config.toml`
-(+ `config.dev.toml` for dev-only), zsh plugins in `home/.zsh_plugins.txt`.
+packages in `mise.dev.toml`, tools in `base/.config/mise/config.toml`
+(+ `config.dev.toml` for dev-only), zsh plugins in `base/.zsh_plugins.txt`.
 
 
 ## Secrets
 
 [fnox](https://fnox.jdx.dev) manages secrets on dev machines (macs): age-encrypted values
-live inline in `home/.config/fnox/config.toml` (safe to commit), decrypted
+live inline in `dev/.config/fnox/config.toml` (safe to commit), decrypted
 with the Syncthing-distributed identity at `~/sync/secrets/keys.txt`
 (`FNOX_AGE_KEY_FILE`, exported by `.zshenv` where the key exists). The daemon
 caches resolved values in memory; shell integration loads project `fnox.toml`
@@ -162,7 +161,7 @@ The machine profile follows the OS: macs are `dev`, Linux hosts are `prod`.
 `.zshenv` exports `MISE_ENV` accordingly, which selects the mise tool overlay
 (`~/.config/mise/config.dev.toml`) and the starship config
 (`starship-dev.toml` / `starship-prod.toml`). Dev-only configs live in the
-`home-dev/` tree, declared only in `mise.dev.toml`.
+`dev/` tree, declared only in `mise.dev.toml`.
 
 ## Platform support
 
