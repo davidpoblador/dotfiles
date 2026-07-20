@@ -393,6 +393,23 @@ All plugins except zsh-defer are lazy-loaded with `kind:defer`.
 | `cdm` | cd to main worktree of current git repo |
 | `rep [name]` | cd to `~/repos` or `~/repos/<name>` |
 
+## Secrets
+
+[fnox](https://fnox.jdx.dev) manages secrets globally: age-encrypted values
+live inline in `home/.config/fnox/config.toml` (safe to commit), decrypted
+with the Syncthing-distributed identity at `~/sync/secrets/keys.txt`
+(`FNOX_AGE_KEY_FILE`, exported by `.zshenv` where the key exists). The daemon
+caches resolved values in memory; shell integration loads project `fnox.toml`
+secrets on `cd`.
+
+```bash
+fnox set -g NAME value   # encrypt into the global config (a repo symlink: commit it)
+fnox get NAME
+```
+
+sops + age stay available (dev machines) for repos that use them, e.g.
+`~/repos/infrastructure`.
+
 ## Agent skills
 
 Skills (reusable `SKILL.md` bundles) are declared as Claude Code **plugins** in

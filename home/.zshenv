@@ -17,6 +17,9 @@ esac
 # Don't quarantine cask apps — avoids the "downloaded from internet" warning
 export HOMEBREW_CASK_OPTS="--no-quarantine"
 
+# fnox decrypts with the Syncthing-distributed age identity where present
+[[ -f "$HOME/sync/secrets/keys.txt" ]] && export FNOX_AGE_KEY_FILE="$HOME/sync/secrets/keys.txt"
+
 # expose: config lives in synced secrets (server hostname is private).
 # The script falls back to ~/.config/expose.env when this is unset.
 export EXPOSE_CONFIG="$HOME/sync/secrets/expose.env"
