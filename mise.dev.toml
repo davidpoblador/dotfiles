@@ -1,0 +1,123 @@
+# ABOUTME: mise bootstrap config for dev machines (macs), loaded when MISE_ENV=dev.
+# ABOUTME: Declares Homebrew formulae/casks and Mac App Store apps; run `mise bootstrap`.
+
+[bootstrap.packages]
+#
+# Shell, terminal, and dotfile plumbing
+# Things that bootstrap the shell environment itself.
+#
+"brew:chezmoi" = "latest"                    # dotfile manager (self-hosted)
+"brew:mas" = "latest"                        # Mac App Store CLI (keep until mise's mas backend is proven standalone)
+"brew:tmux" = "latest"
+"brew:zsh-completions" = "latest"
+"brew:zsh-syntax-highlighting" = "latest"
+"brew-cask:ghostty" = "latest"               # terminal emulator
+
+#
+# Everyday CLI utilities
+# General-purpose tools used interactively across projects.
+#
+"brew:chafa" = "latest"                      # render images as ANSI art in the terminal
+"brew:curl" = "latest"
+"brew:d2" = "latest"                         # diagram-as-code renderer
+"brew:duckdb" = "latest"                     # in-process OLAP SQL engine
+"brew:ffmpeg" = "latest"
+"brew:fileicon" = "latest"                   # set custom icons on files/folders
+"brew:fx" = "latest"                         # interactive JSON viewer
+"brew:imagemagick" = "latest"
+"brew:jless" = "latest"                      # pager for JSON
+"brew:jnv" = "latest"                        # interactive jq
+"brew:jq" = "latest"
+"brew:knock" = "latest"                      # port-knocking client
+"brew:litecli" = "latest"                    # SQLite REPL with autocompletion
+"brew:mosh" = "latest"                       # mobile/latency-tolerant SSH replacement
+"brew:pv" = "latest"                         # pipe progress meter
+"brew:qrencode" = "latest"
+"brew:rsync" = "latest"
+"brew:sc-im" = "latest"                      # spreadsheet in the terminal
+"brew:shfmt" = "latest"                      # shell formatter
+"brew:silicon" = "latest"                    # render source code as an image
+"brew:telnet" = "latest"
+"brew:tokei" = "latest"                      # code-line counter
+"brew:tree" = "latest"
+"brew:watchexec" = "latest"                  # run commands on file changes
+"brew:watchman" = "latest"                   # Facebook file-watcher (RN / Xcode tooling)
+"brew:wget" = "latest"
+"brew:yq" = "latest"                         # YAML/XML/TOML jq-alike
+"brew:yt-dlp" = "latest"                     # video downloader (youtube-dl fork)
+
+#
+# Modern replacements for classic unix tools
+# (kept in brew where mise doesn't yet supply them)
+#
+"brew:broot" = "latest"                      # tree + navigator
+"brew:cheat" = "latest"                      # cheatsheets
+"brew:curlie" = "latest"                     # curl + httpie
+"brew:duff" = "latest"                       # fast duplicate finder
+"brew:gping" = "latest"                      # ping with a graph
+"brew:httpie" = "latest"                     # curl for humans
+"brew:procs" = "latest"                      # ps replacement
+"brew:the_silver_searcher" = "latest"        # 'ag' — grep replacement
+"brew:tlrc" = "latest"                       # tldr client in rust
+
+#
+# Build-from-source toolchain
+# Compilers / generators that other installs may pull in as deps.
+#
+"brew:cmake" = "latest"
+"brew:coreutils" = "latest"                  # GNU versions of ls, cp, etc. (prefixed with 'g')
+"brew:create-dmg" = "latest"                 # used by factoryfloor release scripts
+"brew:protobuf" = "latest"
+"brew:sentencepiece" = "latest"              # tokenizer lib, pulled in by ML tooling
+
+#
+# git ecosystem
+#
+"brew:git" = "latest"                        # newer git than macOS ships
+"brew:git-absorb" = "latest"                 # auto-fixup commits
+"brew:tig" = "latest"                        # git TUI
+
+#
+# AI / inference tooling
+#
+"brew:gemini-cli" = "latest"                 # Google Gemini CLI
+"brew:rtk" = "latest"                        # CLI proxy that minimizes LLM token consumption
+"brew-cask:copilot-cli" = "latest"           # GitHub Copilot CLI
+"brew-cask:macwhisper" = "latest"            # local Whisper transcription app
+
+#
+# Productivity / end-user apps (casks)
+#
+"brew-cask:bitwarden" = "latest"                     # password manager
+"brew-cask:font-jetbrains-mono-nerd-font" = "latest"
+"brew-cask:obsidian" = "latest"                      # knowledge base
+
+#
+# Mac App Store apps
+# Requires being signed in to the App Store, with each app already associated
+# with the Apple ID — mas cannot accept a first-time license non-interactively.
+#
+"mas:411643860" = "latest"                   # DaisyDisk
+"mas:6720708363" = "latest"                  # Obsidian Web Clipper
+"mas:361285480" = "latest"                   # Keynote
+"mas:361304891" = "latest"                   # Numbers
+"mas:361309726" = "latest"                   # Pages
+"mas:803453959" = "latest"                   # Slack
+"mas:497799835" = "latest"                   # Xcode
+
+[tasks.bootstrap]
+description = "Imperative setup mise cannot express declaratively"
+run = """
+#!/bin/bash
+# docker-desktop ships the docker CLI + zsh completions (~/.docker/completions,
+# wired in .zshrc). Its cask postflight trips mise's cask shim (auto_updates
+# unsupported), so it stays with the brew CLI.
+if ! brew list --cask docker-desktop &>/dev/null; then
+  brew install --cask docker-desktop
+fi
+# raycast's cask artifact layout defeats mise's shim ("Raycast.app not found");
+# launcher / Spotlight replacement, self-updates once installed.
+if ! brew list --cask raycast &>/dev/null; then
+  brew install --cask raycast
+fi
+"""

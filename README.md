@@ -14,8 +14,13 @@ Personal dotfiles managed with [chezmoi](https://www.chezmoi.io/).
 sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply davidpoblador --prompt
 ```
 
-Chezmoi prompts for email and full name. Chezmoi will install Homebrew
-packages, mise tools (uv, bun, go, etc.), and deploy configs.
+Chezmoi prompts for email and full name, installs mise tools (uv, bun, go,
+etc.), and deploys configs. Homebrew packages and Mac App Store apps are
+declared in `mise.dev.toml` and installed with:
+
+```bash
+cd "$(chezmoi source-path)" && mise trust && mise bootstrap
+```
 
 After bootstrap, import existing shell history into atuin:
 
@@ -100,6 +105,9 @@ Mise tools auto-upgrade daily in the background via `.zshrc`.
 
 ### Homebrew packages
 
+Declared in `mise.dev.toml` (`[bootstrap.packages]`), installed by
+`mise bootstrap` on macs.
+
 #### Shell and terminal
 
 | Package | Description |
@@ -181,7 +189,6 @@ Mise tools auto-upgrade daily in the background via `.zshrc`.
 | Package | Description |
 |---|---|
 | gemini-cli | Google Gemini CLI |
-| ant | CLI for the Claude Platform (cask) |
 | copilot-cli | GitHub Copilot CLI (cask) |
 | macwhisper | Local Whisper transcription (cask) |
 

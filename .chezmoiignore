@@ -9,6 +9,8 @@ README.md
 TODO.md
 prod/
 renovate.json
+mise.toml
+mise.*.toml
 
 # Zed runtime state, not config (embeddings/prompts DBs, scratch tmp files)
 .config/zed/conversations
@@ -30,5 +32,4 @@ renovate.json
 .docker/
 .ssh/
 private_Library/
-run_onchange_darwin-install-packages.sh
 {{- end }}
