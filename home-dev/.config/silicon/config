@@ -1,4 +1,4 @@
---theme {{ env.HOME }}/.config/silicon/Catppuccin-Macchiato.tmTheme
+--theme /Users/dpoblador/.config/silicon/Catppuccin-Macchiato.tmTheme
 --background #24273a
 --font "JetBrainsMono Nerd Font"
 --shadow-blur-radius 0

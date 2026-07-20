@@ -117,6 +117,5 @@
 "~/.config/ghostty" = { source = "home-dev/.config/ghostty", mode = "symlink-each" }
 "~/.config/opencode" = { source = "home-dev/.config/opencode", mode = "symlink-each" }
 "~/.config/sc-im" = { source = "home-dev/.config/sc-im", mode = "symlink-each" }
+"~/.config/silicon" = { source = "home-dev/.config/silicon", mode = "symlink-each" }
 "~/.config/zed" = { source = "home-dev/.config/zed", mode = "symlink-each" }
-# Rendered per-machine (absolute theme path)
-"~/.config/silicon/config" = { source = "templates/silicon-config", mode = "template" }

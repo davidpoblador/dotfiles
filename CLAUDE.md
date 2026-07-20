@@ -23,7 +23,6 @@ copy `~/sync/secrets/keys.txt` (the age identity).
 
 - `home/`: dotfiles deployed to every machine (`[dotfiles]` in `mise.toml`, symlink-each)
 - `home-dev/`: dotfiles deployed to dev machines only (`mise.dev.toml`, loaded when `MISE_ENV=dev`)
-- `templates/`: files rendered per machine (mise template mode)
 - `mise.toml` / `mise.dev.toml`: `mise bootstrap` config (packages, defaults, repos, services, dotfiles, tasks)
 - `prod/`: planning notes only
 
