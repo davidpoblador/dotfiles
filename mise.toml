@@ -23,7 +23,7 @@ timeout_start_sec = "1h"
 wanted_by = []
 
 [bootstrap.linux.systemd.units.dotfiles-maintain-timer]
-unit = "dotfiles-maintain"
+unit = "dev.mise.dotfiles-maintain.service"
 on_calendar = "daily"
 on_boot_sec = "15min"
 randomized_delay_sec = "30min"
