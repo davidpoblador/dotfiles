@@ -222,6 +222,25 @@ YOU MUST follow this debugging framework for ANY technical issue:
 - Let ruff handle import sorting automatically
 - Match the project's logging approach
 
+## Secrets (fnox)
+
+Secrets on David's machines are managed by [fnox](https://fnox.jdx.dev), with
+age-encrypted values stored inline in config files that are safe to commit.
+
+- Read a secret with `fnox get NAME`; run commands that need secrets with
+  `fnox exec -- cmd` (preferred: the value never touches your transcript).
+- NEVER print decrypted secret values into output, logs, or files. Check
+  presence/length instead when debugging.
+- Global secrets: `fnox set -g NAME value` writes (encrypted) to
+  `~/.config/fnox/config.toml`, which is a symlink into the dotfiles repo —
+  commit the change via PR like any dotfile edit.
+- Project secrets live in a `fnox.toml` next to the code; the shell loads them
+  on `cd`. Plain `fnox set` (no `-g`) writes to `./fnox.toml` in the cwd.
+- NEVER read, copy, or transmit `~/sync/secrets/keys.txt` (the age identity)
+  or any `FNOX_AGE_KEY_FILE` target.
+- Some repos (e.g. `~/repos/infrastructure`) use sops + age instead; follow
+  the repo's existing convention there.
+
 ## Browser Automation
 
 Use Claude Code's first-party Chrome integration. It connects the CLI to a real

@@ -12,7 +12,12 @@ Before every commit, verify that no file contains:
 - `.env` file contents
 - Cloud account IDs
 
-If a file needs secrets, keep it out of the repo (synced secrets dir or, later, fnox) — never inline them.
+If something needs a secret, store it with fnox (`fnox set -g NAME value` for
+global, or a project `fnox.toml`): values are age-encrypted inline and safe to
+commit. The global config `home/.config/fnox/config.toml` is a tracked dotfile;
+`fnox set -g` edits it through the `~/.config/fnox/config.toml` symlink, so
+commit the result via PR. Never commit plaintext secrets, and never read or
+copy `~/sync/secrets/keys.txt` (the age identity).
 
 ## Repo structure
 

@@ -403,9 +403,18 @@ caches resolved values in memory; shell integration loads project `fnox.toml`
 secrets on `cd`.
 
 ```bash
-fnox set -g NAME value   # encrypt into the global config (a repo symlink: commit it)
-fnox get NAME
+fnox set -g NAME value       # encrypt into the global config (a repo symlink: commit it via PR)
+fnox get NAME                # decrypt one value
+fnox list                    # names only; add --values to decrypt all
+fnox exec -- cmd args        # run a command with all secrets in its env
+fnox edit -g                 # edit the global config with decrypted values
+fnox reencrypt -p age        # after changing recipients
+fnox daemon status|clear     # in-memory cache (auto-starts; clears on config change)
 ```
+
+Per-project secrets go in a `fnox.toml` next to the code; the shell hook loads
+them on `cd` and unloads on leave. Without `-g`, `fnox set` writes to
+`./fnox.toml` — mind which one you mean.
 
 sops + age stay available (dev machines) for repos that use them, e.g.
 `~/repos/infrastructure`.
