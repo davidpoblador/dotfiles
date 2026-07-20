@@ -224,7 +224,7 @@ YOU MUST follow this debugging framework for ANY technical issue:
 
 ## Secrets (fnox)
 
-Secrets on David's machines are managed by [fnox](https://fnox.jdx.dev), with
+Secrets on David's dev machines (macs) are managed by [fnox](https://fnox.jdx.dev), with
 age-encrypted values stored inline in config files that are safe to commit.
 
 - Read a secret with `fnox get NAME`; run commands that need secrets with

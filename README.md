@@ -395,7 +395,7 @@ All plugins except zsh-defer are lazy-loaded with `kind:defer`.
 
 ## Secrets
 
-[fnox](https://fnox.jdx.dev) manages secrets globally: age-encrypted values
+[fnox](https://fnox.jdx.dev) manages secrets on dev machines (macs): age-encrypted values
 live inline in `home/.config/fnox/config.toml` (safe to commit), decrypted
 with the Syncthing-distributed identity at `~/sync/secrets/keys.txt`
 (`FNOX_AGE_KEY_FILE`, exported by `.zshenv` where the key exists). The daemon
