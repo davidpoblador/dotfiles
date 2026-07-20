@@ -90,7 +90,9 @@
 #
 "brew-cask:bitwarden" = "latest"                     # password manager
 "brew-cask:font-jetbrains-mono-nerd-font" = "latest"
+"brew-cask:gitkraken-cli" = "latest"                 # GitKraken terminal UI
 "brew-cask:obsidian" = "latest"                      # knowledge base
+"brew-cask:responsively" = "latest"                  # multi-viewport browser for responsive dev
 
 #
 # Mac App Store apps
@@ -119,6 +121,11 @@ fi
 # launcher / Spotlight replacement, self-updates once installed.
 if ! brew list --cask raycast &>/dev/null; then
   brew install --cask raycast
+fi
+# ngrok's cask uses postflight_steps, which mise's shim does not support;
+# tunnels local ports to public URLs.
+if ! brew list --cask ngrok &>/dev/null; then
+  brew install --cask ngrok
 fi
 
 # macOS defaults mise cannot express: -dict values and -currentHost domains
