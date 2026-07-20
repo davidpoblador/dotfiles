@@ -1,5 +1,0 @@
-# Chezmoi profile (dev/prod), used by starship and other profile-aware configs
-export CHEZMOI_PROFILE=$(cat "${XDG_CACHE_HOME:-$HOME/.cache}/chezmoi-profile" 2>/dev/null || echo "dev")
-
-# Starship config per profile
-export STARSHIP_CONFIG="$HOME/.config/starship-${CHEZMOI_PROFILE}.toml"

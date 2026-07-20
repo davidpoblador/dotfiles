@@ -17,8 +17,8 @@ renovate.json
 .config/zed/themes
 .config/zed/.tmp*
 
-{{- if eq .profile "prod" }}
-# Dev-only files excluded on prod
+{{- if ne .chezmoi.os "darwin" }}
+# Dev-only files excluded on non-mac (prod) hosts
 .codex/
 .gemini/
 .config/broot/
@@ -29,11 +29,6 @@ renovate.json
 .config/zed/
 .docker/
 .ssh/
-private_Library/
-run_onchange_darwin-install-packages.sh
-{{- end }}
-
-{{- if ne .chezmoi.os "darwin" }}
 private_Library/
 run_onchange_darwin-install-packages.sh
 {{- end }}

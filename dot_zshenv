@@ -7,6 +7,13 @@ skip_global_compinit=1
 [[ -d "$HOME/.local/share/mise/shims" ]] && export PATH="$HOME/.local/share/mise/shims:$PATH"
 [[ -x /opt/homebrew/bin/brew ]] && eval "$(/opt/homebrew/bin/brew shellenv)"
 
+# Machine profile: macs are dev, Linux hosts are prod. Selects the mise config
+# overlay (~/.config/mise/config.$MISE_ENV.toml) and the starship config.
+case "$OSTYPE" in
+  darwin*) export MISE_ENV=dev ;;
+  *)       export MISE_ENV=prod ;;
+esac
+
 # Don't quarantine cask apps — avoids the "downloaded from internet" warning
 export HOMEBREW_CASK_OPTS="--no-quarantine"
 

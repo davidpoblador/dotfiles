@@ -253,6 +253,9 @@ fi
 # Print directory after zoxide jumps
 export _ZO_ECHO=1
 
+# Starship config per machine profile (dev on macs, prod on Linux; see .zshenv)
+export STARSHIP_CONFIG="$HOME/.config/starship-${MISE_ENV:-dev}.toml"
+
 # starship's init bakes the resolved versioned binary path into PROMPT.
 # Cache the eval output; the heal hook re-inits if mise prunes that binary.
 if [[ -x "$HOME/.local/share/mise/shims/starship" ]]; then
