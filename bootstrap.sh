@@ -34,8 +34,4 @@ cd "$REPO"
 mise trust
 mise bootstrap --yes
 
-if [ "$MISE_ENV" = prod ]; then
-  loginctl enable-linger 2>/dev/null || true
-fi
-
 echo "bootstrap: done — open a new shell"

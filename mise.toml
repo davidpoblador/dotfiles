@@ -286,6 +286,11 @@ chmod 700 "$HOME/.ssh" 2>/dev/null || true
 # Stamp for .zlogin's "Last sync" freshness line
 touch "${XDG_CACHE_HOME:-$HOME/.cache}/dotfiles_last_apply"
 
+# Let systemd user timers run without an active session (Linux)
+if [ "$(uname -s)" = "Linux" ] && command -v loginctl >/dev/null 2>&1; then
+  loginctl enable-linger 2>/dev/null || true
+fi
+
 [ "$(uname -s)" = "Darwin" ] || exit 0
 
 # Casks mise's shim cannot install: docker-desktop and vlc (preflight/postflight

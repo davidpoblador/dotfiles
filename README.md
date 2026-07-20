@@ -15,8 +15,7 @@ Personal dotfiles managed with [mise](https://mise.jdx.dev/) (`mise bootstrap` +
 ## Fresh machine setup
 
 One command on any machine (installs Homebrew on macs, installs mise, clones
-the repo, converges everything; on Linux also sets zsh as the login shell and
-enables systemd lingering):
+the repo, and converges everything, login shell included):
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/davidpoblador/dotfiles/main/bootstrap.sh | bash
@@ -36,7 +35,8 @@ Platform notes:
   needs sudo, so run `mise bootstrap --only task` interactively once if mosh
   connections fail after a mosh upgrade.
 - **Linux**: system packages (zsh, mosh, keychain) come from apt via
-  `[bootstrap.packages]` — expect one sudo prompt. After the bootstrap, log
+  `[bootstrap.packages]` — expect one sudo prompt. The bootstrap task enables
+  systemd lingering so the maintenance timer runs unattended. Afterwards, log
   out fully and reconnect so the login shell change takes effect (with SSH
   multiplexing, close the shared connection first: `ssh -O exit <host>`).
 
