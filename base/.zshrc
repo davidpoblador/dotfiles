@@ -1,3 +1,6 @@
+# Profiling: ZPROF=1 zsh -ic exit (zbench wraps this)
+[[ -n "${ZPROF:-}" ]] && zmodload zsh/zprof
+
 ###########################################################
 # Environment and Language Settings                       #
 ###########################################################
@@ -473,3 +476,21 @@ if command_exists claude; then
       return $rc
   }
 fi
+
+# Report slow interactive startup; zbench measures on demand
+if [[ -n "${_shell_t0:-}" ]]; then
+  _shell_ms=$(( (EPOCHREALTIME - _shell_t0) * 1000 ))
+  (( _shell_ms > 500 )) && printf '[zsh] slow startup: %dms (run zbench for a breakdown)\n' $_shell_ms
+  unset _shell_t0 _shell_ms
+fi
+zbench() {
+  local i s
+  for i in 1 2 3; do
+    s=$EPOCHREALTIME
+    zsh -ic exit
+    printf '%dms\n' $(( (EPOCHREALTIME - s) * 1000 ))
+  done
+  echo "-- top offenders (zprof):"
+  ZPROF=1 zsh -ic exit 2>/dev/null | head -14
+}
+[[ -n "${ZPROF:-}" ]] && zprof
