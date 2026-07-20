@@ -297,6 +297,8 @@ All plugins except zsh-defer are lazy-loaded with `kind:defer`.
 | `dfa` | `mise dotfiles apply` (repo-scoped) |
 | `dfc` | `cd ~/repos/dotfiles` |
 | `bubu` | `brew update && brew upgrade --formula --yes` |
+| `apu` | `sudo apt update` (Linux) |
+| `apg` | `sudo apt upgrade` (Linux) |
 
 ### Shell functions
 

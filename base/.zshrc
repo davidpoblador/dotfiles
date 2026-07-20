@@ -355,6 +355,10 @@ alias ghpr='gh pr view --web'
 # System maintenance
 # Formula-only: casks belong to mise bootstrap (see dotfiles-maintain)
 command_exists brew && alias bubu='brew update && brew upgrade --formula --yes'
+if command_exists apt; then
+  alias apu='sudo apt update'
+  alias apg='sudo apt upgrade'
+fi
 
 # Docker
 alias dps='docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"'
