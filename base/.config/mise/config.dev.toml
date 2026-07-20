@@ -3,6 +3,7 @@
 awscli = "latest"
 claude = "latest"
 fnox = "latest"
+pi = "latest"
 gcloud = "latest"
 "npm:cf" = "latest"
 rust = "latest"
