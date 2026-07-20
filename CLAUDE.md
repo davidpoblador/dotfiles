@@ -12,7 +12,7 @@ Before every commit, verify that no file contains:
 - `.env` file contents
 - Cloud account IDs
 
-If a file needs secrets, use chezmoi templates with `chezmoi data` or environment variables.
+If a file needs secrets, keep it out of the repo (synced secrets dir or, later, fnox) — never inline them.
 
 ## Repo structure
 
