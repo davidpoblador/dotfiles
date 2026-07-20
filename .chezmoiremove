@@ -13,3 +13,8 @@
 .local/bin/claude
 .local/share/google-cloud-sdk
 .cache/.bun
+.agents/skills.wishlist
+.agents/.skill-lock.json
+.claude/skills
+.local/bin/skills-bootstrap
+.local/bin/skills-add
