@@ -124,9 +124,6 @@ Per-project secrets go in a `fnox.toml` next to the code; the shell hook loads
 them on `cd` and unloads on leave. Without `-g`, `fnox set` writes to
 `./fnox.toml` — mind which one you mean.
 
-sops + age stay available (dev machines) for repos that use them, e.g.
-`~/repos/infrastructure`.
-
 ## Agent skills
 
 Skills (reusable `SKILL.md` bundles) are declared as Claude Code **plugins** in
