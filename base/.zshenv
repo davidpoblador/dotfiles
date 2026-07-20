@@ -1,11 +1,12 @@
 # Skip system compinit in /etc/zsh/zshrc (we run our own in .zshrc)
 skip_global_compinit=1
 
-# Ensure brew/user binaries are on PATH for non-interactive shells (e.g. mosh, scp, launchd agents)
+# Ensure brew/user binaries are on PATH for non-interactive shells (e.g. mosh,
+# scp, launchd agents). brew first so mise shims end up in front of it.
+[[ -x /opt/homebrew/bin/brew ]] && eval "$(/opt/homebrew/bin/brew shellenv)"
 [[ -d "$HOME/bin" ]] && export PATH="$HOME/bin:$PATH"
 [[ -d "$HOME/.local/bin" ]] && export PATH="$HOME/.local/bin:$PATH"
 [[ -d "$HOME/.local/share/mise/shims" ]] && export PATH="$HOME/.local/share/mise/shims:$PATH"
-[[ -x /opt/homebrew/bin/brew ]] && eval "$(/opt/homebrew/bin/brew shellenv)"
 
 # Machine profile: macs are dev, Linux hosts are prod. Selects the mise config
 # overlay (~/.config/mise/config.$MISE_ENV.toml) and the starship config.

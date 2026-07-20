@@ -270,9 +270,6 @@ setopt NO_EQUALS
 # Final PATH Adjustments                                  #
 ###########################################################
 
-add_to_path "$HOME/.local/bin"
-add_to_path "$HOME/bin"
-add_to_path "$HOME/.antigravity/antigravity/bin"
 
 # Remove duplicate PATH entries
 typeset -U PATH
@@ -356,7 +353,8 @@ alias ghp='gh pr list --web'
 alias ghpr='gh pr view --web'
 
 # System maintenance
-command_exists brew && alias bubu='brew update && brew upgrade --yes'
+# Formula-only: casks belong to mise bootstrap (see dotfiles-maintain)
+command_exists brew && alias bubu='brew update && brew upgrade --formula --yes'
 
 # Docker
 alias dps='docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"'
@@ -372,8 +370,12 @@ dexec() { docker exec -it "$1" /bin/sh; }    # Shell into a container
 alias dfa='mise -C ~/repos/dotfiles dotfiles apply'
 alias dfc='cd ~/repos/dotfiles'
 
-# System
-alias ports='ss -tlnp'
+# System (ss on Linux, lsof fallback on macOS)
+if command_exists ss; then
+  alias ports='ss -tlnp'
+else
+  alias ports='lsof -iTCP -sTCP:LISTEN -n -P'
+fi
 
 ###########################################################
 # Completion Setup                                        #

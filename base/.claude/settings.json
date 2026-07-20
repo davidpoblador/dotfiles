@@ -44,7 +44,6 @@
       "Bash(grep:*)",
       "Bash(head:*)",
       "Bash(just:*)",
-      "Bash(just --list:*)",
       "Bash(ls:*)",
       "Bash(mkdir:*)",
       "Bash(msgattrib:*)",
@@ -64,7 +63,7 @@
       "Bash(unzip:*)",
       "Bash(uv:*)",
       "Bash(uvx uv-bump:*)",
-      "mcp__Claude_in_Chrome__tabs_context_mcp",
+      "mcp__claude-in-chrome__tabs_context_mcp",
       "mcp__ide__getDiagnostics",
       "mcp__mongodb__find",
       "mcp__mongodb__indexes",
@@ -226,12 +225,6 @@
     "find-skills@alltuner": true
   },
   "extraKnownMarketplaces": {
-    "openai-codex": {
-      "source": {
-        "source": "github",
-        "repo": "openai/codex-plugin-cc"
-      }
-    },
     "astral-sh": {
       "source": {
         "source": "github",
@@ -288,6 +281,5 @@
   "inputNeededNotifEnabled": true,
   "agentPushNotifEnabled": true,
   "skipAutoPermissionPrompt": true,
-  "voiceEnabled": true,
   "model": "claude-fable-5[1m]"
 }

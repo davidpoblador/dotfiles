@@ -90,16 +90,15 @@ worktree path.
 |---|---|
 | `.zshrc`, `.zsh_plugins.txt` | Shell config, plugins (antidote + zsh-defer) |
 | `.config/mise/config.toml` | Global dev tools: bun, go, rust, just, ruff, etc. |
-| `.config/starship.toml` | Prompt |
+| `.config/starship-{dev,prod}.toml` | Prompt (per profile) |
 | `.config/ghostty/`, `.config/tmux/` | Terminal |
 | `.config/git/`, `.gitignore_global` | Git config |
 | `.config/gh/` | GitHub CLI |
 | `.config/bat/`, `.config/lazygit/` | CLI tools |
 | `.claude/` | Claude Code settings and hooks |
 | `.agents/` | Shared `AGENTS.md`/`CLAUDE.md` and the generated cross-agent skills mirror |
-| `.docker/` | Docker daemon config |
 | `.ssh/` | SSH config (no keys) |
-| `.vimrc` | Vim config |
+| `.config/vim/vimrc` | Vim config |
 
 ## Tools
 
@@ -166,7 +165,7 @@ The machine profile follows the OS: macs are `dev`, Linux hosts are `prod`.
 ## Platform support
 
 - **macOS**: Full dev environment with Homebrew packages, App Store apps, casks, fonts
-- **Linux**: Production config with bash, starship, mise (uv, gh)
+- **Linux**: Production config with zsh, starship, and the full base mise toolset
 
 ## Wallpaper sync (macOS)
 
@@ -178,7 +177,7 @@ aspect, cover screen, crop overflow).
 ### Setup
 
 1. Share `~/sync/exchange/wallpapers/` across your Macs with Syncthing.
-   Chezmoi creates it on apply and symlinks `~/Pictures/wallpapers` to it
+   The bootstrap task creates it and symlinks `~/Pictures/wallpapers` to it
    for easy Finder access.
 2. Drop image files in `~/Pictures/wallpapers`. Any `.png`/`.jpg`/`.jpeg`/
    `.heic`/`.tiff` works. Empty folder = script noops.

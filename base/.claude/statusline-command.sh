@@ -1,18 +1,16 @@
 #!/bin/bash
+# ABOUTME: Claude Code statusline: renders cwd, model, context %, cost, and
+# ABOUTME: session stats from the JSON the harness pipes on stdin.
 
-# Read JSON input from stdin
 input=$(cat)
 
-# ── Extract JSON fields ──────────────────────────────────────────────
-cwd=$(echo "$input" | jq -r '.workspace.current_dir')
-project_dir=$(echo "$input" | jq -r '.workspace.project_dir')
-model=$(echo "$input" | jq -r '.model.display_name')
-pct=$(echo "$input" | jq -r '.context_window.used_percentage // 0' | cut -d. -f1)
-cost=$(echo "$input" | jq -r '.cost.total_cost_usd // 0')
-duration_ms=$(echo "$input" | jq -r '.cost.total_duration_ms // 0')
-lines_add=$(echo "$input" | jq -r '.cost.total_lines_added // 0')
-lines_rm=$(echo "$input" | jq -r '.cost.total_lines_removed // 0')
-agent_name=$(echo "$input" | jq -r '.agent.name // empty')
+# ── Extract JSON fields (single jq: this re-renders constantly) ──────
+IFS=$'\t' read -r cwd project_dir model pct cost duration_ms lines_add lines_rm agent_name < <(
+  echo "$input" | jq -r '[.workspace.current_dir, .workspace.project_dir,
+    .model.display_name, (.context_window.used_percentage // 0 | floor),
+    (.cost.total_cost_usd // 0), (.cost.total_duration_ms // 0),
+    (.cost.total_lines_added // 0), (.cost.total_lines_removed // 0),
+    (.agent.name // "")] | @tsv')
 
 # ── Colors (Gruvbox-inspired) ────────────────────────────────────────
 bold='\033[1m'

@@ -268,12 +268,13 @@ touch "${XDG_CACHE_HOME:-$HOME/.cache}/dotfiles_last_apply"
 
 [ "$(uname -s)" = "Darwin" ] || exit 0
 
-# Casks mise's shim cannot install: docker-desktop (postflight rejects
-# auto_updates; ships the docker CLI + zsh completions wired in .zshrc),
-# raycast (app artifact not found), ngrok (postflight_steps unsupported)
+# Casks mise's shim cannot install: docker-desktop and vlc (preflight/postflight
+# reject auto_updates; docker ships the docker CLI + zsh completions wired in
+# .zshrc), raycast (app artifact not found), ngrok (postflight_steps unsupported)
 brew list --cask docker-desktop >/dev/null 2>&1 || brew install --cask docker-desktop
 brew list --cask raycast >/dev/null 2>&1 || brew install --cask raycast
 brew list --cask ngrok >/dev/null 2>&1 || brew install --cask ngrok
+brew list --cask vlc >/dev/null 2>&1 || brew install --cask vlc
 
 # macOS defaults mise cannot express: -dict values and -currentHost domains
 # (companions to [bootstrap.macos.defaults])

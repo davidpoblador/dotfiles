@@ -100,7 +100,7 @@ source "$CFG"
 : "${EXPOSE_DOMAIN:?missing in $CFG}"
 
 command -v frpc >/dev/null \
-  || die "frpc not on PATH (brew install frpc / apt install frpc)"
+  || die "frpc not on PATH (mise install frp / apt install frpc)"
 
 # ---- name + url ----
 [[ -z $NAME ]] && NAME=$(gen_name "$RANDOM_KIND")

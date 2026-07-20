@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# ABOUTME: WorktreeRemove hook: fast-forwards the main checkout after a merge
+# ABOUTME: and cleans up the removed worktree's branch.
 set -euo pipefail
 
 # shellcheck source=_common.sh

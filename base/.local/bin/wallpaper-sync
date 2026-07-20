@@ -2,7 +2,7 @@
 // ABOUTME: picks the best wallpaper per display from ~/Pictures/wallpapers
 // ABOUTME: and sets it with --apply. default is dry-run. idempotent. quiet.
 
-import { setWallpaper, getWallpaper, screens as wpScreens } from 'wallpaper@7.3.0';
+import { setWallpaper, getWallpaper } from 'wallpaper@7.3.0';
 import si from 'systeminformation@5.31.5';
 import { readdir, stat, realpath } from 'node:fs/promises';
 import { join } from 'node:path';

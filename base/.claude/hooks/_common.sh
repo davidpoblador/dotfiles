@@ -1,6 +1,6 @@
 # shellcheck shell=bash
-# Shared helpers for worktree-remove.sh.
-# Sourced, not executed.
+# ABOUTME: Shared helpers for the worktree hooks (tty resolution, OSC emission).
+# ABOUTME: Sourced, not executed.
 #
 # Conventions:
 #   - All helpers take $repo (the main repo root) as the first arg explicitly,

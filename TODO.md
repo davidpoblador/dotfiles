@@ -2,7 +2,7 @@
 
 ## Starship prompt
 
-- Add `cmd_duration` module (shows how long last command took, only above 2s threshold)
+- Add `cmd_duration` module to starship-dev.toml (prod already has it)
 - Add `jobs` module (shows background job count)
 - Add `zig` language module (already in mise, missing from prompt)
 

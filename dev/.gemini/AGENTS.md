@@ -1,1 +1,1 @@
-../.agents/AGENTS.md
+../../base/.agents/AGENTS.md
