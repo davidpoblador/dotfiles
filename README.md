@@ -83,6 +83,26 @@ bubu                           # update Homebrew packages by hand
 Everything else (mise tools, brew formulae, antidote, the skills mirror)
 auto-updates daily via launchd/systemd timers running `dotfiles-maintain`.
 
+### Managing files
+
+- **Edit** a managed file: just edit it (live file and repo file are the same
+  thing through the symlink), commit via PR, `git pull` on the other machines.
+- **Add** a file: place it under `home/` (all machines) or `home-dev/` (macs),
+  mirroring its path relative to `~`, then run `dfa`.
+- **Remove** a file: delete it from the tree and remove the leftover symlink
+  from `~` yourself (there is no state database).
+- **Add a mac package**: `brew info <name>` first, then a `brew:` or
+  `brew-cask:` entry in `mise.dev.toml`; if mise's cask shim rejects it
+  (`auto_updates`, odd artifacts), add a guarded `brew install` to the
+  bootstrap task instead.
+- **Add a tool**: pin it in `home/.config/mise/config.toml` (all machines) or
+  `config.dev.toml` (macs).
+
+Two rules that bite: new scripts need `chmod +x` before committing (systemd
+fails with 203/EXEC otherwise), and `mise dotfiles apply` must only run from
+`~/repos/dotfiles` — never from a worktree, or every symlink bakes the
+worktree path.
+
 ## What's managed
 
 | Path | What |

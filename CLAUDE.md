@@ -32,6 +32,8 @@ copy `~/sync/secrets/keys.txt` (the age identity).
 - One commit per logical change
 - Commit messages: lowercase, imperative, concise
 - Test changes locally before pushing (new terminal; `mise dotfiles apply` / `mise bootstrap --dry-run` for structural changes)
+- `mise dotfiles apply` must run from `~/repos/dotfiles`, NEVER from a worktree: symlinks bake the config file's directory
+- Any new script must be `chmod +x` before committing (symlink deployment preserves the git mode; systemd fails with 203/EXEC on 644)
 
 ## Shell scripts run by mise bootstrap
 
