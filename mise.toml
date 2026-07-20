@@ -8,6 +8,27 @@
 # via packpath since vim reads ~/.config/vim natively)
 "~/.config/vim/pack/catppuccin/start/catppuccin" = { url = "https://github.com/catppuccin/vim", ref = "main" }
 
+[bootstrap.macos.launchd.agents.dotfiles-maintain]
+program = "~/.local/bin/dotfiles-maintain"
+start_interval = 21600
+run_at_load = true
+stdout_path = "~/Library/Logs/dotfiles-maintain.log"
+stderr_path = "~/Library/Logs/dotfiles-maintain.log"
+
+[bootstrap.linux.systemd.units.dotfiles-maintain]
+description = "dotfiles maintenance (mise tools, antidote plugins)"
+type = "oneshot"
+exec_start = "%h/.local/bin/dotfiles-maintain"
+timeout_start_sec = "1h"
+wanted_by = []
+
+[bootstrap.linux.systemd.units.dotfiles-maintain-timer]
+unit = "dotfiles-maintain"
+on_calendar = "daily"
+on_boot_sec = "15min"
+randomized_delay_sec = "30min"
+persistent = true
+
 [bootstrap.macos.defaults.NSGlobalDomain]
 
 # --- Locale ---
