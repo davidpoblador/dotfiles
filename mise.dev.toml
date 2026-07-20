@@ -6,7 +6,6 @@
 # Shell, terminal, and dotfile plumbing
 # Things that bootstrap the shell environment itself.
 #
-"brew:chezmoi" = "latest"                    # dotfile manager (self-hosted)
 "brew:mas" = "latest"                        # Mac App Store CLI (keep until mise's mas backend is proven standalone)
 "brew:tmux" = "latest"
 "brew:zsh-completions" = "latest"
