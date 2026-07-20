@@ -10,3 +10,6 @@
 .config/tmux/plugins
 .config/tmux/project_module.conf
 .config/tmux/scripts
+.local/bin/claude
+.local/share/google-cloud-sdk
+.cache/.bun

@@ -1,6 +1,9 @@
 # Dev-only tools, loaded when MISE_ENV=dev (macs; see .zshenv)
 [tools]
 awscli = "latest"
+claude = "latest"
+codex = "latest"
+gcloud = "latest"
 "npm:cf" = "latest"
 rust = "latest"
 mongosh = "latest"

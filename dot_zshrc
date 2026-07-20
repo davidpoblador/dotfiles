@@ -240,11 +240,6 @@ if [[ -f "${XDG_CONFIG_HOME}/broot/launcher/bash/br" ]]; then
   source "${XDG_CONFIG_HOME}/broot/launcher/bash/br"
 fi
 
-# Google Cloud SDK
-GCP_SDK_PATH="${HOME}/.local/share/google-cloud-sdk"
-if [[ -d "$GCP_SDK_PATH" ]]; then
-  source "${GCP_SDK_PATH}/path.zsh.inc"
-fi
 
 # Keychain: persistent ssh-agent. Only needed in mosh sessions
 # (SSH agent forwarding doesn't survive mosh's UDP handoff).
@@ -276,7 +271,6 @@ setopt NO_EQUALS
 add_to_path "$HOME/.local/bin"
 add_to_path "$HOME/bin"
 add_to_path "$HOME/.antigravity/antigravity/bin"
-add_to_path "$HOME/.cache/.bun/bin"
 
 # Remove duplicate PATH entries
 typeset -U PATH
@@ -421,12 +415,15 @@ zstyle ':completion:*' menu select
 # Show dotfiles in tab completion
 setopt GLOB_DOTS
 
-# Google Cloud SDK completions
-if [[ -n "$GCP_SDK_PATH" && -d "$GCP_SDK_PATH" ]]; then
-  if (( $+functions[zsh-defer] )); then
-    zsh-defer source "${GCP_SDK_PATH}/completion.zsh.inc"
-  else
-    source "${GCP_SDK_PATH}/completion.zsh.inc"
+# Google Cloud SDK completions (SDK is mise-managed; gcloud itself via shims)
+if command_exists gcloud; then
+  GCP_SDK_PATH="$(mise where gcloud 2>/dev/null)"
+  if [[ -n "$GCP_SDK_PATH" && -f "${GCP_SDK_PATH}/completion.zsh.inc" ]]; then
+    if (( $+functions[zsh-defer] )); then
+      zsh-defer source "${GCP_SDK_PATH}/completion.zsh.inc"
+    else
+      source "${GCP_SDK_PATH}/completion.zsh.inc"
+    fi
   fi
 fi
 
