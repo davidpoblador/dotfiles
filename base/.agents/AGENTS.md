@@ -238,8 +238,10 @@ age-encrypted values stored inline in config files that are safe to commit.
   on `cd`. Plain `fnox set` (no `-g`) writes to `./fnox.toml` in the cwd.
 - NEVER read, copy, or transmit `~/sync/secrets/keys.txt` (the age identity)
   or any `FNOX_AGE_KEY_FILE` target.
-- Some repos (e.g. `~/repos/infrastructure`) use sops + age instead; follow
-  the repo's existing convention there.
+- `~/repos/infrastructure` layers configs hierarchically: shared secrets in
+  the repo-root `fnox.toml`, stack-specific ones in `<stack>/fnox.toml`, merged
+  when fnox runs from the stack directory (`fnox -c` skips that merge; cd
+  instead).
 
 ## Browser Automation
 

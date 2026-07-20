@@ -177,12 +177,11 @@ Dev profile only:
 | actionlint | GitHub Actions linter |
 | awscli | AWS CLI |
 | cf | Cloudflare CLI |
-| age | File encryption (sops + fnox identity format) |
+| age | File encryption (fnox identity format) |
 | claude | Claude Code CLI |
 | fnox | Secrets manager |
 | gcloud | Google Cloud SDK |
 | gopls | Go language server |
-| sops | Encrypted file editor (infrastructure repo) |
 | mise-completions-sync | Auto-sync mise tool completions to zsh |
 | mongosh | MongoDB shell |
 | prek | Git hook manager (pre-commit alternative) |
