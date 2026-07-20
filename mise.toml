@@ -1,6 +1,14 @@
 # ABOUTME: mise bootstrap config shared by all machines; macOS sections are
 # ABOUTME: skipped on Linux. Run `mise bootstrap` from this checkout to converge.
 
+[bootstrap.packages]
+# Linux system packages (macs declare theirs in mise.dev.toml). apt needs
+# sudo to install, so fresh machines prompt once during bootstrap; converged
+# hosts verify state without it.
+"apt:zsh" = "latest"
+"apt:keychain" = "latest"   # persistent ssh-agent inside mosh sessions (.zshrc)
+"apt:mosh" = "latest"
+
 [dotfiles]
 # The whole base/ tree, one symlink per file (unmanaged files coexist)
 "~" = { source = "base", mode = "symlink-each" }

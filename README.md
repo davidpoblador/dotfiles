@@ -22,23 +22,23 @@ enables systemd lingering):
 curl -fsSL https://raw.githubusercontent.com/davidpoblador/dotfiles/main/bootstrap.sh | bash
 ```
 
-### Dev (macOS)
+It deploys configs as symlinks into the repo, installs all packages and mise
+tools, seeds atuin with any pre-existing shell history, and installs the
+`alltuner` CLI from the private `alltuner/infrastructure` repo (requires SSH
+access to GitHub from the machine).
 
-To mosh into this Mac, the bootstrap task allows `mosh-server` through the
-application firewall automatically (it re-adds the resolved binary path on
-every run, because brew upgrades invalidate the rule). It needs sudo, so run
-`mise bootstrap --only task` interactively once after a mosh upgrade if mosh
-connections start failing.
+Platform notes:
 
-### Prod (Linux)
-
-Prerequisite: zsh must be installed (`sudo apt-get install -y zsh`), then run
-the one-liner above. Log out fully and reconnect (if using SSH multiplexing, close the shared
-connection first: `ssh -O exit <host>`). Then:
-
-This deploys configs as symlinks into the repo, installs mise tools (starship,
-uv, atuin, delta, etc.), and installs the `alltuner` CLI from the private
-`alltuner/infrastructure` repo (requires SSH access to GitHub from the host).
+- **macOS**: sign in to the App Store first (`mas` cannot accept first-time
+  licenses non-interactively). To mosh into the Mac, the bootstrap task allows
+  `mosh-server` through the application firewall automatically, using the
+  resolved binary path since brew upgrades invalidate path-bound rules; it
+  needs sudo, so run `mise bootstrap --only task` interactively once if mosh
+  connections fail after a mosh upgrade.
+- **Linux**: system packages (zsh, mosh, keychain) come from apt via
+  `[bootstrap.packages]` — expect one sudo prompt. After the bootstrap, log
+  out fully and reconnect so the login shell change takes effect (with SSH
+  multiplexing, close the shared connection first: `ssh -O exit <host>`).
 
 ## Day-to-day usage
 
@@ -48,7 +48,8 @@ dfs    # what would change (dotfiles status)
 dfb    # full converge: packages, defaults, services, tools
 dfc    # cd into the repo
 dfa    # dotfiles apply only
-bubu   # update Homebrew formulae by hand
+bubu   # update Homebrew formulae by hand (apu/apg on Linux)
+zbench # time shell startup, with a zprof breakdown
 ```
 
 Everything else (mise tools, brew formulae, antidote, the skills mirror)
@@ -80,7 +81,7 @@ worktree path.
 | Path | What |
 |---|---|
 | `.zshrc`, `.zsh_plugins.txt` | Shell config, plugins (antidote + zsh-defer) |
-| `.config/mise/config.toml` | Global dev tools: bun, go, rust, just, ruff, etc. |
+| `.config/mise/config.toml` | Global tools: bun, go, uv, ripgrep, etc. (+ `config.dev.toml`: rust, ruff, claude, …) |
 | `.config/starship-{dev,prod}.toml` | Prompt (per profile) |
 | `.config/ghostty/`, `.config/tmux/` | Terminal |
 | `.config/git/`, `.gitignore_global` | Git config |
