@@ -6,3 +6,7 @@
 .config/notify-master/env.example
 .zprofile
 .cache/chezmoi-profile
+.config/vim/colors/catppuccin_macchiato.vim
+.config/tmux/plugins
+.config/tmux/project_module.conf
+.config/tmux/scripts

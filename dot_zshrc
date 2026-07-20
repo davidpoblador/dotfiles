@@ -186,40 +186,38 @@ fi
 [[ -f "${XDG_CONFIG_HOME}/zsh/catppuccin-macchiato-syntax-highlighting.zsh" ]] && \
   source "${XDG_CONFIG_HOME}/zsh/catppuccin-macchiato-syntax-highlighting.zsh"
 
-# Antidote plugin manager — static-load pattern: avoid sourcing antidote.zsh
-# on every startup; regenerate the bundle only when the manifest changes.
+# Antidote plugin manager (cloned by mise bootstrap) — static-load pattern:
+# avoid sourcing antidote.zsh on every startup; regenerate the bundle only
+# when the manifest changes.
 ANTIDOTE_DIR="${ZDOTDIR:-$HOME}/.antidote"
-if [[ ! -d "$ANTIDOTE_DIR" ]]; then
-  git clone --depth 1 https://github.com/mattmc3/antidote.git "$ANTIDOTE_DIR"
-  touch "${XDG_CACHE_HOME}/antidote_last_update"
-fi
+if [[ -d "$ANTIDOTE_DIR" ]]; then
+  fpath=("$ANTIDOTE_DIR/functions" $fpath)
+  autoload -Uz antidote
 
-fpath=("$ANTIDOTE_DIR/functions" $fpath)
-autoload -Uz antidote
-
-_zsh_plugins="${ZDOTDIR:-$HOME}/.zsh_plugins"
-if [[ -z "$ANTIDOTE_HOME" ]]; then
-  if [[ "$OSTYPE" == darwin* ]]; then
-    ANTIDOTE_HOME="$HOME/Library/Caches/antidote"
-  else
-    ANTIDOTE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}/antidote"
+  _zsh_plugins="${ZDOTDIR:-$HOME}/.zsh_plugins"
+  if [[ -z "$ANTIDOTE_HOME" ]]; then
+    if [[ "$OSTYPE" == darwin* ]]; then
+      ANTIDOTE_HOME="$HOME/Library/Caches/antidote"
+    else
+      ANTIDOTE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}/antidote"
+    fi
   fi
-fi
-zstyle ':antidote:static' zcompile yes
-if [[ ! ${_zsh_plugins}.zsh -nt ${_zsh_plugins}.txt ]] || [[ ! -d "$ANTIDOTE_HOME" ]]; then
-  antidote bundle <"${_zsh_plugins}.txt" >| "${_zsh_plugins}.zsh"
-  zcompile -R -- "${_zsh_plugins}.zsh.zwc" "${_zsh_plugins}.zsh"
-fi
-source "${_zsh_plugins}.zsh"
-unset _zsh_plugins
+  zstyle ':antidote:static' zcompile yes
+  if [[ ! ${_zsh_plugins}.zsh -nt ${_zsh_plugins}.txt ]] || [[ ! -d "$ANTIDOTE_HOME" ]]; then
+    antidote bundle <"${_zsh_plugins}.txt" >| "${_zsh_plugins}.zsh"
+    zcompile -R -- "${_zsh_plugins}.zsh.zwc" "${_zsh_plugins}.zsh"
+  fi
+  source "${_zsh_plugins}.zsh"
+  unset _zsh_plugins
 
-# zsh-autosuggestions: use palette color 8 (mid-gray in both dark and light themes)
-ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=8'
+  # zsh-autosuggestions: use palette color 8 (mid-gray in both dark and light themes)
+  ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=8'
 
-# Auto-update antidote and plugins weekly in background. Touch the manifest
-# so the next shell regenerates the bundle against the updated plugins.
-if [[ $(find "${XDG_CACHE_HOME}/antidote_last_update" -mtime +7 2>/dev/null) ]]; then
-  (git -C "$ANTIDOTE_DIR" pull -q && antidote update -q && touch "${ZDOTDIR:-$HOME}/.zsh_plugins.txt" "${XDG_CACHE_HOME}/antidote_last_update" &) 2>/dev/null
+  # Auto-update antidote and plugins weekly in background. Touch the manifest
+  # so the next shell regenerates the bundle against the updated plugins.
+  if [[ ! -f "${XDG_CACHE_HOME}/antidote_last_update" ]] || [[ $(find "${XDG_CACHE_HOME}/antidote_last_update" -mtime +7 2>/dev/null) ]]; then
+    (git -C "$ANTIDOTE_DIR" pull -q && antidote update -q && touch "${ZDOTDIR:-$HOME}/.zsh_plugins.txt" "${XDG_CACHE_HOME}/antidote_last_update" &) 2>/dev/null
+  fi
 fi
 
 ###########################################################
