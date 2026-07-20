@@ -2,7 +2,6 @@
 [tools]
 awscli = "latest"
 claude = "latest"
-codex = "latest"
 gcloud = "latest"
 "npm:cf" = "latest"
 rust = "latest"
