@@ -304,4 +304,20 @@ if [ -f "$ICON" ] && command -v fileicon >/dev/null 2>&1; then
   fileicon set "$SCREENSHOTS_DIR" "$ICON" >/dev/null 2>&1 || true
 fi
 killall SystemUIServer 2>/dev/null || true
+
+# Allow mosh-server through the application firewall. Rules bind to the
+# resolved Cellar binary, so brew upgrades invalidate them; re-adding the
+# current path on every bootstrap keeps mosh reachable. Needs sudo, so it
+# is skipped when no credentials are available (non-interactive runs).
+MOSH_SERVER="$(command -v mosh-server || true)"
+if [ -n "$MOSH_SERVER" ]; then
+  MOSH_REAL="$(readlink -f "$MOSH_SERVER" 2>/dev/null || echo "$MOSH_SERVER")"
+  if sudo -n true 2>/dev/null || [ -t 0 ]; then
+    sudo /usr/libexec/ApplicationFirewall/socketfilterfw --add "$MOSH_REAL" >/dev/null 2>&1 || true
+    sudo /usr/libexec/ApplicationFirewall/socketfilterfw --unblock "$MOSH_REAL" >/dev/null 2>&1 || true
+  else
+    echo "[bootstrap] no sudo available: allow mosh manually with"
+    echo "  sudo /usr/libexec/ApplicationFirewall/socketfilterfw --add \"$MOSH_REAL\" && sudo /usr/libexec/ApplicationFirewall/socketfilterfw --unblock \"$MOSH_REAL\""
+  fi
+fi
 """
