@@ -243,6 +243,9 @@ if command -v uv >/dev/null 2>&1; then
     echo "[bootstrap] alltuner install failed - check SSH access to alltuner/infrastructure"
 fi
 
+# Refresh the cross-agent skills mirror (no-op without a plugin cache)
+[ -x "$HOME/.local/bin/skills-mirror" ] && "$HOME/.local/bin/skills-mirror"
+
 [ "$(uname -s)" = "Darwin" ] || exit 0
 
 # Casks mise's shim cannot install: docker-desktop (postflight rejects

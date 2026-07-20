@@ -35,3 +35,6 @@ if [ -d "$HOME/.antidote" ] && stale antidote_last_update 10020; then
     zsh -c 'fpath=(~/.antidote/functions $fpath); autoload -Uz antidote; antidote update -q' >/dev/null 2>&1 &&
     touch "$HOME/.zsh_plugins.txt" "$CACHE_DIR/antidote_last_update"
 fi
+
+# Keep the cross-agent skills mirror in sync with plugin updates
+[ -x "$HOME/.local/bin/skills-mirror" ] && "$HOME/.local/bin/skills-mirror"

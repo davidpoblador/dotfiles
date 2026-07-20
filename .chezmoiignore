@@ -1,7 +1,6 @@
-# Skills are managed entirely by `bunx skills`, outside chezmoi. Guard against
-# accidentally pulling bunx state into the source via `chezmoi re-add ~/.agents`.
+# ~/.agents/skills is a generated mirror of Claude Code plugin skills (see
+# skills-mirror); guard against pulling it into the source via `chezmoi re-add`.
 .agents/skills
-.agents/.skill-lock.json
 
 # Repo files, not dotfiles
 CLAUDE.md

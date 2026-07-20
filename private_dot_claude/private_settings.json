@@ -212,13 +212,66 @@
     "frontend-design@claude-plugins-official": true,
     "commit-commands@claude-plugins-official": true,
     "feature-dev@claude-plugins-official": true,
-    "expo@claude-plugins-official": true
+    "expo@claude-plugins-official": true,
+    "ast-grep@ast-grep-marketplace": true,
+    "cloudflare@cloudflare": true,
+    "impeccable@impeccable": true,
+    "resend@resend-skills": true,
+    "stripe@stripe": true,
+    "vacant@alltuner": true,
+    "selfmail@alltuner": true,
+    "fastapi@alltuner": true,
+    "shadcn@alltuner": true,
+    "remotion-best-practices@alltuner": true,
+    "find-skills@alltuner": true
   },
   "extraKnownMarketplaces": {
     "openai-codex": {
       "source": {
         "source": "github",
         "repo": "openai/codex-plugin-cc"
+      }
+    },
+    "astral-sh": {
+      "source": {
+        "source": "github",
+        "repo": "astral-sh/claude-code-plugins"
+      }
+    },
+    "alltuner": {
+      "source": {
+        "source": "github",
+        "repo": "alltuner/skills"
+      }
+    },
+    "ast-grep-marketplace": {
+      "source": {
+        "source": "github",
+        "repo": "ast-grep/agent-skill"
+      }
+    },
+    "cloudflare": {
+      "source": {
+        "source": "github",
+        "repo": "cloudflare/skills"
+      }
+    },
+    "impeccable": {
+      "source": {
+        "source": "github",
+        "repo": "pbakaus/impeccable"
+      }
+    },
+    "resend-skills": {
+      "source": {
+        "source": "github",
+        "repo": "resend/resend-skills"
+      }
+    },
+    "stripe": {
+      "source": {
+        "source": "github",
+        "repo": "stripe/ai"
       }
     }
   },

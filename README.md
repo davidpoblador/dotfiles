@@ -96,7 +96,7 @@ Mise tools auto-upgrade daily in the background via `.zshrc`.
 | `.config/gh/` | GitHub CLI |
 | `.config/bat/`, `.config/lazygit/` | CLI tools |
 | `.claude/` | Claude Code settings and hooks |
-| `.agents/` | Shared `AGENTS.md`/`CLAUDE.md` and the agent-skills wishlist, consumed by every agent via symlink |
+| `.agents/` | Shared `AGENTS.md`/`CLAUDE.md` and the generated cross-agent skills mirror |
 | `.docker/` | Docker daemon config |
 | `.ssh/` | SSH config (no keys) |
 | `.vimrc` | Vim config |
@@ -396,93 +396,23 @@ All plugins except zsh-defer are lazy-loaded with `kind:defer`.
 
 ## Agent skills
 
-[Agent skills](https://skills.sh) are reusable bundles of procedural knowledge
-that coding agents load on demand. They're installed globally into every agent on
-the machine — Claude Code, Codex, Gemini CLI, GitHub Copilot, OpenCode — with the
-`skills` CLI (run via `bunx`). One canonical copy lives at `~/.agents/skills/<skill>`
-and each agent's skills directory (e.g. `~/.claude/skills/<skill>`) is a symlink to
-it, so there's a single physical copy per skill.
+Skills (reusable `SKILL.md` bundles) are declared as Claude Code **plugins** in
+`~/.claude/settings.json` (`extraKnownMarketplaces` + `enabledPlugins`), which
+is itself a managed dotfile — so the full set restores on any machine from the
+declaration alone. Sources without an upstream marketplace are served by
+[alltuner/skills](https://github.com/alltuner/skills), whose
+`.claude-plugin/marketplace.json` pins them by commit sha via `git-subdir`.
 
-### The wishlist is the source of truth
+Cross-agent sharing: `skills-mirror` (run by the bootstrap task and the daily
+maintenance job) regenerates `~/.agents/skills/<name>` as symlinks into the
+Claude Code plugin cache. Codex and pi read `~/.agents/skills` natively, so
+every agent sees the same skills without any per-agent install step. The shared
+`~/.agents/AGENTS.md` (with per-agent `AGENTS.md`/`CLAUDE.md` symlinks) is
+unchanged.
 
-The curated set is declared in `~/.agents/skills.wishlist`, a chezmoi-managed
-plain-text file (source: `dot_agents/skills.wishlist`). It is the **only** thing
-that reproduces the skill set on a new machine. Each non-blank, non-`#` line is a
-source repo followed by the skills to pull from it:
-
-```
-anthropics/skills --skill frontend-design
-pbakaus/impeccable --skill impeccable
-shadcn/ui --skill shadcn
-stripe/ai --skill stripe-best-practices --skill stripe-projects --skill upgrade-stripe
-```
-
-Nothing installs automatically. The wishlist is just intent; skills land on the
-machine only when you run `skills-bootstrap` (below).
-
-### Install (or reinstall) everything
-
-```bash
-skills-bootstrap
-```
-
-`skills-bootstrap` (`~/.local/bin`) reads the wishlist and runs `bunx skills add …
--g` for each line, installing into every agent. It's idempotent — re-running just
-refreshes existing skills — so it's also how you apply wishlist changes and how a
-fresh machine gets the full set.
-
-### Add a skill
-
-```bash
-skills-add <source> --skill <name> [--skill <name> ...]
-# e.g. skills-add anthropics/skills --skill skill-creator
-```
-
-`skills-add` (`~/.local/bin`) does the whole round trip: it installs the skill
-into every agent, merges the entry into the wishlist source (located via
-`chezmoi source-path`), applies it to the live copy, and commits + pushes the
-change with `chezmoi git`. It pushes **directly to the default branch** — no PR,
-by design for this curated file. The source may be a bare `owner/repo` slug or a
-full GitHub URL, and re-adding a skill that's already listed is a no-op.
-
-To add a skill by hand instead: `chezmoi cd`, edit `dot_agents/skills.wishlist`,
-then `chezmoi apply ~/.agents/skills.wishlist` and `skills-bootstrap`.
-
-### Remove a skill
-
-Delete its line (or `--skill` token) from the wishlist source (`chezmoi cd`, edit
-`dot_agents/skills.wishlist`), then `chezmoi apply ~/.agents/skills.wishlist`.
-That stops future re-installs but does **not** uninstall what's already there —
-remove that explicitly:
-
-```bash
-bunx skills remove <skill> -g
-```
-
-### Update skills
-
-```bash
-bunx skills update -g
-```
-
-Pulls the latest version of every installed skill. If a skill has been deleted
-upstream, the update warns and offers to remove the now-orphaned local copy — say
-yes, and drop the corresponding entry from the wishlist so bootstrap stops
-requesting it.
-
-### Browse and inspect
-
-```bash
-bunx skills find <query>    # search the skills.sh registry
-bunx skills ls -g           # list installed global skills and their agents
-```
-
-### Runtime state vs. source of truth
-
-The installed skills under `~/.agents/skills/` and the
-`~/.agents/.skill-lock.json` lockfile are bunx's runtime state, deliberately
-**not** chezmoi-managed (`.chezmoiignore` guards against re-adding them). The
-wishlist is the reproducible source; the lockfile is just the CLI's bookkeeping.
+To add a skill: enable an existing marketplace plugin in `settings.json`, or —
+for a new source — add an entry to the alltuner/skills marketplace and enable
+it. To remove one, delete its `enabledPlugins` line.
 
 ## Profiles
 

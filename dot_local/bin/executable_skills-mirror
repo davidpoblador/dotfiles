@@ -1,0 +1,32 @@
+#!/bin/bash
+# ABOUTME: Regenerates ~/.agents/skills as symlinks into the Claude Code plugin
+# ABOUTME: cache so codex, pi, and other agents share one declared skill set.
+
+set -u
+CACHE="$HOME/.claude/plugins/cache"
+DEST="$HOME/.agents/skills"
+[ -d "$CACHE" ] || exit 0
+mkdir -p "$DEST"
+
+# Drop links into the cache (regenerated below); anything else is left alone.
+for link in "$DEST"/*; do
+  [ -L "$link" ] || continue
+  case "$(readlink "$link")" in
+    "$CACHE"/*) rm -f "$link" ;;
+  esac
+done
+
+# Plugin cache layouts: <marketplace>/<plugin>/<version>/SKILL.md (bare skill)
+# or <marketplace>/<plugin>/<version>/skills/<name>/SKILL.md (skill bundle).
+for ver in "$CACHE"/*/*/*/; do
+  [ -d "$ver" ] || continue
+  if [ -f "${ver}SKILL.md" ]; then
+    plugin=$(basename "$(dirname "${ver%/}")")
+    ln -sfn "${ver%/}" "$DEST/$plugin"
+  elif [ -d "${ver}skills" ]; then
+    for s in "${ver}skills"/*/; do
+      [ -f "${s}SKILL.md" ] || continue
+      ln -sfn "${s%/}" "$DEST/$(basename "${s%/}")"
+    done
+  fi
+done
