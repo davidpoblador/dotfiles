@@ -92,7 +92,6 @@
 "brew-cask:gitkraken-cli" = "latest"                 # GitKraken terminal UI
 "brew-cask:obsidian" = "latest"                      # knowledge base
 "brew-cask:responsively" = "latest"                  # multi-viewport browser for responsive dev
-"brew-cask:vlc" = "latest"                           # media player
 
 #
 # Mac App Store apps
