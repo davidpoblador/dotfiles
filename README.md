@@ -44,6 +44,7 @@ Platform notes:
 
 ```bash
 dfu    # sync this machine: pull + apply (pull alone deploys edits; apply covers new/removed files)
+       # (dfb also pulls the repo first: it manages itself via [bootstrap.repos])
 dfs    # what would change (dotfiles status)
 dfb    # full converge: packages, defaults, services, tools
 dfc    # cd into the repo
