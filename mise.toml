@@ -199,12 +199,12 @@ LSQuarantine = false
 # Menu bar                                                #
 ###########################################################
 
-# Clock: 24h with seconds, no date
+# Clock: 24h with seconds, weekday + date
 [bootstrap.macos.defaults."com.apple.menuextra.clock"]
-DateFormat = "HH:mm:ss"
+DateFormat = "EEE d MMM HH:mm:ss"
 Show24Hour = true
 ShowSeconds = true
-ShowDate = 2
+ShowDate = 1
 IsAnalog = false
 
 # Battery percentage (com.apple.controlcenter) is -currentHost scoped, which
