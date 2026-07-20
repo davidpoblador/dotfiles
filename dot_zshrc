@@ -162,22 +162,6 @@ if command_exists gh && [[ -z "$GITHUB_TOKEN" ]]; then
   unset _gh_token
 fi
 
-# Auto-update mise tools daily in background (non-blocking)
-if command_exists mise; then
-  if [[ ! -f "${XDG_CACHE_HOME}/mise_last_update" ]] || [[ $(find "${XDG_CACHE_HOME}/mise_last_update" -mtime +1 2>/dev/null) ]]; then
-    echo "[mise] Updating tools in the background..."
-    { mise upgrade -y >/dev/null 2>&1 && touch "${XDG_CACHE_HOME}/mise_last_update" } &!
-  fi
-fi
-
-# Auto-update Homebrew packages daily in background (non-blocking)
-if command_exists brew; then
-  if [[ ! -f "${XDG_CACHE_HOME}/brew_last_update" ]] || [[ $(find "${XDG_CACHE_HOME}/brew_last_update" -mtime +1 2>/dev/null) ]]; then
-    echo "[brew] Updating packages in the background..."
-    { brew update >/dev/null 2>&1; brew upgrade >/dev/null 2>&1; touch "${XDG_CACHE_HOME}/brew_last_update" } &!
-  fi
-fi
-
 ###########################################################
 # Plugins (antidote + zsh-defer, when available)          #
 ###########################################################
@@ -212,12 +196,6 @@ if [[ -d "$ANTIDOTE_DIR" ]]; then
 
   # zsh-autosuggestions: use palette color 8 (mid-gray in both dark and light themes)
   ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=8'
-
-  # Auto-update antidote and plugins weekly in background. Touch the manifest
-  # so the next shell regenerates the bundle against the updated plugins.
-  if [[ ! -f "${XDG_CACHE_HOME}/antidote_last_update" ]] || [[ $(find "${XDG_CACHE_HOME}/antidote_last_update" -mtime +7 2>/dev/null) ]]; then
-    (git -C "$ANTIDOTE_DIR" pull -q && antidote update -q && touch "${ZDOTDIR:-$HOME}/.zsh_plugins.txt" "${XDG_CACHE_HOME}/antidote_last_update" &) 2>/dev/null
-  fi
 fi
 
 ###########################################################
@@ -254,29 +232,8 @@ export _ZO_ECHO=1
 # Starship config per machine profile (dev on macs, prod on Linux; see .zshenv)
 export STARSHIP_CONFIG="$HOME/.config/starship-${MISE_ENV:-dev}.toml"
 
-# starship's init bakes the resolved versioned binary path into PROMPT.
-# Cache the eval output; the heal hook re-inits if mise prunes that binary.
-if [[ -x "$HOME/.local/share/mise/shims/starship" ]]; then
-  ensure_dir_exists "${XDG_CACHE_HOME}/zsh"
-  _starship_cache="${XDG_CACHE_HOME}/zsh/starship-init.zsh"
-  __starship_init() {
-    local cache="${XDG_CACHE_HOME}/zsh/starship-init.zsh"
-    "$HOME/.local/share/mise/shims/starship" init zsh > "$cache"
-    source "$cache"
-    [[ "$PROMPT" =~ "(/[^']*/starship)" ]] && __starship_bin="$match[1]"
-  }
-  __starship_heal() {
-    [[ -n "$__starship_bin" && ! -x "$__starship_bin" ]] && __starship_init
-  }
-  if [[ -s "$_starship_cache" && "$_starship_cache" -nt "$HOME/.local/share/mise/shims/starship" ]]; then
-    source "$_starship_cache"
-    [[ "$PROMPT" =~ "(/[^']*/starship)" ]] && __starship_bin="$match[1]"
-  else
-    __starship_init
-  fi
-  unset _starship_cache
-  precmd_functions=(__starship_heal $precmd_functions)
-fi
+# starship prompt (mise-managed; cache_eval re-inits when the shim changes)
+cache_eval starship starship init zsh
 
 # Broot - interactive directory tree navigator
 if [[ -f "${XDG_CONFIG_HOME}/broot/launcher/bash/br" ]]; then

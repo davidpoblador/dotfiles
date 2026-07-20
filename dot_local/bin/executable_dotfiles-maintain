@@ -1,0 +1,37 @@
+#!/bin/bash
+# ABOUTME: Background maintenance: mise tools daily, brew formulae daily,
+# ABOUTME: antidote weekly. Runs from launchd/systemd timers; stamps feed .zlogin.
+
+set -u
+CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}"
+mkdir -p "$CACHE_DIR"
+PATH="$HOME/.local/bin:$HOME/.local/share/mise/shims:/opt/homebrew/bin:/usr/local/bin:$PATH"
+
+# stale <stamp-file> <max-age-minutes>: true if the stamp is missing or older
+stale() {
+  [ ! -f "$CACHE_DIR/$1" ] || [ -n "$(find "$CACHE_DIR/$1" -mmin +"$2" 2>/dev/null)" ]
+}
+
+# Match the shell's MISE_ENV (macs are dev, Linux is prod; see .zshenv)
+case "$(uname -s)" in
+  Darwin) export MISE_ENV=dev ;;
+  *)      export MISE_ENV=prod ;;
+esac
+
+if command -v mise >/dev/null 2>&1 && stale mise_last_update 1380; then
+  mise upgrade -y >/dev/null 2>&1 && touch "$CACHE_DIR/mise_last_update"
+fi
+
+# Formulae only: casks are converged by `mise bootstrap`, and a blanket
+# `brew upgrade` would fight mise over the Caskroom.
+if command -v brew >/dev/null 2>&1 && stale brew_last_update 1380; then
+  brew update >/dev/null 2>&1
+  brew upgrade --formula >/dev/null 2>&1
+  touch "$CACHE_DIR/brew_last_update"
+fi
+
+if [ -d "$HOME/.antidote" ] && stale antidote_last_update 10020; then
+  git -C "$HOME/.antidote" pull -q >/dev/null 2>&1 &&
+    zsh -c 'fpath=(~/.antidote/functions $fpath); autoload -Uz antidote; antidote update -q' >/dev/null 2>&1 &&
+    touch "$HOME/.zsh_plugins.txt" "$CACHE_DIR/antidote_last_update"
+fi
