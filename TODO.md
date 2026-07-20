@@ -18,8 +18,6 @@
 
 ## Migration leftovers
 
-- Verify empirically that codex reads `~/.agents/skills` (docs say yes; if
-  not, extend `skills-mirror` to also link into `~/.codex/skills`)
 - Optionally fold `expose.env` into fnox and drop the `EXPOSE_CONFIG`
   special case in `.zshenv`
 - durian has no `~/sync`, so its `~/.config/alltuner` symlink and
