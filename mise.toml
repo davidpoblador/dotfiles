@@ -229,3 +229,56 @@ type = "png"
 
 # Skip the floating thumbnail preview — save straight to file
 show-thumbnail = false
+
+[tasks.bootstrap]
+description = "Imperative setup mise cannot express declaratively"
+run = """
+#!/bin/bash
+set -u
+
+# alltuner CLI from the private infrastructure repo; --force picks up new
+# commits (requires SSH access to github.com/alltuner)
+if command -v uv >/dev/null 2>&1; then
+  uv tool install --force --quiet git+ssh://git@github.com/alltuner/infrastructure.git ||
+    echo "[bootstrap] alltuner install failed - check SSH access to alltuner/infrastructure"
+fi
+
+[ "$(uname -s)" = "Darwin" ] || exit 0
+
+# Casks mise's shim cannot install: docker-desktop (postflight rejects
+# auto_updates; ships the docker CLI + zsh completions wired in .zshrc),
+# raycast (app artifact not found), ngrok (postflight_steps unsupported)
+brew list --cask docker-desktop >/dev/null 2>&1 || brew install --cask docker-desktop
+brew list --cask raycast >/dev/null 2>&1 || brew install --cask raycast
+brew list --cask ngrok >/dev/null 2>&1 || brew install --cask ngrok
+
+# macOS defaults mise cannot express: -dict values and -currentHost domains
+# (companions to [bootstrap.macos.defaults])
+defaults write -g AppleFirstWeekday -dict gregorian 2
+defaults -currentHost write -g com.apple.mouse.tapBehavior -int 1
+defaults -currentHost write com.apple.controlcenter BatteryShowPercentage -bool false
+
+# Wallpapers: synced folder, GUI symlink, apply to attached displays
+WALLPAPERS_DIR="$HOME/sync/exchange/wallpapers"
+mkdir -p "$WALLPAPERS_DIR"
+[ -e "$HOME/Pictures/wallpapers" ] || ln -s "$WALLPAPERS_DIR" "$HOME/Pictures/wallpapers"
+if [ -x "$HOME/.local/bin/wallpaper-sync" ]; then
+  "$HOME/.local/bin/wallpaper-sync" --apply || true
+fi
+
+# Screenshots: synced folder, save location, locked symlinks, folder icon
+SCREENSHOTS_DIR="$HOME/sync/exchange/screenshots"
+mkdir -p "$SCREENSHOTS_DIR"
+defaults write com.apple.screencapture location "$SCREENSHOTS_DIR"
+[ -e "$HOME/Screenshots" ] || ln -s "$SCREENSHOTS_DIR" "$HOME/Screenshots"
+if [ ! -e "$HOME/Desktop/Screenshots" ]; then
+  ln -s "$SCREENSHOTS_DIR" "$HOME/Desktop/Screenshots"
+fi
+# -h locks the symlink itself against accidental deletion
+chflags -h uchg "$HOME/Desktop/Screenshots" 2>/dev/null || true
+ICON="$HOME/sync/exchange/icons/screenshots.png"
+if [ -f "$ICON" ] && command -v fileicon >/dev/null 2>&1; then
+  fileicon set "$SCREENSHOTS_DIR" "$ICON" >/dev/null 2>&1 || true
+fi
+killall SystemUIServer 2>/dev/null || true
+"""

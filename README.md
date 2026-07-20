@@ -226,11 +226,11 @@ Each of these has its own installer wired into a `run_` script or `.zshrc`.
 | Tool | Install method | Description |
 |---|---|---|
 | mise | curl (`mise.jdx.dev`) | Dev tool version manager |
-| antidote | git clone | Zsh plugin manager |
-| claude | curl (`claude.ai/install.sh`) | Claude Code CLI |
-| gcloud-cli | curl tarball | Google Cloud SDK |
-| alltuner | uv tool (private repo) | Internal CLI from `alltuner/infrastructure` |
-| codex | bun install -g (`@openai/codex`) | OpenAI Codex CLI |
+| antidote | mise bootstrap (git repo) | Zsh plugin manager |
+| claude | mise | Claude Code CLI |
+| gcloud | mise | Google Cloud SDK |
+| alltuner | uv tool via bootstrap task | Internal CLI from `alltuner/infrastructure` |
+| codex | mise | OpenAI Codex CLI |
 
 ### Mise-managed dev tools
 

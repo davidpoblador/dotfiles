@@ -106,31 +106,3 @@
 "mas:361309726" = "latest"                   # Pages
 "mas:803453959" = "latest"                   # Slack
 "mas:497799835" = "latest"                   # Xcode
-
-[tasks.bootstrap]
-description = "Imperative setup mise cannot express declaratively"
-run = """
-#!/bin/bash
-# docker-desktop ships the docker CLI + zsh completions (~/.docker/completions,
-# wired in .zshrc). Its cask postflight trips mise's cask shim (auto_updates
-# unsupported), so it stays with the brew CLI.
-if ! brew list --cask docker-desktop &>/dev/null; then
-  brew install --cask docker-desktop
-fi
-# raycast's cask artifact layout defeats mise's shim ("Raycast.app not found");
-# launcher / Spotlight replacement, self-updates once installed.
-if ! brew list --cask raycast &>/dev/null; then
-  brew install --cask raycast
-fi
-# ngrok's cask uses postflight_steps, which mise's shim does not support;
-# tunnels local ports to public URLs.
-if ! brew list --cask ngrok &>/dev/null; then
-  brew install --cask ngrok
-fi
-
-# macOS defaults mise cannot express: -dict values and -currentHost domains
-# (companions to [bootstrap.macos.defaults] in mise.toml)
-defaults write -g AppleFirstWeekday -dict gregorian 2
-defaults -currentHost write -g com.apple.mouse.tapBehavior -int 1
-defaults -currentHost write com.apple.controlcenter BatteryShowPercentage -bool false
-"""
