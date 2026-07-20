@@ -1,6 +1,10 @@
 # ABOUTME: mise bootstrap config shared by all machines; macOS sections are
 # ABOUTME: skipped on Linux. Run `mise bootstrap` from this checkout to converge.
 
+[bootstrap.user]
+# Linux path; mise.dev.toml overrides with the macOS one
+login_shell = "/usr/bin/zsh"
+
 [bootstrap.packages]
 # Linux system packages (macs declare theirs in mise.dev.toml). apt needs
 # sudo to install, so fresh machines prompt once during bootstrap; converged
@@ -53,7 +57,7 @@ AppleTemperatureUnit = "Celsius"
 AppleICUForce24HourTime = true
 
 # Week starts on Monday (AppleFirstWeekday) is a -dict, which mise cannot
-# express; written by the bootstrap task in mise.dev.toml.
+# express; written by the bootstrap task below.
 
 # --- Appearance ---
 # Auto-switch between light and dark mode
@@ -216,7 +220,7 @@ ShowDate = 1
 IsAnalog = false
 
 # Battery percentage (com.apple.controlcenter) is -currentHost scoped, which
-# mise cannot express; written by the bootstrap task in mise.dev.toml.
+# mise cannot express; written by the bootstrap task below.
 
 ###########################################################
 # Safari                                                  #

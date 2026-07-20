@@ -106,6 +106,9 @@
 "mas:803453959" = "latest"                   # Slack
 "mas:497799835" = "latest"                   # Xcode
 
+[bootstrap.user]
+login_shell = "/bin/zsh"
+
 [dotfiles]
 # Dev-only trees (macs), one symlink per file
 "~/.codex" = { source = "dev/.codex", mode = "symlink-each" }

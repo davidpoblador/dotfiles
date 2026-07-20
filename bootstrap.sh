@@ -35,10 +35,6 @@ mise trust
 mise bootstrap --yes
 
 if [ "$MISE_ENV" = prod ]; then
-  case "${SHELL:-}" in
-    */zsh) ;;
-    *) command -v zsh >/dev/null 2>&1 && chsh -s "$(command -v zsh)" ;;
-  esac
   loginctl enable-linger 2>/dev/null || true
 fi
 
