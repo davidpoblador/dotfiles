@@ -4,24 +4,15 @@ Personal dotfiles managed with [mise](https://mise.jdx.dev/) (`mise bootstrap` +
 
 ## Fresh machine setup
 
-### Dev (macOS)
+One command on any machine (installs Homebrew on macs, installs mise, clones
+the repo, converges everything; on Linux also sets zsh as the login shell and
+enables systemd lingering):
 
 ```bash
-# 1. Install Homebrew
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-
-# 2. Install mise and clone the repo
-curl -fsSL https://mise.jdx.dev/install.sh | bash
-git clone https://github.com/davidpoblador/dotfiles ~/repos/dotfiles
-
-# 3. Converge the machine (dotfiles, brew + mas packages, macOS defaults,
-#    launchd agents, repos, tools, everything)
-cd ~/repos/dotfiles
-MISE_ENV=dev ~/.local/bin/mise trust && MISE_ENV=dev ~/.local/bin/mise bootstrap --yes
+curl -fsSL https://raw.githubusercontent.com/davidpoblador/dotfiles/main/bootstrap.sh | bash
 ```
 
-(`MISE_ENV` is only needed explicitly on the first run — once `.zshenv` is in
-place every shell derives it from the OS.)
+### Dev (macOS)
 
 After bootstrap, import existing shell history into atuin:
 
@@ -29,36 +20,16 @@ After bootstrap, import existing shell history into atuin:
 atuin import auto
 ```
 
-If you want to be able to mosh into this Mac, allow `mosh-server` through the
-firewall (one-time, requires sudo):
-
-```bash
-sudo /usr/libexec/ApplicationFirewall/socketfilterfw --add /opt/homebrew/bin/mosh-server
-sudo /usr/libexec/ApplicationFirewall/socketfilterfw --unblock /opt/homebrew/bin/mosh-server
-```
+To mosh into this Mac, the bootstrap task allows `mosh-server` through the
+application firewall automatically (it re-adds the resolved binary path on
+every run, because brew upgrades invalidate the rule). It needs sudo, so run
+`mise bootstrap --only task` interactively once after a mosh upgrade if mosh
+connections start failing.
 
 ### Prod (Linux)
 
-Prerequisite: zsh must be installed.
-
-```bash
-# 1. Install zsh
-sudo apt-get install -y zsh
-
-# 2. Install mise and clone the repo
-curl -fsSL https://mise.jdx.dev/install.sh | bash
-git clone https://github.com/davidpoblador/dotfiles ~/repos/dotfiles
-
-# 3. Converge (dotfiles, systemd timers, repos, tools)
-cd ~/repos/dotfiles
-MISE_ENV=prod ~/.local/bin/mise trust && MISE_ENV=prod ~/.local/bin/mise bootstrap --yes
-
-# 4. Make zsh the login shell and let user timers run unattended
-chsh -s "$(command -v zsh)"
-loginctl enable-linger
-```
-
-Log out fully and reconnect (if using SSH multiplexing, close the shared
+Prerequisite: zsh must be installed (`sudo apt-get install -y zsh`), then run
+the one-liner above. Log out fully and reconnect (if using SSH multiplexing, close the shared
 connection first: `ssh -O exit <host>`). Then:
 
 This deploys configs as symlinks into the repo, installs mise tools (starship,
