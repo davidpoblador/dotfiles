@@ -9,11 +9,21 @@
 ## Atuin
 
 - Try enabling sync (self-hosted or atuin.sh) for cross-machine history
+  (config is explicitly local-only today; see the comment in atuin/config.toml)
 
 ## Bat
 
 - Configure as MANPAGER for syntax-highlighted man pages
-- Set up `~/.config/bat/config` with sane defaults (no line numbers when piping, etc.)
+  (theme is already set in `~/.config/bat/config`)
+
+## Migration leftovers
+
+- Verify empirically that codex reads `~/.agents/skills` (docs say yes; if
+  not, extend `skills-mirror` to also link into `~/.codex/skills`)
+- Optionally fold `expose.env` into fnox and drop the `EXPOSE_CONFIG`
+  special case in `.zshenv`
+- durian has no `~/sync`, so its `~/.config/alltuner` symlink and
+  `EXPOSE_CONFIG` dangle; fix only if those are actually used there
 
 ## After the next mise release (fixes merged upstream 2026-07-15/16)
 
