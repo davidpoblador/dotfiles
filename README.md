@@ -14,9 +14,8 @@ Personal dotfiles managed with [chezmoi](https://www.chezmoi.io/).
 sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply davidpoblador --prompt
 ```
 
-Chezmoi prompts for email, full name, and profile. Hit Enter on profile to accept
-the default (`dev`). Chezmoi will install Homebrew packages, mise tools (uv, bun,
-go, etc.), and deploy configs.
+Chezmoi prompts for email and full name. Chezmoi will install Homebrew
+packages, mise tools (uv, bun, go, etc.), and deploy configs.
 
 After bootstrap, import existing shell history into atuin:
 
@@ -59,7 +58,7 @@ shared connection first: `ssh -O exit <host>`). Then run:
 ```
 
 (Use the full path — no config files are deployed yet, so `~/bin` isn't on
-PATH. Subsequent runs can use `chezmoi update` since `.zprofile` adds it.)
+PATH. Subsequent runs can use `chezmoi update` since `.zshenv` adds it.)
 
 This installs mise (via curl), deploys configs, installs mise tools (starship,
 uv, atuin, delta, etc.), and installs the `alltuner` CLI from the private
@@ -84,7 +83,7 @@ Mise tools auto-upgrade daily in the background via `.zshrc`.
 
 | Path | What |
 |---|---|
-| `.zshrc`, `.zprofile`, `.zsh_plugins.txt` | Shell config, plugins (antidote + zsh-defer) |
+| `.zshrc`, `.zsh_plugins.txt` | Shell config, plugins (antidote + zsh-defer) |
 | `.config/mise/config.toml` | Global dev tools: bun, go, rust, just, ruff, etc. |
 | `.config/starship.toml` | Prompt |
 | `.config/ghostty/`, `.config/tmux/` | Terminal |
@@ -480,14 +479,11 @@ wishlist is the reproducible source; the lockfile is just the CLI's bookkeeping.
 
 ## Profiles
 
-Chezmoi uses a `profile` variable to switch between dev and prod configs:
-
-| Profile | Shell | Starship | Mise tools |
-|---|---|---|---|
-| `dev` (default) | zsh + antidote + plugins | Catppuccin Macchiato, powerline | Full (bun, node, go, rust, etc.) |
-| `prod` | bash + aliases | Red hostname, compact | Minimal (uv, gh, starship) |
-
-The profile is set once during `chezmoi init` and persists in `~/.config/chezmoi/chezmoi.toml`.
+The machine profile follows the OS: macs are `dev`, Linux hosts are `prod`.
+`.zshenv` exports `MISE_ENV` accordingly, which selects the mise tool overlay
+(`~/.config/mise/config.dev.toml`) and the starship config
+(`starship-dev.toml` / `starship-prod.toml`). Prod hosts additionally skip
+dev-only configs via `.chezmoiignore`.
 
 ## Platform support
 

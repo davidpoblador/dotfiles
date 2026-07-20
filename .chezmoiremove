@@ -4,3 +4,5 @@
 .claude/skills/notify-master
 .local/bin/notify-master
 .config/notify-master/env.example
+.zprofile
+.cache/chezmoi-profile
