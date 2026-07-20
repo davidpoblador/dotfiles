@@ -1,6 +1,6 @@
 # Dotfiles
 
-Personal dotfiles managed with [chezmoi](https://www.chezmoi.io/).
+Personal dotfiles managed with [mise](https://mise.jdx.dev/) (`mise bootstrap` + `[dotfiles]`).
 
 ## Fresh machine setup
 
@@ -10,17 +10,18 @@ Personal dotfiles managed with [chezmoi](https://www.chezmoi.io/).
 # 1. Install Homebrew
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
-# 2. Bootstrap chezmoi (installs chezmoi, clones repo, applies dotfiles)
-sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply davidpoblador --prompt
+# 2. Install mise and clone the repo
+curl -fsSL https://mise.jdx.dev/install.sh | bash
+git clone https://github.com/davidpoblador/dotfiles ~/repos/dotfiles
+
+# 3. Converge the machine (dotfiles, brew + mas packages, macOS defaults,
+#    launchd agents, repos, tools, everything)
+cd ~/repos/dotfiles
+MISE_ENV=dev ~/.local/bin/mise trust && MISE_ENV=dev ~/.local/bin/mise bootstrap --yes
 ```
 
-Chezmoi prompts for email and full name, installs mise tools (uv, bun, go,
-etc.), and deploys configs. Homebrew packages and Mac App Store apps are
-declared in `mise.dev.toml` and installed with:
-
-```bash
-cd "$(chezmoi source-path)" && mise trust && mise bootstrap
-```
+(`MISE_ENV` is only needed explicitly on the first run — once `.zshenv` is in
+place every shell derives it from the OS.)
 
 After bootstrap, import existing shell history into atuin:
 
@@ -44,28 +45,23 @@ Prerequisite: zsh must be installed.
 # 1. Install zsh
 sudo apt-get install -y zsh
 
-# 2. Bootstrap chezmoi
-sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply davidpoblador --prompt
+# 2. Install mise and clone the repo
+curl -fsSL https://mise.jdx.dev/install.sh | bash
+git clone https://github.com/davidpoblador/dotfiles ~/repos/dotfiles
+
+# 3. Converge (dotfiles, systemd timers, repos, tools)
+cd ~/repos/dotfiles
+MISE_ENV=prod ~/.local/bin/mise trust && MISE_ENV=prod ~/.local/bin/mise bootstrap --yes
+
+# 4. Make zsh the login shell and let user timers run unattended
+chsh -s "$(command -v zsh)"
+loginctl enable-linger
 ```
 
-At the prompts:
+Log out fully and reconnect (if using SSH multiplexing, close the shared
+connection first: `ssh -O exit <host>`). Then:
 
-- **Email address:** `david@poblador.com`
-- **Full name:** `David Poblador i Garcia`
-- **Profile:** `prod`
-
-The first run will set zsh as the default shell via `chsh` and stop with a
-message. Log out fully and reconnect (if using SSH multiplexing, close the
-shared connection first: `ssh -O exit <host>`). Then run:
-
-```bash
-~/bin/chezmoi apply
-```
-
-(Use the full path — no config files are deployed yet, so `~/bin` isn't on
-PATH. Subsequent runs can use `chezmoi update` since `.zshenv` adds it.)
-
-This installs mise (via curl), deploys configs, installs mise tools (starship,
+This deploys configs as symlinks into the repo, installs mise tools (starship,
 uv, atuin, delta, etc.), and installs the `alltuner` CLI from the private
 `alltuner/infrastructure` repo (requires SSH access to GitHub from the host).
 
@@ -78,11 +74,14 @@ atuin import auto
 ## Day-to-day usage
 
 ```bash
-chezmoi update              # Pull latest dotfiles and apply
-bubu                        # Update Homebrew packages
+git -C ~/repos/dotfiles pull   # dotfiles are symlinks into the repo: pull = applied
+dfa                            # mise dotfiles apply (only needed for new/removed files)
+mise -C ~/repos/dotfiles bootstrap --yes   # full converge (packages, defaults, ...)
+bubu                           # update Homebrew packages by hand
 ```
 
-Mise tools auto-upgrade daily in the background via `.zshrc`.
+Everything else (mise tools, brew formulae, antidote, the skills mirror)
+auto-updates daily via launchd/systemd timers running `dotfiles-maintain`.
 
 ## What's managed
 
@@ -112,7 +111,6 @@ Declared in `mise.dev.toml` (`[bootstrap.packages]`), installed by
 
 | Package | Description |
 |---|---|
-| chezmoi | Dotfile manager |
 | mas | Mac App Store CLI |
 | tmux | Terminal multiplexer |
 | zsh-completions | Additional zsh completions |
@@ -290,7 +288,8 @@ Mise also auto-installs dependencies on `cd`: runs `uv sync` when `uv.lock` exis
 ```bash
 mise registry <tool>    # see which backends are available
 mise use -g <tool>      # install + add to global config
-# then: chezmoi re-add ~/.config/mise/config.toml to track the change
+# then: move the pin from ~/.config/mise/config.toml into the repo copy
+# (it is a symlink into the repo, so mise use -g already edited it in place)
 ```
 
 Prefer backends in this order: **core** (built-in) > **aqua** / **ubi** (single binary download) > **asdf** (legacy plugin). Core/aqua/ubi install cleanly. `asdf:` plugins refresh their git repo on every `mise install`/`upgrade`, adding one line of noise per apply — fine for a tool you need, annoying for orphans.
@@ -381,8 +380,8 @@ All plugins except zsh-defer are lazy-loaded with `kind:defer`.
 
 | Alias | Command |
 |---|---|
-| `cma` | `chezmoi add` |
-| `cmc` | `chezmoi cd` |
+| `dfa` | `mise dotfiles apply` (repo-scoped) |
+| `dfc` | `cd ~/repos/dotfiles` |
 | `bubu` | `brew update && brew upgrade --yes` |
 
 ### Shell functions
@@ -419,8 +418,8 @@ it. To remove one, delete its `enabledPlugins` line.
 The machine profile follows the OS: macs are `dev`, Linux hosts are `prod`.
 `.zshenv` exports `MISE_ENV` accordingly, which selects the mise tool overlay
 (`~/.config/mise/config.dev.toml`) and the starship config
-(`starship-dev.toml` / `starship-prod.toml`). Prod hosts additionally skip
-dev-only configs via `.chezmoiignore`.
+(`starship-dev.toml` / `starship-prod.toml`). Dev-only configs live in the
+`home-dev/` tree, declared only in `mise.dev.toml`.
 
 ## Platform support
 

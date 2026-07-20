@@ -106,3 +106,17 @@
 "mas:361309726" = "latest"                   # Pages
 "mas:803453959" = "latest"                   # Slack
 "mas:497799835" = "latest"                   # Xcode
+
+[dotfiles]
+# Dev-only trees (macs), one symlink per file
+"~/.codex" = { source = "home-dev/.codex", mode = "symlink-each" }
+"~/.gemini" = { source = "home-dev/.gemini", mode = "symlink-each" }
+"~/.ssh" = { source = "home-dev/.ssh", mode = "symlink-each" }
+"~/Library" = { source = "home-dev/Library", mode = "symlink-each" }
+"~/.config/broot" = { source = "home-dev/.config/broot", mode = "symlink-each" }
+"~/.config/ghostty" = { source = "home-dev/.config/ghostty", mode = "symlink-each" }
+"~/.config/opencode" = { source = "home-dev/.config/opencode", mode = "symlink-each" }
+"~/.config/sc-im" = { source = "home-dev/.config/sc-im", mode = "symlink-each" }
+"~/.config/zed" = { source = "home-dev/.config/zed", mode = "symlink-each" }
+# Rendered per-machine (absolute theme path)
+"~/.config/silicon/config" = { source = "templates/silicon-config", mode = "template" }
