@@ -1,0 +1,7 @@
+# Global pitchfork settings. Per-project daemons live in each repo's pitchfork.toml.
+
+[settings.general]
+# Run daemons through mise so they inherit the project's tool versions and [env].
+# Without this they inherit the supervisor's environment instead, and miss anything
+# a project computes in mise.toml (ports, API URLs, secrets loaded on entry).
+mise = true
