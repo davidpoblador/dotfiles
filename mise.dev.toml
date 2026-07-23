@@ -119,7 +119,6 @@ login_shell = "/bin/zsh"
 "~/.config/fnox" = { source = "dev/.config/fnox", mode = "symlink-each" }
 "~/.config/ghostty" = { source = "dev/.config/ghostty", mode = "symlink-each" }
 "~/.config/opencode" = { source = "dev/.config/opencode", mode = "symlink-each" }
-"~/.config/pitchfork" = { source = "dev/.config/pitchfork", mode = "symlink-each" }
 "~/.config/sc-im" = { source = "dev/.config/sc-im", mode = "symlink-each" }
 "~/.config/silicon" = { source = "dev/.config/silicon", mode = "symlink-each" }
 "~/.config/zed" = { source = "dev/.config/zed", mode = "symlink-each" }

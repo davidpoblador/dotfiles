@@ -124,22 +124,6 @@ Per-project secrets go in a `fnox.toml` next to the code; the shell hook loads
 them on `cd` and unloads on leave. Without `-g`, `fnox set` writes to
 `./fnox.toml` — mind which one you mean.
 
-## Dev stack processes
-
-[pitchfork](https://pitchfork.jdx.dev) supervises long-running project processes on
-dev machines. Daemons are declared in a `pitchfork.toml` next to the code, with
-dependency ordering, readiness checks (port, HTTP, output regex, delay) and
-file-watch restarts. The shell hook starts and stops them on `cd`, after fnox
-has loaded that directory's secrets, so daemons inherit them.
-
-```bash
-pitchfork start|stop|restart NAME   # control one daemon
-pitchfork logs --follow NAME        # tail output
-pitchfork list                      # what's running
-pitchfork status NAME               # state, pid, uptime
-pitchfork tui                       # interactive dashboard
-```
-
 ## Agent skills
 
 Skills (reusable `SKILL.md` bundles) are declared as Claude Code **plugins** in

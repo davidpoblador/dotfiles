@@ -184,7 +184,6 @@ Dev profile only:
 | gopls | Go language server |
 | mise-completions-sync | Auto-sync mise tool completions to zsh |
 | mongosh | MongoDB shell |
-| pitchfork | Daemon supervisor for project dev stacks |
 | prek | Git hook manager (pre-commit alternative) |
 | ruff | Python linter and formatter |
 | rust | Rust programming language |
