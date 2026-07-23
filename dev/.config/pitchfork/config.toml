@@ -1,4 +1,5 @@
-# Global pitchfork settings. Per-project daemons live in each repo's pitchfork.toml.
+# Global pitchfork settings, machine-wide only. Nothing project-specific belongs here:
+# per-project daemons live in each repo's own pitchfork.toml.
 
 [settings.general]
 # Run daemons through mise so they inherit the project's tool versions and [env].
@@ -6,21 +7,8 @@
 # a project computes in mise.toml (ports, API URLs, secrets loaded on entry).
 mise = true
 
-[settings.proxy]
-# Serve each slug below at https://<slug>.localhost, routed to whatever port the
-# daemon actually bound. Projects derive their ports from their checkout path, so the
-# numbers are deliberately unmemorable — these URLs are the stable handle, and they
-# appear in `pitchfork list`. The TLS certificate is installed on first use
-# (auto_trust), which needs sudo once.
-enable = true
-
-# Slugs map a hostname to a daemon in a project. Add one with
-# `pitchfork proxy add <slug> --dir <path> --daemon <name>`, which edits this file
-# through the ~/.config/pitchfork symlink, then commit the result via PR.
-
-[slugs.ott]
-namespace = "ott"
-daemon = "server"
-
-[namespaces.ott]
-dir = "/Users/dpoblador/repos/ott"
+# The reverse proxy (https://<slug>.localhost) is deliberately NOT enabled. It only
+# routes to slugs declared here as [slugs.<name>] plus a [namespaces.<name>] with an
+# absolute project path — pitchfork expands neither ~ nor $HOME, ignores slugs declared
+# in a project's own pitchfork.toml, and does not read a config.local.toml. There is
+# therefore no way to use it without hardcoding per-project paths into this file.
