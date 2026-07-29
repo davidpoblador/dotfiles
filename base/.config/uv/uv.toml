@@ -2,3 +2,7 @@ exclude-newer = "2 days"
 
 [exclude-newer-package]
 vibetuner = false
+# Build backends must resolve or the project cannot build at all, which breaks
+# `uv run` and every pre-commit hook behind it. A fresh release is unavailable
+# for two days under the cutoff above, so exempt it.
+uv-build = false
