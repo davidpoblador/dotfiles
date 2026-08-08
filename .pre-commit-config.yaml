@@ -1,0 +1,7 @@
+# ABOUTME: Pre-commit hooks for this public repo, run by prek.
+# ABOUTME: Scans staged changes for credentials before they can be committed.
+repos:
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.30.1
+    hooks:
+      - id: gitleaks

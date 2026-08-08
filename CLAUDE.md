@@ -4,7 +4,10 @@
 
 **NEVER commit secrets, credentials, tokens, API keys, passwords, or private hostnames to this repo.**
 
-Before every commit, verify that no file contains:
+A gitleaks pre-commit hook enforces this. `mise bootstrap` installs it via
+`prek install`; run that once by hand in a fresh clone if you commit before
+bootstrapping. Treat it as a backstop, not a substitute for checking. Before
+every commit, verify that no file contains:
 - API keys or tokens (e.g. `sk-`, `ghp_`, `gho_`, `AKIA`, `Bearer`)
 - Passwords or passphrases
 - Private IP addresses or internal hostnames

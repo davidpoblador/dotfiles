@@ -289,6 +289,14 @@ fi
 # Refresh the cross-agent skills mirror (no-op without a plugin cache)
 [ -x "$HOME/.local/bin/skills-mirror" ] && "$HOME/.local/bin/skills-mirror"
 
+# Install this repo's git hooks, so the secret scan guards every commit.
+# prek writes .git/hooks/pre-commit, which is per-clone and not tracked.
+if command -v prek >/dev/null 2>&1 &&
+   [ -f "$HOME/repos/dotfiles/.pre-commit-config.yaml" ]; then
+  (cd "$HOME/repos/dotfiles" && prek install >/dev/null 2>&1) ||
+    echo "[bootstrap] prek install failed"
+fi
+
 # alltuner CLI config lives in synced secrets (target outside the repo, so it
 # cannot be a tracked symlink)
 ln -sfn "$HOME/sync/secrets/alltuner-cli-config" "$HOME/.config/alltuner"
