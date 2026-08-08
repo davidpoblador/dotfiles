@@ -193,7 +193,7 @@
     "cloudflare@cloudflare": true,
     "impeccable@impeccable": true,
     "resend@resend-skills": true,
-    "stripe@stripe": true,
+    "stripe@claude-plugins-official": true,
     "vacant@alltuner": true,
     "selfmail@alltuner": true,
     "fastapi@alltuner": true,
@@ -236,12 +236,6 @@
       "source": {
         "source": "github",
         "repo": "resend/resend-skills"
-      }
-    },
-    "stripe": {
-      "source": {
-        "source": "github",
-        "repo": "stripe/ai"
       }
     }
   },
