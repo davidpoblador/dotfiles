@@ -147,11 +147,17 @@ new machine.
 |---|---|---|
 | mongodb-community | mongodb/brew | Local MongoDB server |
 | mongodb-database-tools | mongodb/brew | mongodump, mongorestore, and friends |
-| resend | resend/cli | Resend email CLI |
-| vacant | alltuner/tap | Domain availability checker |
 
-Because they can't be declared, `mise bootstrap packages prune` always lists
-them for removal. Never run prune without reading `--dry-run` first.
+A tapped formula whose upstream publishes GitHub release binaries can be
+declared through mise's `ubi` backend instead, which reads those releases
+directly and sidesteps the Homebrew API entirely. `resend` and `vacant` are
+installed that way.
+
+Because the remaining two can't be declared, `mise bootstrap packages prune`
+always lists them for removal. It also lists transitive dependencies of
+declared formulae — `pcre` is required by `the_silver_searcher` and
+`python-setuptools` by `cairo`, yet both appear. Never run prune without
+reading `--dry-run` first.
 
 ### Installed outside Homebrew and mise
 
@@ -216,12 +222,14 @@ Dev profile only:
 | mongosh | MongoDB shell |
 | opencode | Open-source terminal coding agent |
 | prek | Git hook manager (pre-commit alternative) |
+| resend-cli | Resend email CLI |
 | ruff | Python linter and formatter |
 | rust | Rust programming language |
 | rust-analyzer | Rust language server |
 | sentry-cli | Sentry release and sourcemap CLI |
 | stripe | Stripe CLI |
 | ty | Python type checker |
+| vacant | Domain availability checker via authoritative DNS |
 | vhs | Scripted terminal session recorder |
 | zig | Zig programming language |
 
