@@ -86,9 +86,7 @@ brew:<name>` (or `brew-cask:`) after checking `brew info <name>`; remove with
 
 | Package | Description |
 |---|---|
-| gemini-cli | Google Gemini CLI |
 | rtk | CLI proxy that minimizes LLM token consumption |
-| copilot-cli | GitHub Copilot CLI (cask) |
 | macwhisper | Local Whisper transcription (cask) |
 
 #### Apps (casks)
@@ -179,11 +177,14 @@ Dev profile only:
 | cf | Cloudflare CLI |
 | age | File encryption (fnox identity format) |
 | claude | Claude Code CLI |
+| copilot-cli | GitHub Copilot CLI |
 | fnox | Secrets manager |
 | gcloud | Google Cloud SDK |
+| gemini-cli | Google Gemini CLI |
 | gopls | Go language server |
 | mise-completions-sync | Auto-sync mise tool completions to zsh |
 | mongosh | MongoDB shell |
+| opencode | Open-source terminal coding agent |
 | prek | Git hook manager (pre-commit alternative) |
 | ruff | Python linter and formatter |
 | rust | Rust programming language |
