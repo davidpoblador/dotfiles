@@ -79,9 +79,7 @@
 #
 # AI / inference tooling
 #
-"brew:gemini-cli" = "latest"                 # Google Gemini CLI
 "brew:rtk" = "latest"                        # CLI proxy that minimizes LLM token consumption
-"brew-cask:copilot-cli" = "latest"           # GitHub Copilot CLI
 "brew-cask:macwhisper" = "latest"            # local Whisper transcription app
 
 #

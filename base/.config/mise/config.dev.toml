@@ -2,6 +2,9 @@
 [tools]
 awscli = "latest"
 claude = "latest"
+copilot-cli = "latest"
+gemini-cli = "latest"
+opencode = "latest"
 fnox = "latest"
 pi = "latest"
 gcloud = "latest"
