@@ -31,6 +31,7 @@ copy `~/sync/secrets/keys.txt` (the age identity).
 - Commit messages: lowercase, imperative, concise
 - Test changes locally before pushing (new terminal; `mise dotfiles apply` / `mise bootstrap --dry-run` for structural changes)
 - `mise dotfiles apply` must run from `~/repos/dotfiles`, NEVER from a worktree: symlinks bake the config file's directory
+- `mise dotfiles apply` takes ~4-5 minutes and prints nothing until it finishes. It is not hung: to find stale links it walks the whole destination tree, and the `~` entry means all ~7M entries under `$HOME`. Scope a run with a target (`mise dotfiles apply '~/.claude'`) when you only touched one subtree
 - Any new script must be `chmod +x` before committing (symlink deployment preserves the git mode; systemd fails with 203/EXEC on 644)
 
 ## Shell scripts run by mise bootstrap

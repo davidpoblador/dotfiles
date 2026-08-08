@@ -34,7 +34,9 @@ brew:<name>` (or `brew-cask:`) after checking `brew info <name>`; remove with
 | jq | JSON processor |
 | knock | Port-knock client |
 | litecli | SQLite CLI with autocomplete |
+| mole | Deep clean and optimize macOS |
 | mosh | Latency-tolerant SSH replacement |
+| potrace | Trace bitmaps into vector graphics |
 | pv | Pipe progress meter |
 | qrencode | QR code generator |
 | rsync | File sync |
@@ -44,11 +46,13 @@ brew:<name>` (or `brew-cask:`) after checking `brew info <name>`; remove with
 | telnet | Telnet client |
 | tokei | Code stats by language |
 | tree | Directory listing |
+| typst | Markup-based typesetting system |
 | watchexec | Run commands on file changes |
 | watchman | File-watching service (RN / Xcode tooling) |
 | wget | HTTP client |
 | yq | YAML/XML/TOML processor |
 | yt-dlp | Video downloader |
+| zbar | Barcode and QR reader |
 
 #### Modern Unix replacements
 
@@ -71,8 +75,16 @@ brew:<name>` (or `brew-cask:`) after checking `brew info <name>`; remove with
 | cmake | Build system generator |
 | coreutils | GNU core utilities |
 | create-dmg | macOS DMG builder (release scripts) |
+| node | JavaScript runtime for tooling that needs system node |
 | protobuf | Protocol Buffers compiler |
 | sentencepiece | Text tokenizer |
+
+#### Apple platform development
+
+| Package | Description |
+|---|---|
+| cocoapods | Dependency manager for Cocoa projects |
+| xcodegen | Generate Xcode projects from a spec |
 
 #### Git
 
@@ -122,6 +134,24 @@ cannot handle these (see TODO.md and jdx/mise#11107).
 | Pages | Documents |
 | Slack | Team communication |
 | Xcode | Apple development tools |
+
+#### Third-party tap formulae
+
+`[bootstrap.packages]` resolves `brew:` entries against the Homebrew API and
+will not proxy to the `brew` CLI, so a tap that doesn't publish
+`api/formula/<name>.json` cannot be declared. None of the taps below do.
+These are installed by hand and `mise bootstrap` will not restore them on a
+new machine.
+
+| Package | Tap | Description |
+|---|---|---|
+| mongodb-community | mongodb/brew | Local MongoDB server |
+| mongodb-database-tools | mongodb/brew | mongodump, mongorestore, and friends |
+| resend | resend/cli | Resend email CLI |
+| vacant | alltuner/tap | Domain availability checker |
+
+Because they can't be declared, `mise bootstrap packages prune` always lists
+them for removal. Never run prune without reading `--dry-run` first.
 
 ### Installed outside Homebrew and mise
 
@@ -189,7 +219,10 @@ Dev profile only:
 | ruff | Python linter and formatter |
 | rust | Rust programming language |
 | rust-analyzer | Rust language server |
+| sentry-cli | Sentry release and sourcemap CLI |
+| stripe | Stripe CLI |
 | ty | Python type checker |
+| vhs | Scripted terminal session recorder |
 | zig | Zig programming language |
 
 Mise also auto-installs dependencies on `cd`: runs `uv sync` when `uv.lock` exists without `.venv`, and `bun install` when `bun.lock` exists without `node_modules`.
