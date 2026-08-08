@@ -3,9 +3,16 @@
 # ABOUTME: cache so codex, pi, and other agents share one declared skill set.
 
 set -u
-CACHE="$HOME/.claude/plugins/cache"
+PLUGINS="$HOME/.claude/plugins"
+CACHE="$PLUGINS/cache"
+INSTALLED="$PLUGINS/installed_plugins.json"
+SETTINGS="$HOME/.claude/settings.json"
 DEST="$HOME/.agents/skills"
+
 [ -d "$CACHE" ] || exit 0
+[ -f "$INSTALLED" ] || exit 0
+[ -f "$SETTINGS" ] || exit 0
+command -v jq >/dev/null 2>&1 || exit 0
 mkdir -p "$DEST"
 
 # Drop links into the cache (regenerated below); anything else is left alone.
@@ -16,15 +23,29 @@ for link in "$DEST"/*; do
   esac
 done
 
-# Plugin cache layouts: <marketplace>/<plugin>/<version>/SKILL.md (bare skill)
-# or <marketplace>/<plugin>/<version>/skills/<name>/SKILL.md (skill bundle).
-for ver in "$CACHE"/*/*/*/; do
-  [ -d "$ver" ] || continue
-  if [ -f "${ver}SKILL.md" ]; then
-    plugin=$(basename "$(dirname "${ver%/}")")
-    ln -sfn "${ver%/}" "$DEST/$plugin"
-  elif [ -d "${ver}skills" ]; then
-    for s in "${ver}skills"/*/; do
+# Claude Code records the install path of each plugin, which pins the exact
+# version it loads. Walking the cache directly would instead hand the other
+# agents whichever path sorted last: an older version of the same plugin, or a
+# same-named plugin from a marketplace that is no longer enabled.
+enabled_paths() {
+  jq -r --slurpfile s "$SETTINGS" '
+    (($s[0].enabledPlugins // {})) as $enabled
+    | .plugins // {}
+    | to_entries[]
+    | select($enabled[.key] == true)
+    | (.value | map(select(.scope == "user")) + . )[0].installPath // empty
+  ' "$INSTALLED" 2>/dev/null
+}
+
+# Plugin layouts: <install>/SKILL.md (bare skill) or
+# <install>/skills/<name>/SKILL.md (skill bundle).
+enabled_paths | while IFS= read -r root; do
+  [ -d "$root" ] || continue
+  if [ -f "$root/SKILL.md" ]; then
+    # $root ends in the version, so the plugin name is one level up.
+    ln -sfn "$root" "$DEST/$(basename "$(dirname "$root")")"
+  elif [ -d "$root/skills" ]; then
+    for s in "$root/skills"/*/; do
       [ -f "${s}SKILL.md" ] || continue
       ln -sfn "${s%/}" "$DEST/$(basename "${s%/}")"
     done
