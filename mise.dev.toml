@@ -123,7 +123,8 @@ login_shell = "/bin/zsh"
 "~/.codex" = { source = "dev/.codex", mode = "symlink-each" }
 "~/.gemini" = { source = "dev/.gemini", mode = "symlink-each" }
 "~/.ssh" = { source = "dev/.ssh", mode = "symlink-each" }
-"~/Library" = { source = "dev/Library", mode = "symlink-each" }
+"~/Library/Application Support/lazydocker" = { source = "dev/Library/Application Support/lazydocker", mode = "symlink-each" }
+"~/Library/Developer/Xcode/UserData/FontAndColorThemes" = { source = "dev/Library/Developer/Xcode/UserData/FontAndColorThemes", mode = "symlink-each" }
 "~/.config/broot" = { source = "dev/.config/broot", mode = "symlink-each" }
 "~/.config/fnox" = { source = "dev/.config/fnox", mode = "symlink-each" }
 "~/.config/ghostty" = { source = "dev/.config/ghostty", mode = "symlink-each" }

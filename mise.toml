@@ -14,8 +14,23 @@ login_shell = "/usr/bin/zsh"
 "apt:mosh" = "latest"
 
 [dotfiles]
-# The whole base/ tree, one symlink per file (unmanaged files coexist)
-"~" = { source = "base", mode = "symlink-each" }
+# One symlink per file, so unmanaged files coexist in the same directories.
+#
+# Entries are scoped to individual subtrees instead of to `~`. A symlink-each
+# entry scans its entire destination to find stale links, so a `~` entry walks
+# every file under $HOME (~7M here, about four minutes). A whole-file entry
+# targets one path and scans nothing.
+#
+# The cost of that: a new top-level directory under base/ needs its own entry.
+"~/.agents" = { source = "base/.agents", mode = "symlink-each" }
+"~/.claude" = { source = "base/.claude", mode = "symlink-each" }
+"~/.config" = { source = "base/.config", mode = "symlink-each" }
+"~/.local/bin" = { source = "base/.local/bin", mode = "symlink-each" }
+"~/.gitignore_global" = { source = "base/.gitignore_global" }
+"~/.zlogin" = { source = "base/.zlogin" }
+"~/.zsh_plugins.txt" = { source = "base/.zsh_plugins.txt" }
+"~/.zshenv" = { source = "base/.zshenv" }
+"~/.zshrc" = { source = "base/.zshrc" }
 
 [bootstrap.repos]
 # This repo manages itself: bootstrap fast-forwards a clean checkout and
