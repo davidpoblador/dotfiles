@@ -1,16 +1,38 @@
 #!/bin/bash
-# ABOUTME: Claude Code statusline: renders cwd, model, context %, cost, and
-# ABOUTME: session stats from the JSON the harness pipes on stdin.
+# ABOUTME: Claude Code statusline: renders cwd, model, context %, cost, quota,
+# ABOUTME: and git state from the JSON the harness pipes on stdin.
 
 input=$(cat)
 
 # ── Extract JSON fields (single jq: this re-renders constantly) ──────
-IFS=$'\t' read -r cwd project_dir model pct cost duration_ms lines_add lines_rm agent_name < <(
+# Read line-per-value rather than tab-splitting: tab is an IFS whitespace
+# character, so a `read` on tabs collapses empty fields and shifts every
+# value after an absent one.
+f=()
+while IFS= read -r line; do
+    f[${#f[@]}]="$line"
+done < <(
   echo "$input" | jq -r '[.workspace.current_dir, .workspace.project_dir,
-    .model.display_name, (.context_window.used_percentage // 0 | floor),
+    (.workspace.repo.name // ""),
+    .model.display_name, (.effort.level // ""), (.fast_mode // false),
+    (.context_window.used_percentage // 0 | floor),
     (.cost.total_cost_usd // 0), (.cost.total_duration_ms // 0),
     (.cost.total_lines_added // 0), (.cost.total_lines_removed // 0),
-    (.agent.name // "")] | @tsv')
+    (.agent.name // ""), (.session_name // ""),
+    (.worktree.name // ""), (.worktree.branch // ""), (.worktree.original_cwd // ""),
+    (.pr.number // ""), (.pr.review_state // ""),
+    (.rate_limits.five_hour.used_percentage // -1 | floor),
+    (.rate_limits.seven_day.used_percentage // -1 | floor)] | .[]'
+)
+
+cwd=${f[0]};        project_dir=${f[1]};  repo_name=${f[2]}
+model=${f[3]};      effort=${f[4]};       fast_mode=${f[5]}
+pct=${f[6]};        cost=${f[7]};         duration_ms=${f[8]}
+lines_add=${f[9]};  lines_rm=${f[10]};    agent_name=${f[11]}
+session_name=${f[12]}
+wt_name=${f[13]};   wt_branch=${f[14]};   wt_origin=${f[15]}
+pr_num=${f[16]};    pr_state=${f[17]}
+rl5=${f[18]};       rl7=${f[19]}
 
 # ── Colors (Gruvbox-inspired) ────────────────────────────────────────
 bold='\033[1m'
@@ -26,40 +48,56 @@ fg_white='\033[38;5;223m'
 
 sep=" "
 
+# Colour for a 0-100 percentage where higher is worse.
+heat() {
+    if [ "$1" -ge 90 ]; then printf '%s' "$fg_red"
+    elif [ "$1" -ge 70 ]; then printf '%s' "$fg_yellow"
+    elif [ "$1" -ge 40 ]; then printf '%s' "$fg_aqua"
+    else printf '%s' "$fg_green"; fi
+}
+
 # ── Git info ─────────────────────────────────────────────────────────
-git_branch=""
+# The harness supplies worktree identity, so git is consulted only for the
+# branch outside a worktree and for the dirty counts.
+git_branch="$wt_branch"
 git_dirty=""
-is_worktree=""
-worktree_name=""
-real_project=""
 
 if git -C "$cwd" rev-parse --git-dir >/dev/null 2>&1; then
-    git_branch=$(git -C "$cwd" branch --show-current 2>/dev/null)
-    [ -z "$git_branch" ] && git_branch=$(git -C "$cwd" rev-parse --short HEAD 2>/dev/null)
+    if [ -z "$git_branch" ]; then
+        git_branch=$(git -C "$cwd" branch --show-current 2>/dev/null)
+        [ -z "$git_branch" ] && git_branch=$(git -C "$cwd" rev-parse --short HEAD 2>/dev/null)
+    fi
 
-    # Dirty state
-    staged=$(git -C "$cwd" --no-optional-locks diff --cached --numstat 2>/dev/null | wc -l | tr -d ' ')
-    modified=$(git -C "$cwd" --no-optional-locks diff --numstat 2>/dev/null | wc -l | tr -d ' ')
+    # One porcelain call rather than two numstat calls.
+    staged=0
+    modified=0
+    while IFS= read -r st; do
+        [ -n "$st" ] || continue
+        x=${st:0:1}
+        y=${st:1:1}
+        case "$x" in
+            '?'|' ') ;;
+            *) staged=$((staged + 1)) ;;
+        esac
+        case "$y" in
+            ' '|'') ;;
+            '?') ;;
+            *) modified=$((modified + 1)) ;;
+        esac
+    done < <(git -C "$cwd" --no-optional-locks status --porcelain 2>/dev/null)
+
     [ "$staged" -gt 0 ] && git_dirty="${fg_green}+${staged}${reset}"
     [ "$modified" -gt 0 ] && git_dirty="${git_dirty}${fg_yellow}~${modified}${reset}"
-
-    # Worktree detection — derive real project name from the main repo
-    git_dir=$(git -C "$cwd" rev-parse --git-dir 2>/dev/null)
-    git_common=$(git -C "$cwd" rev-parse --git-common-dir 2>/dev/null)
-    if [ "$git_dir" != "$git_common" ] 2>/dev/null; then
-        is_worktree="yes"
-        worktree_name=$(basename "$cwd")
-        # git_common is like /path/to/real-repo/.git — go up one level
-        real_project=$(basename "$(dirname "$(cd "$cwd" && realpath "$git_common")")")
-    fi
 fi
 
 # ── Project name ─────────────────────────────────────────────────────
-if [ -n "$is_worktree" ] && [ -n "$real_project" ]; then
-    # In a worktree: show the real project name
-    display_project="$real_project"
+# In a worktree the harness names the originating checkout, so the real
+# project no longer has to be derived from git's common dir.
+if [ -n "$repo_name" ]; then
+    display_project="$repo_name"
+elif [ -n "$wt_origin" ]; then
+    display_project=$(basename "$wt_origin")
 else
-    # Normal: just the project dir basename
     display_project=$(basename "$project_dir")
 fi
 
@@ -81,23 +119,13 @@ fi
 bar_width=8
 filled=$((pct * bar_width / 100))
 empty=$((bar_width - filled))
-
-if [ "$pct" -ge 90 ]; then
-    bar_color="$fg_red"
-elif [ "$pct" -ge 70 ]; then
-    bar_color="$fg_yellow"
-elif [ "$pct" -ge 40 ]; then
-    bar_color="$fg_aqua"
-else
-    bar_color="$fg_green"
-fi
+bar_color=$(heat "$pct")
 
 bar=""
 [ "$filled" -gt 0 ] && bar=$(printf "%${filled}s" | tr ' ' '█')
 [ "$empty" -gt 0 ] && bar="${bar}${fg_gray}$(printf "%${empty}s" | tr ' ' '░')${reset}"
 
-# ── LINE 1: Model + Project + Branch + Worktree + Agent ──────────────
-# Hostname with OS-appropriate emoji
+# ── LINE 1: Model + Project + Branch + Worktree + PR + Agent ─────────
 hostname=$(hostname -s)
 case "$(uname)" in
     Darwin) os_emoji="🍎" ;;
@@ -105,7 +133,11 @@ case "$(uname)" in
     *)      os_emoji="🖥️" ;;
 esac
 
-line1="🤖 ${fg_orange}${bold}${model}${reset}"
+model_label="$model"
+[ -n "$effort" ] && model_label="${model_label} ${effort}"
+[ "$fast_mode" = "true" ] && model_label="${model_label} ⚡"
+
+line1="🤖 ${fg_orange}${bold}${model_label}${reset}"
 line1="${line1}${sep}${os_emoji} ${fg_gray}${hostname}${reset}"
 line1="${line1}${sep}📁 ${fg_white}${display_project}${reset}"
 
@@ -114,15 +146,21 @@ if [ -n "$git_branch" ]; then
     [ -n "$git_dirty" ] && line1="${line1} ${git_dirty}"
 fi
 
-if [ -n "$is_worktree" ]; then
-    line1="${line1}${sep}🌳 ${fg_purple}${worktree_name}${reset}"
+[ -n "$wt_name" ] && line1="${line1}${sep}🌳 ${fg_purple}${wt_name}${reset}"
+
+if [ -n "$pr_num" ]; then
+    case "$pr_state" in
+        approved)          pr_color="$fg_green" ;;
+        changes_requested) pr_color="$fg_red" ;;
+        *)                 pr_color="$fg_gray" ;;
+    esac
+    line1="${line1}${sep}⇧ ${pr_color}#${pr_num}${reset}"
 fi
 
-if [ -n "$agent_name" ]; then
-    line1="${line1}${sep}🕵️ ${fg_purple}${agent_name}${reset}"
-fi
+[ -n "$agent_name" ]   && line1="${line1}${sep}🕵️ ${fg_purple}${agent_name}${reset}"
+[ -n "$session_name" ] && line1="${line1}${sep}🏷️ ${fg_gray}${session_name}${reset}"
 
-# ── LINE 2: Context bar + Cost + Duration + Lines ────────────────────
+# ── LINE 2: Context bar + Cost + Duration + Lines + Quota ────────────
 cost_fmt=$(printf '$%.2f' "$cost")
 
 line2="🧠 ${bar_color}${bar}${reset} ${fg_gray}${pct}%${reset}"
@@ -131,6 +169,12 @@ line2="${line2}${sep}⏱️ ${fg_gray}${duration_fmt}${reset}"
 
 if [ "$lines_add" -gt 0 ] || [ "$lines_rm" -gt 0 ]; then
     line2="${line2}${sep}✏️ ${fg_green}+${lines_add}${reset} ${fg_red}-${lines_rm}${reset}"
+fi
+
+# Plan quota: five-hour window, then the weekly one.
+if [ "$rl5" -ge 0 ]; then
+    line2="${line2}${sep}⏳ $(heat "$rl5")${rl5}%${reset}"
+    [ "$rl7" -ge 0 ] && line2="${line2}${fg_gray}/${reset}$(heat "$rl7")${rl7}%${reset}"
 fi
 
 # ── Output ───────────────────────────────────────────────────────────
