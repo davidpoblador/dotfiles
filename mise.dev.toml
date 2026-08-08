@@ -29,7 +29,9 @@
 "brew:jq" = "latest"
 "brew:knock" = "latest"                      # port-knocking client
 "brew:litecli" = "latest"                    # SQLite REPL with autocompletion
+"brew:mole" = "latest"                       # deep clean and optimize macOS
 "brew:mosh" = "latest"                       # mobile/latency-tolerant SSH replacement
+"brew:potrace" = "latest"                    # trace bitmaps into vector graphics
 "brew:pv" = "latest"                         # pipe progress meter
 "brew:qrencode" = "latest"
 "brew:rsync" = "latest"
@@ -39,11 +41,13 @@
 "brew:telnet" = "latest"
 "brew:tokei" = "latest"                      # code-line counter
 "brew:tree" = "latest"
+"brew:typst" = "latest"                      # markup-based typesetting system
 "brew:watchexec" = "latest"                  # run commands on file changes
 "brew:watchman" = "latest"                   # Facebook file-watcher (RN / Xcode tooling)
 "brew:wget" = "latest"
 "brew:yq" = "latest"                         # YAML/XML/TOML jq-alike
 "brew:yt-dlp" = "latest"                     # video downloader (youtube-dl fork)
+"brew:zbar" = "latest"                       # barcode and QR reader
 
 #
 # Modern replacements for classic unix tools
@@ -66,8 +70,15 @@
 "brew:cmake" = "latest"
 "brew:coreutils" = "latest"                  # GNU versions of ls, cp, etc. (prefixed with 'g')
 "brew:create-dmg" = "latest"                 # used by factoryfloor release scripts
+"brew:node" = "latest"                       # JavaScript runtime for tooling that needs system node
 "brew:protobuf" = "latest"
 "brew:sentencepiece" = "latest"              # tokenizer lib, pulled in by ML tooling
+
+#
+# Apple platform development
+#
+"brew:cocoapods" = "latest"                  # dependency manager for Cocoa projects
+"brew:xcodegen" = "latest"                   # generate Xcode projects from a spec
 
 #
 # git ecosystem
