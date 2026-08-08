@@ -1,6 +1,6 @@
 #!/bin/bash
-# ABOUTME: Claude Code statusline: renders cwd, model, context %, cost, quota,
-# ABOUTME: and git state from the JSON the harness pipes on stdin.
+# ABOUTME: Claude Code statusline: renders the session label, cwd, model,
+# ABOUTME: context %, cost, quota and git state from the JSON piped on stdin.
 
 input=$(cat)
 
@@ -157,8 +157,13 @@ if [ -n "$pr_num" ]; then
     line1="${line1}${sep}⇧ ${pr_color}#${pr_num}${reset}"
 fi
 
-[ -n "$agent_name" ]   && line1="${line1}${sep}🕵️ ${fg_purple}${agent_name}${reset}"
-[ -n "$session_name" ] && line1="${line1}${sep}🏷️ ${fg_gray}${session_name}${reset}"
+[ -n "$agent_name" ] && line1="${line1}${sep}🕵️ ${fg_purple}${agent_name}${reset}"
+
+# ── LINE 0: Session label, only once one exists ──────────────────────
+# Absent until the session is named with --name or /rename, or picks up an
+# AI-generated title; the default handle (my-app-3f) does not populate it.
+line0=""
+[ -n "$session_name" ] && line0="🏷️ ${fg_white}${bold}${session_name}${reset}"
 
 # ── LINE 2: Context bar + Cost + Duration + Lines + Quota ────────────
 cost_fmt=$(printf '$%.2f' "$cost")
@@ -178,5 +183,6 @@ if [ "$rl5" -ge 0 ]; then
 fi
 
 # ── Output ───────────────────────────────────────────────────────────
+[ -n "$line0" ] && printf '%b\n' "$line0"
 printf '%b\n' "$line1"
 printf '%b\n' "$line2"
