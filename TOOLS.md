@@ -138,26 +138,20 @@ cannot handle these (see TODO.md and jdx/mise#11107).
 #### Third-party tap formulae
 
 `[bootstrap.packages]` resolves `brew:` entries against the Homebrew API and
-will not proxy to the `brew` CLI, so a tap that doesn't publish
-`api/formula/<name>.json` cannot be declared. None of the taps below do.
-These are installed by hand and `mise bootstrap` will not restore them on a
-new machine.
+will not proxy to the `brew` CLI, so a formula from a tap that doesn't publish
+`api/formula/<name>.json` cannot be declared at all — not even tap-qualified.
+Nothing is currently installed that way.
 
-| Package | Tap | Description |
-|---|---|---|
-| mongodb-community | mongodb/brew | Local MongoDB server |
-| mongodb-database-tools | mongodb/brew | mongodump, mongorestore, and friends |
+Reach for mise's `ubi` backend instead when the upstream publishes GitHub
+release binaries, which is what the tap's formula usually downloads anyway. It
+reads those releases directly and sidesteps the Homebrew API. `resend` and
+`vacant` are installed that way; see the mise tool list.
 
-A tapped formula whose upstream publishes GitHub release binaries can be
-declared through mise's `ubi` backend instead, which reads those releases
-directly and sidesteps the Homebrew API entirely. `resend` and `vacant` are
-installed that way.
-
-Because the remaining two can't be declared, `mise bootstrap packages prune`
-always lists them for removal. It also lists transitive dependencies of
-declared formulae — `pcre` is required by `the_silver_searcher` and
-`python-setuptools` by `cairo`, yet both appear. Never run prune without
-reading `--dry-run` first.
+`mise bootstrap packages prune` cannot be trusted to list only removable
+packages: it proposes deleting transitive dependencies of declared formulae.
+`pcre` is required by `the_silver_searcher` and `python-setuptools` by `cairo`,
+both declared, yet both appear. `ag` links `libpcre` at runtime, so acting on
+that entry breaks it. Never run prune without reading `--dry-run` first.
 
 ### Installed outside Homebrew and mise
 
