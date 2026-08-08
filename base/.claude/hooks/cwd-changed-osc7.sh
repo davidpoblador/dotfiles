@@ -13,4 +13,8 @@ CWD=$(jq -r '.new_cwd // .cwd // empty')
 # name (e.g. host.local) — the same value Ghostty's own shell integration sends.
 HOST=$(hostname 2>/dev/null || echo localhost)
 
+# Written straight to the tty on purpose. A hook can also ask the harness to
+# emit an escape sequence by returning `terminalSequence`, but that path only
+# permits OSC 0/1/2/9/99/777 and BEL — OSC 7 is rejected by its allowlist. So
+# this is the only channel that works; do not "modernise" it.
 printf '\033]7;file://%s%s\033\\' "$HOST" "$CWD" >"${CLAUDE_INVOKER_TTY:-/dev/tty}" 2>/dev/null || true
