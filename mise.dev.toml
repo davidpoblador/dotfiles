@@ -31,6 +31,7 @@
 "brew:litecli" = "latest"                    # SQLite REPL with autocompletion
 "brew:mole" = "latest"                       # deep clean and optimize macOS
 "brew:mosh" = "latest"                       # mobile/latency-tolerant SSH replacement
+"brew:poppler" = "latest"                    # pdftotext, pdfimages, and friends
 "brew:potrace" = "latest"                    # trace bitmaps into vector graphics
 "brew:pv" = "latest"                         # pipe progress meter
 "brew:qrencode" = "latest"
