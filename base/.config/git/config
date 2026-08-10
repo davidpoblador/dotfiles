@@ -50,6 +50,17 @@
 [pager]
     log = less -FRX
 
+# Authenticate HTTPS pushes to GitHub through gh. Invoked by name rather than
+# by path: `gh auth setup-git` writes the resolved binary into ~/.gitconfig,
+# which pins a versioned mise install directory and breaks on the next upgrade.
+[credential "https://github.com"]
+    helper =
+    helper = !gh auth git-credential
+
+[credential "https://gist.github.com"]
+    helper =
+    helper = !gh auth git-credential
+
 [include]
     path = macchiato.config
 
