@@ -147,11 +147,26 @@ release binaries, which is what the tap's formula usually downloads anyway. It
 reads those releases directly and sidesteps the Homebrew API. `resend` and
 `vacant` are installed that way; see the mise tool list.
 
-`mise bootstrap packages prune` cannot be trusted to list only removable
-packages: it proposes deleting transitive dependencies of declared formulae.
-`pcre` is required by `the_silver_searcher` and `python-setuptools` by `cairo`,
-both declared, yet both appear. `ag` links `libpcre` at runtime, so acting on
-that entry breaks it. Never run prune without reading `--dry-run` first.
+`mise bootstrap packages prune` judges against the *current* formula metadata,
+so it also surfaces dependencies that a locally installed formula still links
+but its formula no longer declares. `brew outdated` stays silent about these,
+because the version is unchanged and only the dependency graph moved.
+
+When prune lists a library you didn't install directly, check what still needs
+it before doing anything:
+
+```bash
+brew uses --installed <formula>
+```
+
+If something does, that parent is a stale build: `brew reinstall <parent>`
+rebuilds it against the current dependencies, after which the library really is
+an orphan and comes off cleanly. `the_silver_searcher` had been built against
+`pcre` while the formula had moved to `pcre2`, and `cairo` against
+`python-setuptools` which it no longer needs.
+
+Read `--dry-run` first regardless — a tap formula that cannot be declared also
+shows up here, and that is a different problem with a different answer.
 
 ### Installed outside Homebrew and mise
 
