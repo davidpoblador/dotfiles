@@ -37,6 +37,7 @@ brew:<name>` (or `brew-cask:`) after checking `brew info <name>`; remove with
 | mole | Deep clean and optimize macOS |
 | mosh | Latency-tolerant SSH replacement |
 | potrace | Trace bitmaps into vector graphics |
+| poppler | PDF toolkit: pdftotext, pdfimages, pdftoppm |
 | pv | Pipe progress meter |
 | qrencode | QR code generator |
 | rsync | File sync |
