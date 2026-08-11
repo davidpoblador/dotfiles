@@ -188,18 +188,12 @@
     "frontend-design@claude-plugins-official": true,
     "commit-commands@claude-plugins-official": true,
     "feature-dev@claude-plugins-official": true,
-    "expo@claude-plugins-official": true,
     "ast-grep@ast-grep-marketplace": true,
     "cloudflare@cloudflare": true,
     "impeccable@impeccable": true,
     "resend@resend-skills": true,
-    "stripe@claude-plugins-official": true,
     "vacant@alltuner": true,
-    "selfmail@alltuner": true,
-    "fastapi@alltuner": true,
-    "shadcn@alltuner": true,
-    "remotion-best-practices@alltuner": true,
-    "find-skills@alltuner": true
+    "selfmail@alltuner": true
   },
   "extraKnownMarketplaces": {
     "astral-sh": {
