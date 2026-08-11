@@ -133,16 +133,73 @@ declaration alone. Sources without an upstream marketplace are served by
 [alltuner/skills](https://github.com/alltuner/skills), whose
 `.claude-plugin/marketplace.json` pins them by commit sha via `git-subdir`.
 
-Cross-agent sharing: `skills-mirror` (run by the bootstrap task and the daily
-maintenance job) regenerates `~/.agents/skills/<name>` as symlinks into the
-Claude Code plugin cache. Codex and pi read `~/.agents/skills` natively, so
-every agent sees the same skills without any per-agent install step. The shared
-`~/.agents/AGENTS.md` (with per-agent `AGENTS.md`/`CLAUDE.md` symlinks) is
-unchanged.
+### Where skills live
 
-To add a skill: enable an existing marketplace plugin in `settings.json`, or —
-for a new source — add an entry to the alltuner/skills marketplace and enable
-it. To remove one, delete its `enabledPlugins` line.
+`~/.agents/skills/<name>` is the shared location every agent reads. Codex,
+Gemini CLI, opencode and pi all discover it natively, so there is no per-agent
+install step and no per-agent skills directory to maintain:
+
+| Agent | Reads |
+|---|---|
+| Codex | `$HOME/.agents/skills` |
+| Gemini CLI | `~/.agents/skills` (alias for `~/.gemini/skills`) |
+| opencode | `~/.agents/skills` |
+| pi | `~/.agents/skills` |
+| Claude Code | its own plugin cache, natively |
+
+Claude Code is the odd one out: it loads plugins directly and never consults
+`~/.agents/skills`. The content is the same either way, because the shared
+directory is generated from the plugins Claude has already fetched.
+
+`skills-mirror` regenerates that directory, run by the bootstrap task and the
+daily maintenance job. It reads `installed_plugins.json` for each enabled
+plugin's install path, so the mirror always pins the exact version Claude
+loads, and plugins from disabled or superseded marketplaces are left out.
+
+The shared `~/.agents/AGENTS.md` (with per-agent `AGENTS.md`/`CLAUDE.md`
+symlinks) is a separate mechanism and unaffected by any of this.
+
+### Adding a skill
+
+Prefer a **plugin**, which is the declarative path and restores from
+`settings.json` alone:
+
+1. Enable an existing marketplace plugin in `enabledPlugins`, or for a new
+   source add its marketplace to `extraKnownMarketplaces` first. A source with
+   no upstream marketplace can go into
+   [alltuner/skills](https://github.com/alltuner/skills), which pins by commit
+   sha via `git-subdir`.
+2. Restart Claude Code so it fetches the plugin.
+3. Run `skills-mirror` to publish it to the other agents.
+
+Check whether `claude-plugins-official` already carries the plugin before
+adding a vendor marketplace — two marketplaces shipping the same plugin name
+collide on the skill prefix, and resolution between them is undefined.
+
+For a skill that **isn't packaged as a plugin**, use the
+[skills CLI](https://github.com/vercel-labs/skills), which installs a canonical
+copy and records it in `~/.agents/.skill-lock.json`:
+
+```bash
+npx skills@latest add <owner>/<repo> --global
+```
+
+`microsoft-foundry` is installed this way. Do not use its `--agent` flag to
+target Claude Code: that writes `~/.claude/skills/`, and any skill Claude also
+gets from a plugin would then load twice.
+
+### Removing a skill
+
+- Plugin-provided: delete its `enabledPlugins` line, restart Claude Code, then
+  run `skills-mirror`. The mirror drops links for anything no longer enabled.
+- CLI-installed: `npx skills@latest remove <name>`.
+
+### Checking it worked
+
+```bash
+ls -l ~/.agents/skills/<name>          # present, and pointing at the live version
+codex exec "list the skills you can see"
+```
 
 ## Profiles
 
