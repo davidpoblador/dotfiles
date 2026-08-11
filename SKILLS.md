@@ -38,17 +38,11 @@ plain fetch both 404). It is served through Claude Code's own channel, so these
 cannot be installed by the skills CLI or copied by hand. Claude Code is the
 only way to get them.
 
+Installed: `frontend-design` (1 skill).
+
 ```
-/plugin install expo@claude-plugins-official
-/plugin install stripe@claude-plugins-official
 /plugin install frontend-design@claude-plugins-official
 ```
-
-| Plugin | Skills | Also ships |
-|---|---|---|
-| expo | 21 (`eas-*`, `expo-*`) | agents, MCP server |
-| stripe | 7 (`stripe-*`, `connect-recommend`, `upgrade-stripe`) | commands, agents, MCP server |
-| frontend-design | 1 | — |
 
 ### cloudflare/skills — 11 skills
 
@@ -118,27 +112,33 @@ shared build for all harnesses rather than the one compiled for yours". The
 Claude marketplace (`/plugin marketplace add pbakaus/impeccable`) is a third
 option. Ships an agent alongside the skill.
 
-### alltuner/skills — 6 plugins
+### alltuner/skills — 2 skills
 
 ```bash
-npx skills add alltuner/skills                 # all
+npx skills add alltuner/skills                 # both
 npx skills add alltuner/skills --skill vacant  # one
 ```
 
-Two are published here directly; four are upstream re-hosts pinned by sha via
-`git-subdir`, and can equally be installed from source:
+`vacant` and `selfmail`. The marketplace publishes only skills written here —
+it does not republish anyone else's.
 
-| Skill | Upstream | Path |
-|---|---|---|
-| vacant | this repo | `./skills/vacant` |
-| selfmail | this repo | `./skills/selfmail` |
-| fastapi | `fastapi/fastapi` | `fastapi/.agents/skills/fastapi` |
-| shadcn | `shadcn/ui` | `skills/shadcn` |
-| remotion-best-practices | `remotion-dev/skills` | `skills/remotion-best-practices` |
-| find-skills | `vercel-labs/skills` | `skills/find-skills` |
+## Documented, not installed by default
 
-The repo's README documents only `vacant` and `selfmail`; the other four are in
-`.claude-plugin/marketplace.json` but undocumented.
+Useful, deliberately not enabled. Install when a project needs them, then
+remove again.
+
+| Skill set | Install |
+|---|---|
+| **expo** — 21 skills (`eas-*`, `expo-*`), agents, MCP server | `/plugin install expo@claude-plugins-official` |
+| **stripe** — 7 skills, commands, agents, MCP server | `/plugin install stripe@claude-plugins-official` |
+| **fastapi** | `npx skills add fastapi/fastapi --skill fastapi` |
+| **shadcn** | `npx skills add shadcn/ui --skill shadcn` |
+| **remotion-best-practices** | `npx skills add remotion-dev/skills` |
+| **find-skills** | `npx skills add vercel-labs/skills --skill find-skills` |
+
+expo and stripe are Claude Code only, for the marketplace reason above. The
+other four are installed straight from their upstreams rather than through a
+re-host.
 
 ## Adding a skill
 
