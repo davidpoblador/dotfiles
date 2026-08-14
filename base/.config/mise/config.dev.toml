@@ -19,11 +19,10 @@ age = "latest"
 sentry-cli = "latest"
 stripe = "latest"
 vhs = "latest"
-# The archive ships the binary as `resend`, not as the repo name.
-"ubi:resend/resend-cli[exe=resend]" = "latest"
-# Monorepo: the bare 0.3.x tags sort after the current vacant-v* ones, so
-# without the filter "latest" resolves backwards to 0.3.4.
-"ubi:alltuner/vacant[tag_regex=^vacant-v]" = "latest"
+"github:resend/resend-cli" = "latest"
+# Monorepo: the vacant-py-* and vacant-js-* tags carry no binaries, so without
+# the prefix "latest" resolves to a release with no macOS asset.
+"github:alltuner/vacant[version_prefix=vacant-v]" = "latest"
 "github:alltuner/mise-completions-sync" = "latest"
 "go:golang.org/x/tools/gopls" = "latest"
 rust-analyzer = "latest"

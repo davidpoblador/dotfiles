@@ -143,7 +143,7 @@ will not proxy to the `brew` CLI, so a formula from a tap that doesn't publish
 `api/formula/<name>.json` cannot be declared at all — not even tap-qualified.
 Nothing is currently installed that way.
 
-Reach for mise's `ubi` backend instead when the upstream publishes GitHub
+Reach for mise's `github` backend instead when the upstream publishes GitHub
 release binaries, which is what the tap's formula usually downloads anyway. It
 reads those releases directly and sidesteps the Homebrew API. `resend` and
 `vacant` are installed that way; see the mise tool list.
@@ -254,7 +254,7 @@ mise use -g <tool>      # install + add to global config
 # (it is a symlink into the repo, so mise use -g already edited it in place)
 ```
 
-Prefer backends in this order: **core** (built-in) > **aqua** / **ubi** (single binary download) > **asdf** (legacy plugin). Core/aqua/ubi install cleanly. `asdf:` plugins refresh their git repo on every `mise install`/`upgrade`, adding one line of noise per apply — fine for a tool you need, annoying for orphans.
+Prefer backends in this order: **core** (built-in) > **aqua** / **github** (single binary download) > **asdf** (legacy plugin). Core/aqua/github install cleanly. `asdf:` plugins refresh their git repo on every `mise install`/`upgrade`, adding one line of noise per apply — fine for a tool you need, annoying for orphans.
 
 If `mise registry` only lists an `asdf:` backend, you can still use it — or pin another backend explicitly in `config.toml` (e.g. `"aqua:owner/repo" = "latest"`).
 
