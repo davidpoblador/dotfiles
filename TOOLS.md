@@ -143,15 +143,17 @@ will not proxy to the `brew` CLI, so a formula from a tap that doesn't publish
 `api/formula/<name>.json` cannot be declared at all — not even tap-qualified.
 Nothing is currently installed that way.
 
-Reach for mise's `github` or `ubi` backend instead when the upstream publishes
-GitHub release binaries, which is what the tap's formula usually downloads
-anyway. Both read those releases directly and sidestep the Homebrew API.
-`resend` uses `github:`, `vacant` uses `ubi:`; see the mise tool list.
+Reach for mise's `github` backend instead when the upstream publishes GitHub
+release binaries, which is what the tap's formula usually downloads anyway. It
+reads those releases directly and sidesteps the Homebrew API. `resend` and
+`vacant` are installed that way; see the mise tool list.
 
-The two are not interchangeable. `github:` ignores `tag_regex` and strips a
-leading `v` from every tag before matching, so a repo whose releases need
-filtering — a monorepo tagging several packages, say — must use `ubi:`, which
-honours the filter against the raw tag.
+Do not reach for `ubi:`. It is deprecated and goes away in mise 2027.1.0.
+Porting an entry across the two means translating the options, not just the
+prefix: `github:` has no `tag_regex`, and passing one is silently ignored
+rather than rejected. To pick out one package's tags in a monorepo, use
+`version_prefix` — `vacant` needs `version_prefix=vacant-v` so that `latest`
+skips the `vacant-js-*` and `vacant-py-*` tags, which publish no binaries.
 
 `mise bootstrap packages prune` judges against the *current* formula metadata,
 so it also surfaces dependencies that a locally installed formula still links
@@ -259,7 +261,7 @@ mise use -g <tool>      # install + add to global config
 # (it is a symlink into the repo, so mise use -g already edited it in place)
 ```
 
-Prefer backends in this order: **core** (built-in) > **aqua** / **github** / **ubi** (single binary download) > **asdf** (legacy plugin). Core/aqua/github/ubi install cleanly. `asdf:` plugins refresh their git repo on every `mise install`/`upgrade`, adding one line of noise per apply — fine for a tool you need, annoying for orphans.
+Prefer backends in this order: **core** (built-in) > **aqua** / **github** (single binary download) > **asdf** (legacy plugin). Core/aqua/github install cleanly. `asdf:` plugins refresh their git repo on every `mise install`/`upgrade`, adding one line of noise per apply — fine for a tool you need, annoying for orphans.
 
 If `mise registry` only lists an `asdf:` backend, you can still use it — or pin another backend explicitly in `config.toml` (e.g. `"aqua:owner/repo" = "latest"`).
 
