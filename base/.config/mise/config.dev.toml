@@ -3,7 +3,10 @@
 awscli = "latest"
 claude = "latest"
 copilot-cli = "latest"
-gemini-cli = "latest"
+# The registry alias resolves to the same package, but installing under that
+# name makes mise run node-pty's node-gyp build script, which has no
+# toolchain here. The npm-qualified name uses the prebuilt binary instead.
+"npm:@google/gemini-cli" = "latest"
 opencode = "latest"
 fnox = "latest"
 pi = "latest"
@@ -21,9 +24,10 @@ stripe = "latest"
 vhs = "latest"
 # The archive ships the binary as `resend`, not as the repo name.
 "github:resend/resend-cli[exe=resend]" = "latest"
-# Monorepo: the bare 0.3.x tags sort after the current vacant-v* ones, so
-# without the filter "latest" resolves backwards to 0.3.4.
-"github:alltuner/vacant[tag_regex=^vacant-v]" = "latest"
+# Monorepo: the bare 0.3.x tags sort after the current vacant-v* ones, and
+# the -js/-py tags carry no binaries, so "latest" needs the filter. Only the
+# ubi backend honours tag_regex; github ignores it.
+"ubi:alltuner/vacant[tag_regex=^vacant-v]" = "latest"
 "github:alltuner/mise-completions-sync" = "latest"
 "go:golang.org/x/tools/gopls" = "latest"
 rust-analyzer = "latest"
