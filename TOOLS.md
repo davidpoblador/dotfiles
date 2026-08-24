@@ -148,6 +148,13 @@ release binaries, which is what the tap's formula usually downloads anyway. It
 reads those releases directly and sidesteps the Homebrew API. `resend` and
 `vacant` are installed that way; see the mise tool list.
 
+Do not reach for `ubi:`. It is deprecated and goes away in mise 2027.1.0.
+Porting an entry across the two means translating the options, not just the
+prefix: `github:` has no `tag_regex`, and passing one is silently ignored
+rather than rejected. To pick out one package's tags in a monorepo, use
+`version_prefix` — `vacant` needs `version_prefix=vacant-v` so that `latest`
+skips the `vacant-js-*` and `vacant-py-*` tags, which publish no binaries.
+
 `mise bootstrap packages prune` judges against the *current* formula metadata,
 so it also surfaces dependencies that a locally installed formula still links
 but its formula no longer declares. `brew outdated` stays silent about these,
@@ -226,7 +233,7 @@ Dev profile only:
 | copilot-cli | GitHub Copilot CLI |
 | fnox | Secrets manager |
 | gcloud | Google Cloud SDK |
-| gemini-cli | Google Gemini CLI |
+| gemini-cli | Google Gemini CLI (declared `npm:@google/gemini-cli`; the bare registry alias fails to build node-pty) |
 | gopls | Go language server |
 | mise-completions-sync | Auto-sync mise tool completions to zsh |
 | mongosh | MongoDB shell |
