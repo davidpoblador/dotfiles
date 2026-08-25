@@ -368,17 +368,33 @@ rc() {
         slug=${root:t}
     fi
     name="rc-$slug"
+    # Whatever started it, a live server for this directory means there is nothing
+    # to do; a second one would register a second environment for the same repo and
+    # show up as a duplicate directory in the app
+    local pid pcwd
+    for pid in ${(f)"$(pgrep -f 'claude remote-control' 2>/dev/null)"}; do
+        [[ -n $pid ]] || continue
+        [[ $(ps -o comm= -p "$pid" 2>/dev/null) == *tmux* ]] && continue
+        pcwd=$(lsof -a -p "$pid" -d cwd -Fn 2>/dev/null | sed -n 's/^n//p')
+        if [[ $pcwd == "$root" ]]; then
+            echo "rc: $root already served by pid $pid"
+            tmux has-session -t "$name" 2>/dev/null &&
+                echo "rc: attach with 'tmux attach -t $name', stop with 'tmux kill-session -t $name'"
+            return 0
+        fi
+    done
+
     if tmux has-session -t "$name" 2>/dev/null; then
-        echo "rc: already serving $root as $name"
-    else
-        # Not --no-create-session-in-dir: without a resumable record in the
-        # directory the server mints a new environment on every start, and each
-        # one shows up as another copy of the repo in the app's directory picker
-        tmux new-session -d -s "$name" -c "$root" \
-            'exec zsh -lc "claude remote-control --spawn worktree"' ||
-            return 1
-        echo "rc: serving $root as $name"
+        echo "rc: tmux session $name exists but nothing is serving $root; replacing it"
+        tmux kill-session -t "$name"
     fi
+    # Not --no-create-session-in-dir: without a resumable record in the directory
+    # the server mints a new environment on every start, and each one shows up as
+    # another copy of the repo in the app's directory picker
+    tmux new-session -d -s "$name" -c "$root" \
+        'exec zsh -lc "claude remote-control --spawn worktree"' ||
+        return 1
+    echo "rc: serving $root as $name"
     echo "rc: attach with 'tmux attach -t $name', stop with 'tmux kill-session -t $name'"
 }
 
