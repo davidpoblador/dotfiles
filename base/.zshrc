@@ -348,6 +348,37 @@ alias cccy='claude --dangerously-skip-permissions'
 alias cccwy='claude --dangerously-skip-permissions -w'
 alias agents='cd ~/repos && claude agents'
 
+# Serve a repo to the phone: a detached tmux session running Remote Control, so
+# the repo becomes a selectable directory under this machine at claude.ai/code.
+# Sessions started from the phone land in their own worktree, which is what keeps
+# their auto memory and CLAUDE.md keyed to the repo. Defaults to the repo you are
+# in; from inside a worktree it serves the main checkout.
+rc() {
+    local dir=${1:-$PWD} common root slug name
+    common=$(git -C "$dir" rev-parse --path-format=absolute --git-common-dir 2>/dev/null) || {
+        echo "rc: $dir is not a git repository" >&2
+        return 1
+    }
+    root=${common:h}
+    # Name after the path below ~/repos, so nested repos that share a basename
+    # (alltuner/brand, websites/davidpoblador) get distinct tmux sessions
+    if [[ $root == $HOME/repos/* ]]; then
+        slug=${${root#$HOME/repos/}//\//-}
+    else
+        slug=${root:t}
+    fi
+    name="rc-$slug"
+    if tmux has-session -t "$name" 2>/dev/null; then
+        echo "rc: already serving $root as $name"
+    else
+        tmux new-session -d -s "$name" -c "$root" \
+            'exec zsh -lc "claude remote-control --spawn worktree --no-create-session-in-dir"' ||
+            return 1
+        echo "rc: serving $root as $name"
+    fi
+    echo "rc: attach with 'tmux attach -t $name', stop with 'tmux kill-session -t $name'"
+}
+
 # Launch a background dig exploration in the digs workbench; topic inline
 digs() {
     ( cd ~/repos/digs 2>/dev/null || { echo "digs: ~/repos/digs not found" >&2; exit 1; }
