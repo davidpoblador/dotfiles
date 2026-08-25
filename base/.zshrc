@@ -398,8 +398,31 @@ rc() {
     tmux new-session -d -s "$name" -c "$root" \
         'exec env -u DO_NOT_TRACK zsh -lc "claude remote-control --spawn worktree"' ||
         return 1
-    echo "rc: serving $root as $name"
-    echo "rc: attach with 'tmux attach -t $name', stop with 'tmux kill-session -t $name'"
+
+    # tmux succeeds as soon as the pane starts, but the server can exit straight
+    # away — an untrusted workspace is the common one — taking its error with it
+    # when the pane closes. Hold the pane, wait for the server to report capacity,
+    # and print what it said if it never does.
+    local waited
+    tmux set-option -t "$name" remain-on-exit on 2>/dev/null
+    for waited in {1..12}; do
+        sleep 1
+        if tmux capture-pane -p -t "$name" 2>/dev/null | grep -q 'Capacity:'; then
+            tmux set-option -t "$name" remain-on-exit off 2>/dev/null
+            echo "rc: serving $root as $name"
+            echo "rc: attach with 'tmux attach -t $name', stop with 'tmux kill-session -t $name'"
+            return 0
+        fi
+        [[ $(tmux list-panes -t "$name" -F '#{pane_dead}' 2>/dev/null) == 1 ]] && break
+    done
+
+    echo "rc: $name did not come up" >&2
+    # -S - reaches into scrollback, where the start of the error usually sits, and
+    # -J rejoins wrapped lines, or it arrives cut in half
+    tmux capture-pane -p -J -S - -t "$name" 2>/dev/null |
+        tr -d '\000' | grep -v '^[[:space:]]*$' | grep -v '^Pane is dead' | tail -3 >&2
+    tmux kill-session -t "$name" 2>/dev/null
+    return 1
 }
 
 # Launch a background dig exploration in the digs workbench; topic inline
