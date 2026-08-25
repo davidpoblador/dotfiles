@@ -1,0 +1,69 @@
+#!/usr/bin/env python3
+# ABOUTME: Marks a folder as a trusted Claude Code workspace in ~/.claude.json.
+# ABOUTME: Prints "trusted <path>" when it changes something, nothing when already set.
+"""Accept the Claude Code workspace trust dialog for a folder, without the dialog.
+
+Claude Code shows the trust dialog in interactive sessions only, so anything
+started detached — `claude remote-control` in a tmux pane, for instance — exits
+with "Workspace not trusted" in a folder that has never been opened interactively.
+The documented way to grant it by hand is to set
+`projects["<path>"].hasTrustDialogAccepted` to true in ~/.claude.json, which is
+what this does.
+
+Trust gates what repository-supplied configuration may do: `permissions.allow`
+rules and `additionalDirectories`, `.mcp.json` servers and their `headersHelper`,
+subagent frontmatter hooks, project skills-dir plugins, and
+`extraKnownMarketplaces`. Grant it to repositories you would open interactively
+and trust anyway, not to code you have just cloned and not yet read.
+
+Usage:  claude-trust-workspace <path>...
+"""
+
+import json
+import os
+import pathlib
+import sys
+
+CONFIG = pathlib.Path.home() / ".claude.json"
+
+
+def main() -> int:
+    paths = sys.argv[1:]
+    if not paths:
+        sys.stderr.write(__doc__)
+        return 2
+
+    try:
+        config = json.loads(CONFIG.read_text())
+    except FileNotFoundError:
+        sys.stderr.write(f"claude-trust-workspace: no {CONFIG}\n")
+        return 1
+    except json.JSONDecodeError as err:
+        sys.stderr.write(f"claude-trust-workspace: {CONFIG} is not valid JSON: {err}\n")
+        return 1
+
+    projects = config.setdefault("projects", {})
+    changed = []
+    for raw in paths:
+        path = str(pathlib.Path(raw).expanduser().resolve())
+        entry = projects.setdefault(path, {})
+        if entry.get("hasTrustDialogAccepted") is True:
+            continue
+        entry["hasTrustDialogAccepted"] = True
+        changed.append(path)
+
+    if not changed:
+        return 0
+
+    # Replace via a temporary file in the same directory: ~/.claude.json is
+    # rewritten by every running session, and a partial write would lose all of it
+    tmp = CONFIG.with_suffix(f".json.trust-{os.getpid()}")
+    tmp.write_text(json.dumps(config, indent=2) + "\n")
+    os.replace(tmp, CONFIG)
+    for path in changed:
+        print(f"trusted {path}")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

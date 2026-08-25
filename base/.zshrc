@@ -388,6 +388,11 @@ rc() {
         echo "rc: tmux session $name exists but nothing is serving $root; replacing it"
         tmux kill-session -t "$name"
     fi
+    # The trust dialog only appears in interactive sessions, so a detached pane
+    # exits with "Workspace not trusted" in a repo never opened interactively.
+    # Grant it up front; the helper prints only when it changes something
+    claude-trust-workspace "$root" || return 1
+
     # Remote Control exits rather than start under DO_NOT_TRACK, which interactive
     # shells export above and a tmux server started from one hands to every pane.
     # The claude() wrapper scrubs it; this bypasses the wrapper, so scrub it here.
