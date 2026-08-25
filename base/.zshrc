@@ -388,11 +388,15 @@ rc() {
         echo "rc: tmux session $name exists but nothing is serving $root; replacing it"
         tmux kill-session -t "$name"
     fi
+    # Remote Control exits rather than start under DO_NOT_TRACK, which interactive
+    # shells export above and a tmux server started from one hands to every pane.
+    # The claude() wrapper scrubs it; this bypasses the wrapper, so scrub it here.
+    #
     # Not --no-create-session-in-dir: without a resumable record in the directory
     # the server mints a new environment on every start, and each one shows up as
     # another copy of the repo in the app's directory picker
     tmux new-session -d -s "$name" -c "$root" \
-        'exec zsh -lc "claude remote-control --spawn worktree"' ||
+        'exec env -u DO_NOT_TRACK zsh -lc "claude remote-control --spawn worktree"' ||
         return 1
     echo "rc: serving $root as $name"
     echo "rc: attach with 'tmux attach -t $name', stop with 'tmux kill-session -t $name'"
