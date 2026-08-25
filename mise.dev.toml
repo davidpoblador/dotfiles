@@ -133,3 +133,18 @@ login_shell = "/bin/zsh"
 "~/.config/sc-im" = { source = "dev/.config/sc-im", mode = "symlink-each" }
 "~/.config/silicon" = { source = "dev/.config/silicon", mode = "symlink-each" }
 "~/.config/zed" = { source = "dev/.config/zed", mode = "symlink-each" }
+
+# Registers the machine with claude.ai/code so sessions can be spawned from the
+# phone. Sessions are created in ~/repos and share it, which is what keeps every
+# repo reachable from a single server; --spawn pins that against the mode the
+# server otherwise remembers per directory. The login shell is what puts the
+# mise-managed `claude` on PATH.
+[bootstrap.macos.launchd.agents.claude-remote-control]
+program = "/bin/zsh"
+args = ["-lc", "exec claude remote-control --spawn same-dir"]
+working_directory = "~/repos"
+keep_alive = true
+run_at_load = true
+throttle_interval = 30
+stdout_path = "~/Library/Logs/claude-remote-control.log"
+stderr_path = "~/Library/Logs/claude-remote-control.log"
