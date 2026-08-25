@@ -348,6 +348,56 @@ alias cccy='claude --dangerously-skip-permissions'
 alias cccwy='claude --dangerously-skip-permissions -w'
 alias agents='cd ~/repos && claude agents'
 
+# Serve a repo to the phone: a detached tmux session running Remote Control, so
+# the repo becomes a selectable directory under this machine at claude.ai/code.
+# Sessions started from the phone land in their own worktree, which is what keeps
+# their auto memory and CLAUDE.md keyed to the repo. Defaults to the repo you are
+# in; from inside a worktree it serves the main checkout.
+rc() {
+    local dir=${1:-$PWD} common root slug name
+    common=$(git -C "$dir" rev-parse --path-format=absolute --git-common-dir 2>/dev/null) || {
+        echo "rc: $dir is not a git repository" >&2
+        return 1
+    }
+    root=${common:h}
+    # Name after the path below ~/repos, so nested repos that share a basename
+    # (alltuner/brand, websites/davidpoblador) get distinct tmux sessions
+    if [[ $root == $HOME/repos/* ]]; then
+        slug=${${root#$HOME/repos/}//\//-}
+    else
+        slug=${root:t}
+    fi
+    name="rc-$slug"
+    # Whatever started it, a live server for this directory means there is nothing
+    # to do; a second one would register a second environment for the same repo and
+    # show up as a duplicate directory in the app
+    local pid pcwd
+    for pid in ${(f)"$(pgrep -f 'claude remote-control' 2>/dev/null)"}; do
+        [[ -n $pid ]] || continue
+        [[ $(ps -o comm= -p "$pid" 2>/dev/null) == *tmux* ]] && continue
+        pcwd=$(lsof -a -p "$pid" -d cwd -Fn 2>/dev/null | sed -n 's/^n//p')
+        if [[ $pcwd == "$root" ]]; then
+            echo "rc: $root already served by pid $pid"
+            tmux has-session -t "$name" 2>/dev/null &&
+                echo "rc: attach with 'tmux attach -t $name', stop with 'tmux kill-session -t $name'"
+            return 0
+        fi
+    done
+
+    if tmux has-session -t "$name" 2>/dev/null; then
+        echo "rc: tmux session $name exists but nothing is serving $root; replacing it"
+        tmux kill-session -t "$name"
+    fi
+    # Not --no-create-session-in-dir: without a resumable record in the directory
+    # the server mints a new environment on every start, and each one shows up as
+    # another copy of the repo in the app's directory picker
+    tmux new-session -d -s "$name" -c "$root" \
+        'exec zsh -lc "claude remote-control --spawn worktree"' ||
+        return 1
+    echo "rc: serving $root as $name"
+    echo "rc: attach with 'tmux attach -t $name', stop with 'tmux kill-session -t $name'"
+}
+
 # Launch a background dig exploration in the digs workbench; topic inline
 digs() {
     ( cd ~/repos/digs 2>/dev/null || { echo "digs: ~/repos/digs not found" >&2; exit 1; }
