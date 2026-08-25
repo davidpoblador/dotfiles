@@ -371,8 +371,11 @@ rc() {
     if tmux has-session -t "$name" 2>/dev/null; then
         echo "rc: already serving $root as $name"
     else
+        # Not --no-create-session-in-dir: without a resumable record in the
+        # directory the server mints a new environment on every start, and each
+        # one shows up as another copy of the repo in the app's directory picker
         tmux new-session -d -s "$name" -c "$root" \
-            'exec zsh -lc "claude remote-control --spawn worktree --no-create-session-in-dir"' ||
+            'exec zsh -lc "claude remote-control --spawn worktree"' ||
             return 1
         echo "rc: serving $root as $name"
     fi
