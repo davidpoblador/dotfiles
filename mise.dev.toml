@@ -133,6 +133,11 @@ login_shell = "/bin/zsh"
 "~/.config/sc-im" = { source = "dev/.config/sc-im", mode = "symlink-each" }
 "~/.config/silicon" = { source = "dev/.config/silicon", mode = "symlink-each" }
 "~/.config/zed" = { source = "dev/.config/zed", mode = "symlink-each" }
+# Applies to sessions launched in ~/repos itself, which in practice means the
+# ones the Remote Control server spawns. Their auto memory is keyed to ~/repos
+# rather than to the project they end up working in, so it can only ever be
+# filed where no other session will read it. Nested repos are unaffected.
+"~/repos/.claude" = { source = "dev/repos/.claude", mode = "symlink-each" }
 
 # Registers the machine with claude.ai/code so sessions can be spawned from the
 # phone. Sessions are created in ~/repos and share it, which is what keeps every
