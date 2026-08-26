@@ -245,9 +245,19 @@ age-encrypted values stored inline in config files that are safe to commit.
 
 ## Browser Automation
 
-Use Claude Code's first-party Chrome integration. It connects the CLI to a real
-Chrome via the official extension and native messaging — no MCP server, no
-third-party CLI.
+Three stacks, each with a job. All three are in active use; don't collapse them
+into one.
+
+| stack | use it for |
+|---|---|
+| Claude in Chrome (native) | driving pages, logged-in sessions, clicking and filling |
+| `chrome-devtools` MCP | perf traces, heap snapshots, network and console inspection, device emulation |
+| `safari-mcp-stp` MCP | WebKit-specific checks |
+
+### Claude in Chrome (default)
+
+Claude Code's first-party Chrome integration connects the CLI to a real Chrome
+via the official extension and native messaging.
 
 Setup:
 
@@ -264,6 +274,45 @@ live in the extension settings.
 
 Requires a direct Anthropic plan (Pro/Max/Team/Enterprise) — not available on
 Bedrock, Vertex, or Foundry, and not supported on WSL.
+
+### Chrome DevTools MCP
+
+For DevTools-grade work the native integration doesn't cover. It lives in
+`~/.claude.json` under `mcpServers`, which is machine-local and NOT tracked
+here, so reproduce it by hand on each machine:
+
+```jsonc
+"chrome-devtools": {
+  "type": "stdio",
+  "command": "npx",
+  "args": [
+    "-y", "chrome-devtools-mcp@latest",
+    "--autoConnect",                 // attach to the running Chrome, don't launch one
+    "--usageStatistics=false",       // Google telemetry, on by default
+    "--performanceCrux=false",       // stops trace URLs going to Google's CrUX API
+    "--redactNetworkHeaders",        // keeps auth headers out of the transcript
+    "--screenshotFormat=webp",       // ~3-5x smaller than the PNG default
+    "--screenshotMaxWidth=1280",
+    "--ignoreDefaultChromeArg=--enable-automation",
+    "--chromeArg=--disable-blink-features=AutomationControlled"
+  ]
+}
+```
+
+`npx`, not `bunx`: `bunx pkg@latest` resolves `latest` once and then serves that
+cached version forever, so the pin silently rots.
+
+`--autoConnect` needs Chrome 144+ with remote debugging enabled once via
+`chrome://inspect/#remote-debugging`. It attaches to the same Chrome the native
+integration drives, so both stacks share state and there's only one window. The
+last two args only apply when the server launches Chrome itself, so under
+`--autoConnect` they're inert — they're kept as a fallback for the launch path,
+where the `--chromeArg` is load-bearing for `navigator.webdriver`.
+
+### Safari
+
+`safaridriver --mcp` exists only in Safari Technology Preview. Stable Safari's
+`safaridriver` has no `--mcp`, so the STP path in the config is required.
 
 ## Code Intelligence
 
