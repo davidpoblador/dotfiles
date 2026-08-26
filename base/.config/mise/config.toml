@@ -2,6 +2,7 @@
 experimental = true
 idiomatic_version_file_enable_tools = []
 minimum_release_age_excludes = ["claude"]
+auto_update = true
 
 [[hooks.cd]]
 script = """
