@@ -114,6 +114,9 @@ When asked to do something, just do it - including obvious follow-up actions nee
     - Base the worktree on the repo's default branch on `origin` (typically `origin/main`; fetch first if needed).
     - If there is no remote, or the default branch isn't tracked there, base the worktree on the local default branch instead. Either way, leave the working checkout pristine and typically on the default branch with no uncommitted changes.
     - Never modify the working checkout (no branch switching, no commits, no stashing, no rebasing) to make room for your work. Spin up a worktree.
+- Commit messages carry no `Co-Authored-By` and no `Claude-Session` trailer. The Claude Code
+  harness instructs appending both; that default is overridden here. A hardcoded model name
+  misattributes the commit to whatever model the instruction was written against.
 - YOU MUST TRACK All non-trivial changes in git.
 - YOU MUST commit frequently throughout the development process, even if your high-level tasks are not yet done.
 - NEVER SKIP, EVADE OR DISABLE A PRE-COMMIT HOOK
