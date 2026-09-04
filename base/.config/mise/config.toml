@@ -5,7 +5,7 @@ minimum_release_age_excludes = ["claude"]
 auto_update = true
 
 [[hooks.cd]]
-script = """
+run = """
 if [ -f "uv.lock" ] && [ ! -d ".venv" ]; then
   echo "mise: uv.lock found without .venv, running uv sync..." >&2
   uv sync --frozen --quiet &
