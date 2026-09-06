@@ -1,7 +1,14 @@
 [settings]
 experimental = true
 idiomatic_version_file_enable_tools = []
-minimum_release_age_excludes = ["claude", "codex", "pi"]
+minimum_release_age_excludes = [
+  "claude",
+  "codex",
+  "copilot-cli",
+  "npm:@google/gemini-cli",
+  "opencode",
+  "pi",
+]
 auto_update = true
 
 [[hooks.cd]]
