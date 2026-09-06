@@ -1,7 +1,7 @@
 [settings]
 experimental = true
 idiomatic_version_file_enable_tools = []
-minimum_release_age_excludes = ["claude"]
+minimum_release_age_excludes = ["claude", "codex", "pi"]
 auto_update = true
 
 [[hooks.cd]]
