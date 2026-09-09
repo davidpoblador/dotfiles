@@ -122,6 +122,26 @@ npx skills add alltuner/skills --skill vacant  # one
 `vacant` and `selfmail`. The marketplace publishes only skills written here —
 it does not republish anyone else's.
 
+### ayghri/i-have-adhd — 1 skill
+
+```
+/plugin marketplace add ayghri/i-have-adhd
+/plugin install i-have-adhd@i-have-adhd
+```
+
+`i-have-adhd` shapes responses for an ADHD reader: answer or command first,
+numbered steps, one concrete next action, no preamble or closers. It sets
+`disable-model-invocation: true`, so it only runs when invoked as
+`/i-have-adhd`, and stays on for the session until "stop adhd mode".
+
+The plugin registers a `SessionStart` hook that injects the ruleset into every
+session, but only when the opt-in flag `~/.claude/.i-have-adhd-always` exists.
+The flag is not created here; without it the hook exits immediately.
+
+The upstream also publishes Codex, Gemini, opencode and Cursor builds, but
+`skills-mirror` already links the plugin's `SKILL.md` into `~/.agents/skills`,
+so installing one of those on top would load the skill twice.
+
 ## Documented, not installed by default
 
 Useful, deliberately not enabled. Install when a project needs them, then
