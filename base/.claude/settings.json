@@ -193,7 +193,8 @@
     "impeccable@impeccable": true,
     "resend@resend-skills": true,
     "vacant@alltuner": true,
-    "selfmail@alltuner": true
+    "selfmail@alltuner": true,
+    "i-have-adhd@i-have-adhd": true
   },
   "extraKnownMarketplaces": {
     "astral-sh": {
@@ -218,6 +219,12 @@
       "source": {
         "source": "github",
         "repo": "cloudflare/skills"
+      }
+    },
+    "i-have-adhd": {
+      "source": {
+        "source": "github",
+        "repo": "ayghri/i-have-adhd"
       }
     },
     "impeccable": {
