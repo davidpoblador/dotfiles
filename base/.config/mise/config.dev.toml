@@ -11,7 +11,9 @@ opencode = "latest"
 fnox = "latest"
 pi = "latest"
 gcloud = "latest"
-"npm:cf" = "latest"
+# The 1.0 line is still prerelease, and mise leaves prereleases out of both
+# "latest" and prefix matching, so only an exact version selects it.
+"npm:cf" = "1.0.0-beta.12"
 rust = "latest"
 mongosh = "latest"
 ty = "latest"
