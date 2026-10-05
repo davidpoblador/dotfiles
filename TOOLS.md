@@ -350,7 +350,7 @@ All plugins except zsh-defer are lazy-loaded with `kind:defer`.
 |---|---|
 | `dfu` | pull + `mise dotfiles apply` (sync this machine) |
 | `dfs` | `mise dotfiles status` |
-| `dfb` | `mise bootstrap --yes` (full converge) |
+| `dfb` | `mise bootstrap --yes --skip-dirty` (full converge) |
 | `dfa` | `mise dotfiles apply` (repo-scoped) |
 | `dfc` | `cd ~/repos/dotfiles` |
 | `bubu` | `brew update && brew upgrade --formula --yes` |
