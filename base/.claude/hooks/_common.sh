@@ -325,9 +325,7 @@ worktree_has_active_session() {
 	[ -d "$sessions_dir" ] || return 1
 	for f in "$sessions_dir"/*.json; do
 		[ -f "$f" ] || continue
-		cwd=$(jq -r '.cwd // empty' "$f" 2>/dev/null)
-		pid=$(jq -r '.pid // empty' "$f" 2>/dev/null)
-		sid=$(jq -r '.sessionId // empty' "$f" 2>/dev/null)
+		IFS='|' read -r cwd pid sid < <(jq -r '"\(.cwd // "")|\(.pid // "")|\(.sessionId // "")"' "$f" 2>/dev/null) || continue
 		[ -n "$cwd" ] && [ -n "$pid" ] || continue
 		if [ -n "$exclude_session" ] && [ "$sid" = "$exclude_session" ]; then
 			continue
