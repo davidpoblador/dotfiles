@@ -106,16 +106,14 @@ brew:<name>` (or `brew-cask:`) after checking `brew info <name>`; remove with
 | Package | Description |
 |---|---|
 | bitwarden | Password manager |
-| docker-desktop | Docker Desktop (ships the docker CLI and shell completions) † |
+| docker-desktop | Docker Desktop (ships the docker CLI and shell completions) |
 | gitkraken-cli | GitKraken terminal UI |
-| ngrok | Tunnel local ports to public URLs † |
+| ngrok | Tunnel local ports to public URLs |
 | obsidian | Markdown-based knowledge base |
-| raycast | Launcher / Spotlight replacement † |
+| raycast | Launcher / Spotlight replacement |
 | responsively | Multi-viewport browser for responsive dev |
-| vlc | Media player † |
+| vlc | Media player |
 
-† installed by the bootstrap task through the brew CLI: mise's cask shim
-cannot handle these (see TODO.md and jdx/mise#11107).
 
 #### Fonts
 

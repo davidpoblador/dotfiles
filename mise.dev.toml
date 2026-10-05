@@ -97,10 +97,14 @@
 # Productivity / end-user apps (casks)
 #
 "brew-cask:bitwarden" = "latest"                     # password manager
+"brew-cask:docker-desktop" = "latest"                # docker engine + CLI (completions wired in .zshrc)
 "brew-cask:font-jetbrains-mono-nerd-font" = "latest"
 "brew-cask:gitkraken-cli" = "latest"                 # GitKraken terminal UI
+"brew-cask:ngrok" = "latest"                         # tunnels to local servers
 "brew-cask:obsidian" = "latest"                      # knowledge base
+"brew-cask:raycast" = "latest"                       # launcher
 "brew-cask:responsively" = "latest"                  # multi-viewport browser for responsive dev
+"brew-cask:vlc" = "latest"                           # media player
 
 #
 # Mac App Store apps
