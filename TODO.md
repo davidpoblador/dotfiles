@@ -16,6 +16,12 @@
 - Configure as MANPAGER for syntax-highlighted man pages
   (theme is already set in `~/.config/bat/config`)
 
+## Cloudflare cf CLI
+
+- `npm:cf` is pinned to `1.0.0-beta.12` in `config.dev.toml`. Once 1.0.0
+  final ships, switch it back to `"latest"`; until then, bump the pin for
+  newer betas (`npm view cf dist-tags`).
+
 ## Migration leftovers
 
 - Optionally fold `expose.env` into fnox and drop the `EXPOSE_CONFIG`
