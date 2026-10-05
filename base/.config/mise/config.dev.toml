@@ -11,8 +11,8 @@ opencode = "latest"
 fnox = "latest"
 pi = "latest"
 gcloud = "latest"
-# The 1.0 line is still prerelease, and mise leaves prereleases out of both
-# "latest" and prefix matching, so only an exact version selects it.
+# mise leaves prereleases out of both "latest" and prefix matching, so only an
+# exact version selects a beta; Renovate bumps it (see renovate.json).
 "npm:cf" = "1.0.0-beta.12"
 rust = "latest"
 mongosh = "latest"
