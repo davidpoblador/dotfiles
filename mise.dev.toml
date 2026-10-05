@@ -97,7 +97,9 @@
 # Productivity / end-user apps (casks)
 #
 "brew-cask:bitwarden" = "latest"                     # password manager
-"brew-cask:docker-desktop" = "latest"                # docker engine + CLI (completions wired in .zshrc)
+# Self-updating: adopt an existing Docker.app as-is rather than replace it
+# (replacing would stop a running engine)
+"brew-cask:docker-desktop" = { version = "latest", adopt = true } # docker engine + CLI (completions wired in .zshrc)
 "brew-cask:font-jetbrains-mono-nerd-font" = "latest"
 "brew-cask:gitkraken-cli" = "latest"                 # GitKraken terminal UI
 "brew-cask:ngrok" = "latest"                         # tunnels to local servers
