@@ -99,7 +99,6 @@ brew:<name>` (or `brew-cask:`) after checking `brew info <name>`; remove with
 
 | Package | Description |
 |---|---|
-| rtk | CLI proxy that minimizes LLM token consumption |
 | macwhisper | Local Whisper transcription (cask) |
 
 #### Apps (casks)

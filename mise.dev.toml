@@ -91,7 +91,6 @@
 #
 # AI / inference tooling
 #
-"brew:rtk" = "latest"                        # CLI proxy that minimizes LLM token consumption
 "brew-cask:macwhisper" = "latest"            # local Whisper transcription app
 
 #
