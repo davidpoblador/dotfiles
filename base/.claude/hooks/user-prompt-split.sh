@@ -26,10 +26,11 @@ if [ -z "$CWD" ] || [ ! -d "$CWD" ]; then
 	exit 0
 fi
 
-if ! "$(dirname "$0")/split-pane.sh" "$CWD" 2>>"$LOGFILE"; then
-	log_quiet "  split-pane failed (exit $?)"
+"$(dirname "$0")/split-pane.sh" "$CWD" 2>>"$LOGFILE" || {
+	rc=$?
+	log_quiet "  split-pane failed (exit $rc)"
 	jq -nc '{decision: "block", reason: "split-pane: failed (see log)"}'
 	exit 0
-fi
+}
 
 jq -nc '{decision: "block", reason: "split-pane opened"}'
