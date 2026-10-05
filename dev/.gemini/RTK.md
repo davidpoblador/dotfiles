@@ -1,1 +1,0 @@
-../../base/.agents/RTK.md

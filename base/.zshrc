@@ -464,7 +464,8 @@ alias dfc='cd ~/repos/dotfiles'
 alias dfa='mise -C ~/repos/dotfiles dotfiles apply'
 alias dfs='mise -C ~/repos/dotfiles dotfiles status'
 alias dfu='git -C ~/repos/dotfiles pull && mise -C ~/repos/dotfiles dotfiles apply'
-alias dfb='mise -C ~/repos/dotfiles bootstrap --yes'
+# --skip-dirty: app-rewritten files keep this checkout dirty; skip it, converge the rest
+alias dfb='mise -C ~/repos/dotfiles bootstrap --yes --skip-dirty'
 
 # System (ss on Linux, lsof fallback on macOS)
 if command_exists ss; then

@@ -152,6 +152,8 @@ fi
 
 # --- project-level hook ---
 PROJECT_HOOK="$REPO_ROOT/.hooks/worktree-remove.sh"
+# Its failure is logged, not propagated: a non-zero exit here would make Claude
+# Code report the whole removal as failed.
 if [ -x "$PROJECT_HOOK" ]; then
-	echo "$INPUT" | "$PROJECT_HOOK"
+	echo "$INPUT" | "$PROJECT_HOOK" || log "⚠ project hook failed (exit $?)"
 fi
