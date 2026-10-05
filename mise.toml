@@ -75,9 +75,6 @@ AppleTemperatureUnit = "Celsius"
 # 24-hour time everywhere
 AppleICUForce24HourTime = true
 
-# Week starts on Monday (AppleFirstWeekday) is a -dict, which mise cannot
-# express; written by the bootstrap task below.
-
 # --- Appearance ---
 # Auto-switch between light and dark mode
 AppleInterfaceStyleSwitchesAutomatically = true
@@ -238,9 +235,6 @@ ShowSeconds = true
 ShowDate = 1
 IsAnalog = false
 
-# Battery percentage (com.apple.controlcenter) is -currentHost scoped, which
-# mise cannot express; written by the bootstrap task below.
-
 ###########################################################
 # Safari                                                  #
 ###########################################################
@@ -264,6 +258,33 @@ type = "png"
 
 # Skip the floating thumbnail preview — save straight to file
 show-thumbnail = false
+
+###########################################################
+# Nested and -currentHost preferences                     #
+###########################################################
+# These can't be plain keys in the domain tables above: they need a host
+# scope or a path into a dictionary value.
+
+# Week starts on Monday
+[[bootstrap.macos.defaults_entries]]
+domain = "NSGlobalDomain"
+key = "AppleFirstWeekday"
+path = ["gregorian"]
+value = 2
+
+# Tap to click (current-host half of the trackpad setting)
+[[bootstrap.macos.defaults_entries]]
+domain = "NSGlobalDomain"
+key = "com.apple.mouse.tapBehavior"
+host = "current"
+value = 1
+
+# Hide battery percentage in the menu bar
+[[bootstrap.macos.defaults_entries]]
+domain = "com.apple.controlcenter"
+key = "BatteryShowPercentage"
+host = "current"
+value = false
 
 [tasks.bootstrap]
 description = "Imperative setup mise cannot express declaratively"
@@ -327,12 +348,6 @@ brew list --cask docker-desktop >/dev/null 2>&1 || brew install --cask docker-de
 brew list --cask raycast >/dev/null 2>&1 || brew install --cask raycast
 brew list --cask ngrok >/dev/null 2>&1 || brew install --cask ngrok
 brew list --cask vlc >/dev/null 2>&1 || brew install --cask vlc
-
-# macOS defaults mise cannot express: -dict values and -currentHost domains
-# (companions to [bootstrap.macos.defaults])
-defaults write -g AppleFirstWeekday -dict gregorian 2
-defaults -currentHost write -g com.apple.mouse.tapBehavior -int 1
-defaults -currentHost write com.apple.controlcenter BatteryShowPercentage -bool false
 
 # Wallpapers: synced folder, GUI symlink, apply to attached displays
 WALLPAPERS_DIR="$HOME/sync/exchange/wallpapers"
