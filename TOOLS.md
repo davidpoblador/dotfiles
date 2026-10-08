@@ -364,3 +364,50 @@ All plugins except zsh-defer are lazy-loaded with `kind:defer`.
 | `cdm` | cd to main worktree of current git repo |
 | `rep [name]` | cd to `~/repos` or `~/repos/<name>` |
 
+
+### Browser automation setup
+
+Which stack to use for what lives in `base/.agents/AGENTS.md`. This is the
+one-time setup per machine.
+
+#### Claude in Chrome
+
+1. Install the [Claude in Chrome](https://chromewebstore.google.com/detail/claude/fcoeoabgfenejglbffodgkkbkcdhcgfn)
+   extension (works with Chrome and Edge).
+2. Start Claude Code with `claude --chrome`. The native messaging host config is
+   installed automatically on first use.
+3. To keep it on by default, run `/chrome` and choose "Enabled by default" (this
+   keeps the browser tools loaded, which costs context).
+
+#### Chrome DevTools MCP
+
+It lives in `~/.claude.json` under `mcpServers`, which is machine-local and not
+tracked here, so reproduce it by hand on each machine:
+
+```jsonc
+"chrome-devtools": {
+  "type": "stdio",
+  "command": "npx",
+  "args": [
+    "-y", "chrome-devtools-mcp@latest",
+    "--autoConnect",                 // attach to the running Chrome, don't launch one
+    "--usageStatistics=false",       // Google telemetry, on by default
+    "--performanceCrux=false",       // stops trace URLs going to Google's CrUX API
+    "--redactNetworkHeaders",        // keeps auth headers out of the transcript
+    "--screenshotFormat=webp",       // ~3-5x smaller than the PNG default
+    "--screenshotMaxWidth=1280",
+    "--ignoreDefaultChromeArg=--enable-automation",
+    "--chromeArg=--disable-blink-features=AutomationControlled"
+  ]
+}
+```
+
+`npx`, not `bunx`: `bunx pkg@latest` resolves `latest` once and then serves that
+cached version forever, so the pin silently rots.
+
+`--autoConnect` needs Chrome 144+ with remote debugging enabled once via
+`chrome://inspect/#remote-debugging`. It attaches to the same Chrome the native
+integration drives, so both stacks share state and there's only one window. The
+last two args only apply when the server launches Chrome itself, so under
+`--autoConnect` they're inert; they're kept as a fallback for the launch path,
+where the `--chromeArg` is load-bearing for `navigator.webdriver`.
