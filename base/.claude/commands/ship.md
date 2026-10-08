@@ -19,8 +19,8 @@ Take the work on this branch all the way to a merged, cleaned-up state.
 2. If on the default branch, create a feature branch first.
 3. Commit any uncommitted changes. Follow the repo's own commit-message conventions when its instructions define them; otherwise use a concise, lowercase, imperative subject.
 4. `git fetch origin` and rebase onto the fresh default-branch tip, unless the branch has already been pushed and reviewed (then ask David first).
-5. Work out the remote branch name. With `B` = current branch, run `R=${B#worktree-}; R=${R//+//}` (bash or zsh). The worktree tool names local branches `worktree-<name>` and writes a `/` in the name as `+`, so this turns `worktree-dig+foo` into `dig/foo`. For other branches it leaves the name unchanged. Push with `git push -u origin HEAD:$R`.
-6. Open the PR with `gh pr create --head "$R"`, using the commit subject as the title and a body that summarizes the change. Without `--head`, `gh` infers the local branch name, which has no remote counterpart.
+5. Push the branch under its own name: `git push -u origin HEAD`.
+6. Open the PR with `gh pr create`, using the commit subject as the title and a body that summarizes the change.
 7. Squash-merge with `gh pr merge --squash`. Never pass `--delete-branch`: from a worktree it fails trying to check out the default branch, which the main worktree holds. GitHub's auto-delete removes the remote branch.
 8. Return the session to an up-to-date main checkout:
    - If this session created the worktree (EnterWorktree), confirm with `gh pr view` that the PR is `MERGED` and the tree is clean. Then call `ExitWorktree` with action `remove` and `discard_changes: true`. Squash merges look unmerged by ancestry, so the first attempt without it is refused.
