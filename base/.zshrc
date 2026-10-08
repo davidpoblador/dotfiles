@@ -107,11 +107,9 @@ fi
 ###########################################################
 # Telemetry Opt-outs                                      #
 ###########################################################
-# https://donottrack.sh/ — universal flag plus per-tool overrides for CLIs
-# that don't honor DO_NOT_TRACK. Kept in .zshrc (interactive shells only) so
-# subshells spawned by `claude` don't inherit DO_NOT_TRACK=1 from a global
-# default and opt claude out of telemetry against our wishes.
-export DO_NOT_TRACK=1
+# Per-tool overrides from https://donottrack.sh/. The universal DO_NOT_TRACK
+# flag is deliberately not exported: Claude Code reads it as "skip feature-flag
+# fetching", which disables Remote Control and the advisor tool.
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
 export SAM_CLI_TELEMETRY=0
 export AZURE_CORE_COLLECT_TELEMETRY=0
@@ -393,15 +391,11 @@ rc() {
     # Grant it up front; the helper prints only when it changes something
     claude-trust-workspace "$root" || return 1
 
-    # Remote Control exits rather than start under DO_NOT_TRACK, which interactive
-    # shells export above and a tmux server started from one hands to every pane.
-    # The claude() wrapper scrubs it; this bypasses the wrapper, so scrub it here.
-    #
     # Not --no-create-session-in-dir: without a resumable record in the directory
     # the server mints a new environment on every start, and each one shows up as
     # another copy of the repo in the app's directory picker
     tmux new-session -d -s "$name" -c "$root" \
-        'exec env -u DO_NOT_TRACK zsh -lc "claude remote-control --spawn worktree"' ||
+        'exec zsh -lc "claude remote-control --spawn worktree"' ||
         return 1
 
     # tmux succeeds as soon as the pane starts, but the server can exit straight
@@ -540,9 +534,6 @@ reset-term() {
 }
 
 # Ghostty occasionally doesn't receive the keyboard-mode pop on `claude` exit.
-# Also scrub DO_NOT_TRACK so claude itself isn't opted out via the interactive
-# default above (subshells spawned by claude don't source .zshrc, so they're
-# already clean).
 #
 # Capture this shell's tty path and pass it down as CLAUDE_INVOKER_TTY.
 # Detached agent-team teammates spawned by claude have no controlling tty
@@ -554,9 +545,9 @@ if command_exists claude; then
   claude() {
       local tty_path
       if tty_path=$(tty 2>/dev/null); then
-          env -u DO_NOT_TRACK CLAUDE_INVOKER_TTY="$tty_path" command claude "$@"
+          CLAUDE_INVOKER_TTY="$tty_path" command claude "$@"
       else
-          env -u DO_NOT_TRACK command claude "$@"
+          command claude "$@"
       fi
       local rc=$?
       reset-term
