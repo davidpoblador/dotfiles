@@ -210,10 +210,10 @@ unique_commits_against() {
 # produce different commit SHAs, so a "0 unique commits" check alone can
 # miss merged work — this is the secondary check.
 #
-# The local branch carries the create-hook's "worktree-" prefix, but the PR
-# head on GitHub is the de-prefixed name the push used (e.g. local
-# worktree-dig/<slug> vs head dig/<slug>). Query both heads; this only ever
-# confirms a genuinely merged PR, so it never loosens the safety guard.
+# The PR head normally matches the local branch name. Branches pushed under a
+# name without the worktree tool's "worktree-" prefix are matched too. Either
+# lookup only ever confirms a genuinely merged PR, so it never loosens the
+# safety guard.
 # $1: repo root  $2: branch name
 merged_pr_for_branch() {
 	local repo="$1" branch="$2" head pr
@@ -385,8 +385,8 @@ clean_stale_worktrees() {
 		# inherits origin/<default> as its upstream via branch.autoSetupMerge
 		# (on by default). That is NOT evidence the branch was ever pushed —
 		# so only count an upstream that points at the branch's own remote ref.
-		# The push may target a de-prefixed head (worktree-dig/<slug> pushes to
-		# origin/dig/<slug>), so accept that ref too. Otherwise a fresh,
+		# A push without the "worktree-" prefix (worktree-foo to origin/foo)
+		# counts too. Otherwise a fresh,
 		# never-pushed worktree takes the "pushed then remote gone" path, looks
 		# squash-merged (no unique commits vs base), and gets deleted mid-run.
 		upstream=$(git -C "$repo" for-each-ref --format='%(upstream)' "refs/heads/$stale_branch" 2>/dev/null)
