@@ -13,7 +13,7 @@ pi = "latest"
 gcloud = "latest"
 # mise leaves prereleases out of both "latest" and prefix matching, so only an
 # exact version selects a beta; Renovate bumps it (see renovate.json).
-"npm:cf" = "1.0.0-beta.12"
+"npm:cf" = "1.0.0-beta.14"
 rust = "latest"
 mongosh = "latest"
 ty = "latest"
