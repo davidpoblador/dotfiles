@@ -402,11 +402,59 @@ It exists because of four things that are not obvious:
   of shell quoting. It is also why a brief must never contain a secret: it lands
   in the process arguments and in `~/.claude/jobs/<id>/state.json`.
 
-Three skills drive it, so work can be handed off from inside a session instead
-of from a terminal: `dispatch` for anything, `dig` for the research workbench,
-and `dig-context` for a dig that needs the conversation it came out of. See
-SKILLS.md. From a terminal, `digs <topic>` is the same thing in one word, and
-names the session after the topic.
+#### Starting one
+
+| Way in | Use it when | Cost |
+|---|---|---|
+| `digs <topic>` | A topic off the top of your head, from a terminal. Names the session after the topic | instant |
+| `/dig <topic>` | The same, from inside a session already doing something else | two tool calls |
+| `/dig-context <topic>` | The question only makes sense given what that session has been doing: what was tried, what broke, what was ruled out | as long as writing it down takes |
+| `/dispatch [repo\|path] <task>` | Anything that is not a dig. Defaults to the directory the calling session is in; a bare name resolves under `~/repos` | two tool calls |
+
+The three skills live in `base/.claude/skills/`; SKILLS.md carries the rule they
+share about which context is worth handing over and which the dispatched session
+should go and read for itself.
+
+`/dig` is cheap because it dispatches **blind**: it looks nothing up, since the
+session lands in the workbench and reads it faster than a caller can read it on
+its behalf. The first version asked for a rich brief instead, and the calling
+session spent nearly four minutes researching, in the one context the dispatch
+existed to protect.
+
+#### What an unattended session does
+
+Nobody is watching a background session, which changes what it is safe for it to
+decide. Launched through the skills, its brief tells it to stop at a PR rather
+than merge, to assume rather than ask, and to report back when done. Worth
+knowing because none of those are the defaults:
+
+- **It will merge its own work if nothing stops it.** A repo whose instructions
+  say to ship gets its PRs squash-merged by the session itself, with nobody
+  having read them. One did exactly that, across two repos. The skills' briefs
+  override the repo's shipping rule for this reason. `digs <topic>` sends **no
+  brief at all**, so a terminal-launched dig still has that authority.
+- **A question stalls it indefinitely.** There is nobody to answer, so it sits
+  at `blocked` until attached. The briefs tell it to take the sensible reading
+  and record the assumption instead.
+- **It cannot be handed a file**, only a path to one. Anything bulky (a
+  transcript, a log, a dump) goes in a file inside the target or an `--add-dir`
+  directory.
+
+Other limits, none fatal, all surprising once:
+
+- **Session names are not unique.** Two dispatches with the same `--name` both
+  succeed silently, and then neither resolves by name: `claude logs <name>`
+  reports the clash and makes you use the ids.
+- **Model and effort come from the settings**, not from the dispatching
+  conversation. Pass `--model` to override.
+- **The return channel is best-effort.** If the dispatching session has ended by
+  the time the work finishes, its `SendMessage` lands nowhere. The PR is the real
+  deliverable; the message is a convenience.
+- **No budget ceiling.** `--max-budget-usd` applies only to `--print`, so a
+  dispatched session runs until it finishes or `claude stop <id>`.
+- **Exited sessions stay in the roster** until `claude rm <id>`, so the list
+  accumulates. A reboot kills the processes; `claude respawn <id>` brings one
+  back on the current version with its conversation intact.
 
 Status, beyond `claude agents --json`, is in `~/.claude/jobs/<id>/state.json`:
 `state`, a live one-line `detail`, tokens, cwd, and the original brief as

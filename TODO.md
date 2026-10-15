@@ -16,6 +16,15 @@
 - Configure as MANPAGER for syntax-highlighted man pages
   (theme is already set in `~/.config/bat/config`)
 
+## Background sessions
+
+- `digs <topic>` sends no brief, so a terminal-launched session carries none of
+  the guards the skills add: nothing stops it merging its own PR, and nothing
+  tells it to assume rather than ask. Putting the stop-at-the-PR rule in the
+  workbench's own instructions would cover both paths with one copy, which is
+  better than giving the shell function a preamble that would then drift from
+  the skills.
+
 ## Migration leftovers
 
 - Optionally fold `expose.env` into fnox and drop the `EXPOSE_CONFIG`
