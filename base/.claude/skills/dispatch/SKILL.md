@@ -62,6 +62,11 @@ you would have to go and find:
 - where to start looking, **as pointers rather than as content you fetched**;
 - what "done" looks like.
 
+If the material is bulky (a pasted document, a transcript, a log, an error dump),
+**put it in a file** inside the target directory or a directory you pass with
+`--add-dir`, and point the brief at that path. A brief is a prompt, not an
+attachment, and the session has no other way to receive a file.
+
 **Never put a secret in a brief.** It becomes process arguments and is stored in
 `~/.claude/jobs/<id>/state.json`. Name the secret and let the session fetch it
 (`fnox get NAME`, or `fnox exec`).
@@ -76,8 +81,15 @@ Then add these lines, adjusted for the names in play:
 > actually contain rather than relying on this brief, which was written without
 > looking at them.
 >
-> Push your work and open a PR, then stop. Do not merge: David decides on the
-> content.
+> Nobody is watching this session. Do not ask questions and do not wait for an
+> answer: where something is ambiguous, pick the sensible reading, say so in what
+> you write up, and carry on. If you are truly blocked, stop and report rather
+> than sitting idle.
+>
+> Push your work and open a PR, then **stop there**. Do not merge, and do not run
+> the shipping command that merges, even where this repo's instructions say to
+> ship: David has not seen this work, because you are running detached and he was
+> not in the conversation that started you. The PR is where you hand it to him.
 >
 > When you are done or blocked, call ListAgents, then SendMessage to the session
 > named `<this session's name, from ListAgents>` with a two-line summary and the
@@ -123,6 +135,26 @@ one-line `detail`, token count, cwd, and the original brief as `intent`.
 A session whose `state` is `blocked` wants attention, often with an unsent
 prompt in its box. It is not stuck, and it is not failing; `claude attach <id>`
 and answer it.
+
+Exited sessions stay in the roster until `claude rm`, so the list accumulates.
+A reboot kills the session processes; `claude respawn <id>` restarts one on the
+current version, keeping its conversation.
+
+## Known limits
+
+- **Names are not unique.** Dispatching twice with the same `--name` is accepted
+  silently, and then neither one resolves by name: `claude logs <name>` reports
+  the clash and makes you use the ids. Do not spend a call checking, but pick a
+  distinct name when you know something is already running on the subject.
+- **Model and effort come from the settings, not from this conversation.**
+  Whatever this session is running on now does not carry over. Pass `--model` if
+  the work needs a particular one.
+- **The return channel is best-effort.** If the dispatching session has ended by
+  the time the work finishes, the `SendMessage` lands nowhere, which is why the
+  brief falls back to a push notification. Neither is guaranteed, so for work
+  that matters the PR is the real deliverable, not the message.
+- **No budget ceiling.** A dispatched session runs until it is done or stopped;
+  `--max-budget-usd` only applies to `--print`. `claude stop <id>` is the brake.
 
 ## What dispatching does to the machine
 
