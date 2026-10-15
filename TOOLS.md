@@ -402,9 +402,11 @@ It exists because of four things that are not obvious:
   of shell quoting. It is also why a brief must never contain a secret: it lands
   in the process arguments and in `~/.claude/jobs/<id>/state.json`.
 
-Two skills drive it, so work can be handed off from inside a session instead of
-from a terminal: `dispatch` for anything, `dig` for the research workbench. See
-SKILLS.md.
+Three skills drive it, so work can be handed off from inside a session instead
+of from a terminal: `dispatch` for anything, `dig` for the research workbench,
+and `dig-context` for a dig that needs the conversation it came out of. See
+SKILLS.md. From a terminal, `digs <topic>` is the same thing in one word, and
+names the session after the topic.
 
 Status, beyond `claude agents --json`, is in `~/.claude/jobs/<id>/state.json`:
 `state`, a live one-line `detail`, tokens, cwd, and the original brief as

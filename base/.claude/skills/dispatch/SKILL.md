@@ -30,6 +30,14 @@ should be dispatched in two or three steps: write the brief, launch, report. If
 you are on your fifth tool call and have not launched, you have taken the work
 over instead of handing it off, which was the opposite of the point.
 
+The distinction that matters is not fast versus thorough, it is what the session
+could find out by itself. Anything in a repo, a log or a changelog is
+**recoverable**: it reads that on arrival. What happened in this conversation is
+**unrecoverable**, and worth writing down at length: what we tried, the output we
+saw, what we ruled out and why, what David asked for in his words. Spend time
+there and nowhere else. (For a research question with a lot of that history,
+`dig-context` does exactly this into the workbench.)
+
 ## How to dispatch
 
 **1. Pick the target directory.**
