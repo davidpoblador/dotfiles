@@ -14,6 +14,22 @@ work here when it is the thing David is watching.
 Do not use this to parallelise a task you are already doing. One dispatched
 session per piece of work.
 
+## Dispatch first, do not pre-investigate
+
+**The work is the dispatched session's job, not yours.** It arrives in the target
+directory, reads that directory's instructions, and can see every path you give
+it with `--add-dir`. It does not need you to go ahead of it.
+
+So before launching: no reading the files the task is about, no grepping for
+background, no checking memories, no WebSearch, no advisor call. If you catch
+yourself learning something about the task itself, stop and launch.
+
+Whatever you believe the session needs to find out goes in the brief as **an
+instruction to go look**, not as a result you fetched for it. A cold request
+should be dispatched in two or three steps: write the brief, launch, report. If
+you are on your fifth tool call and have not launched, you have taken the work
+over instead of handing it off, which was the opposite of the point.
+
 ## How to dispatch
 
 **1. Pick the target directory.**
@@ -35,12 +51,15 @@ starts with **no context from this conversation**: it gets the brief, plus the
 target directory's own instructions, and nothing else. It cannot see what we
 have been doing, what we tried, or what David said.
 
-So the brief carries, in its own words:
+So the brief carries what **this conversation already contains**, and nothing
+you would have to go and find:
 
 - the question or task, stated so it stands alone;
-- every path, URL, id, command, version and finding from this conversation it
-  would otherwise have to rediscover;
+- paths, URLs, ids, commands, versions and findings already established here, so
+  it does not rediscover them. If the request arrived cold, there are none, and
+  the brief is correspondingly short;
 - what has already been ruled out, so it does not walk back in;
+- where to start looking, **as pointers rather than as content you fetched**;
 - what "done" looks like.
 
 **Never put a secret in a brief.** It becomes process arguments and is stored in
@@ -52,6 +71,10 @@ Then add these lines, adjusted for the names in play:
 > You are the top-level owner of this work, not a helper. Follow this repo's own
 > instructions in full, including any worktree, commit and index conventions
 > they define.
+>
+> Orient yourself before you conclude anything: read what the directories above
+> actually contain rather than relying on this brief, which was written without
+> looking at them.
 >
 > Push your work and open a PR, then stop. Do not merge: David decides on the
 > content.

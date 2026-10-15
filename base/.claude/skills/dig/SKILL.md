@@ -24,6 +24,26 @@ same work. Follow the repo's drill instead.
 Likewise, if the question is really about the code in front of us, answer it
 here. A dig is for a question with a life of its own.
 
+## Dispatch in under a minute
+
+**The investigation is the dispatched session's job, not yours.** It arrives in
+the workbench with the directories you give it and orients itself there, with
+its own context. So:
+
+- **Do not research the subject before dispatching.** No reading the files the
+  question is about, no grepping for background, no checking memories, no
+  WebSearch, no advisor call. If you catch yourself learning something about the
+  question, stop and dispatch.
+- **One lookup is allowed**: listing the workbench's digs, to find an existing
+  slug. Nothing else.
+- Anything you think the session needs to find out goes in the brief as **an
+  instruction to go look**, not as a result you fetched for it.
+
+A cold question should be dispatched in about three steps: list the digs, write
+the brief, launch. If you are on your fifth tool call and have not launched yet,
+you have taken over the dig instead of handing it off, and the point of this was
+to keep this session's context clear.
+
 ## How
 
 **1. Pick the slug.** It names the *subject*, in kebab-case, and nothing else:
@@ -45,13 +65,20 @@ read the workbench's own instructions when it gets there, so **do not restate
 them**: nothing about templates, worktrees, frontmatter, the index or how to
 commit. Those live in the repo and change there.
 
-What only this conversation knows, and the brief must carry:
+The brief carries what **this conversation already contains**, and nothing you
+would have to go and find:
 
-- the question, stated so it stands alone, in David's terms;
+- the question, stated so it stands alone, in David's words where he gave them;
 - why it came up, and what would count as an answer;
-- every URL, path, command, version, error message and dead end already found
-  here, so the session does not rediscover them;
-- the existing slug, if this is a new angle on a dig that already exists.
+- whatever we have already established here: paths, URLs, commands, versions,
+  error messages, dead ends. If the question arrived cold and we have discussed
+  nothing, this list is empty, and that is fine.
+- the existing slug, if this is a new angle on a dig that already exists;
+- where to start looking: the repos, directories and files worth reading, **as
+  pointers, not as content you fetched**.
+
+A cold question makes a short brief. Resist padding it: a long brief built from
+research you just did means you did the dig in the wrong session.
 
 **Never put a secret in a brief.** It becomes process arguments and is stored in
 `~/.claude/jobs/<id>/state.json`. Name it and let the session fetch it with
@@ -62,6 +89,10 @@ Then add these lines:
 > You are the top-level owner of this dig, not a helper. Follow the workbench's
 > own instructions in full: start the dig, manage its worktree, commit as you
 > go, and regenerate the index.
+>
+> Orient yourself before you conclude anything: read what the directories above
+> actually contain rather than relying on this brief, which was written without
+> looking at them.
 >
 > Push and open a PR, then stop. Do not merge: David decides on the content.
 >
@@ -76,8 +107,11 @@ Then add these lines:
 claude-bg-dispatch --repo digs --name <slug> --brief <brief-file>
 ```
 
-Add `--add-dir` for any directory the investigation genuinely needs to read: the
-repo that raised the question, a log directory, a checkout being compared.
+**Always pass `--add-dir` for the repo this session is standing in**, when the
+question came out of it: the dispatched session is homed in the workbench and
+cannot read that repo otherwise, and this is what replaces you reading it for
+them. Add one for any other directory the investigation needs: a sibling repo,
+a log directory, a checkout being compared.
 
 **4. Report** the id, with `claude logs <id>` / `claude attach <id>` / `claude
 stop <id>`, and go back to what this session was doing. Do not poll it; it
