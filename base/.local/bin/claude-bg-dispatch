@@ -1,0 +1,95 @@
+#!/bin/bash
+# ABOUTME: Launches a detached Claude Code session homed in a chosen directory.
+# ABOUTME: Reads the brief from a file, so a long prompt never goes through shell quoting.
+#
+# Claude Code has no flag for the working directory of a backgrounded session:
+# `claude --bg` inherits the one it was launched from, and `claude agents --cwd`
+# only filters the listing. So the target is set by launching from it, which is
+# what this wraps, along with the two things that bite:
+#
+#   - `--add-dir` is variadic, so a prompt written after it is parsed as one more
+#     directory and the session comes up idle with nothing to do. `--` ends it.
+#   - a directory that has never been opened interactively is refused as an
+#     untrusted workspace. `claude-trust-workspace` grants it, but that is a
+#     decision for a human, so this only prints the command.
+#
+# Keep this bash 3.2 clean: that is what /bin/bash is on macOS.
+set -euo pipefail
+
+usage() {
+    cat >&2 <<'USAGE'
+usage: claude-bg-dispatch --repo <path|name> --name <session-name> --brief <file>
+                          [--add-dir <path>]... [--model <model>]
+
+  --repo     where the session is homed. An existing directory is used as given,
+             so `.` means `.`; any other name is looked up under ~/repos.
+  --name     session name, used by `claude agents`, `attach` and `logs`.
+  --brief    file holding the prompt. The session starts with no context beyond
+             this file and the target's own instructions, so the brief has to
+             stand on its own. Never put a secret in it: it lands in the process
+             arguments and in ~/.claude/jobs/<id>/state.json.
+  --add-dir  extra directory the session may read. Repeatable.
+  --model    model for the session. Defaults to whatever the settings say.
+
+Prints the short id. Follow it with `claude logs <id>`, talk to it with
+`claude attach <id>`, end it with `claude stop <id>` and `claude rm <id>`.
+USAGE
+    exit 2
+}
+
+repo=""
+name=""
+brief=""
+extra=()
+passthrough=()
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --repo)    repo=${2:?--repo needs a value}; shift 2 ;;
+        --name)    name=${2:?--name needs a value}; shift 2 ;;
+        --brief)   brief=${2:?--brief needs a value}; shift 2 ;;
+        --add-dir) extra+=("${2:?--add-dir needs a value}"); shift 2 ;;
+        --model)   passthrough+=(--model "${2:?--model needs a value}"); shift 2 ;;
+        -h|--help) usage ;;
+        *)         echo "claude-bg-dispatch: unknown argument: $1" >&2; usage ;;
+    esac
+done
+
+[ -n "$repo" ] && [ -n "$name" ] && [ -n "$brief" ] || usage
+[ -f "$brief" ] || { echo "claude-bg-dispatch: no brief file at $brief" >&2; exit 1; }
+
+# An existing directory wins, so `.` and `..` mean what they say. Only a name
+# that is not a directory here is looked up as a repo under ~/repos.
+expanded=${repo/#\~/$HOME}
+if [ -d "$expanded" ]; then
+    target=$(cd "$expanded" && pwd)
+elif [ -d "$HOME/repos/$repo" ]; then
+    target=$(cd "$HOME/repos/$repo" && pwd)
+else
+    echo "claude-bg-dispatch: no directory at $repo, and no repo named $repo under ~/repos" >&2
+    exit 1
+fi
+
+prompt=$(cat "$brief")
+[ -n "${prompt//[[:space:]]/}" ] || { echo "claude-bg-dispatch: brief is empty" >&2; exit 1; }
+
+args=(--bg -n "$name")
+# ${arr+"${arr[@]}"} keeps an empty array from tripping `set -u` under bash 3.2.
+args+=(${passthrough+"${passthrough[@]}"})
+for dir in ${extra+"${extra[@]}"}; do
+    resolved=$(cd "${dir/#\~/$HOME}" 2>/dev/null && pwd) || {
+        echo "claude-bg-dispatch: no such --add-dir: $dir" >&2; exit 1; }
+    args+=(--add-dir "$resolved")
+done
+
+# `command` skips the zsh wrapper function, which appends terminal reset codes.
+out=$(cd "$target" && command claude "${args[@]}" -- "$prompt" 2>&1) || true
+
+if printf '%s' "$out" | grep -q 'not trusted'; then
+    echo "claude-bg-dispatch: $target is not a trusted workspace." >&2
+    echo "  Read what is in it, then: claude-trust-workspace $target" >&2
+    exit 3
+fi
+
+printf '%s\n' "$out"
+printf '%s' "$out" | grep -q 'backgrounded' || exit 1

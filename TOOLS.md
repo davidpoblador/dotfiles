@@ -363,6 +363,61 @@ All plugins except zsh-defer are lazy-loaded with `kind:defer`.
 | `gnb <branch>` | Checkout main, pull, create new branch |
 | `cdm` | cd to main worktree of current git repo |
 | `rep [name]` | cd to `~/repos` or `~/repos/<name>` |
+| `digs <topic>` | Start a background dig in the research workbench |
+
+
+### Background Claude sessions
+
+`claude --bg` starts a detached session that keeps working after the terminal or
+the conversation that launched it moves on. `claude agents` lists them, `claude
+attach <id>` opens one, `claude logs <id>` shows its recent output, and `claude
+stop` / `claude rm` end and delete it.
+
+The point of dispatching work this way is that the research or the build happens
+in its own context, so it never crowds out the session that asked for it.
+
+`claude-bg-dispatch` (in `base/.local/bin`) wraps the launch:
+
+```bash
+claude-bg-dispatch --repo <path|name> --name <session-name> --brief <file> [--add-dir <path>]
+```
+
+It exists because of four things that are not obvious:
+
+- **There is no flag for the working directory.** A backgrounded session
+  inherits the directory it was launched from, and `claude agents --cwd` only
+  filters the listing. So the target is set by launching from it. The session
+  then loads *that* directory's project instructions, not the caller's.
+- **`--add-dir` is variadic**, so a prompt written after it is parsed as one
+  more directory. The session comes up correctly homed and completely idle,
+  which the launch line reports as `(idle — send a prompt to start)`. A `--`
+  before the prompt ends the list.
+- **The target must be a trusted workspace.** A directory never opened
+  interactively is refused outright. Trust resolves through the containing git
+  repository, so a nested repo inside a trusted one needs its own grant;
+  `claude-trust-workspace <path>` gives it without the dialog.
+- **The brief goes in a file.** A real brief is several paragraphs, and a
+  dispatched session starts with no context beyond the brief and the target's
+  own instructions, so it has to be self-contained. A file keeps all of that out
+  of shell quoting. It is also why a brief must never contain a secret: it lands
+  in the process arguments and in `~/.claude/jobs/<id>/state.json`.
+
+Two skills drive it, so work can be handed off from inside a session instead of
+from a terminal: `dispatch` for anything, `dig` for the research workbench. See
+SKILLS.md.
+
+Status, beyond `claude agents --json`, is in `~/.claude/jobs/<id>/state.json`:
+`state`, a live one-line `detail`, tokens, cwd, and the original brief as
+`intent`. A `state` of `blocked` means the session wants attention, commonly an
+unsent prompt in its box, not that it has failed.
+
+The first dispatch after a reboot starts the per-user supervisor daemon, which
+adopts the background sessions already running and respawns stale ones onto the
+current Claude Code version. That restarts those processes, though their
+conversations survive. The daemon is spawned by the dispatching session's own
+`claude` process rather than by a tool subshell, so it runs from `$HOME` with a
+clean environment, and the session hosts it supervises are reparented to `init`,
+which is how a fresh daemon adopts them.
 
 
 ### Browser automation setup
