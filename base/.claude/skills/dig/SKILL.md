@@ -34,29 +34,33 @@ its own context. So:
   question is about, no grepping for background, no checking memories, no
   WebSearch, no advisor call. If you catch yourself learning something about the
   question, stop and dispatch.
-- **One lookup is allowed**: listing the workbench's digs, to find an existing
-  slug. Nothing else.
+- **Do not look up whether a dig already exists either.** The session lands in
+  the workbench and can check its own `notes/` in its first step, which the
+  brief tells it to do. You cannot check it faster than it can.
 - Anything you think the session needs to find out goes in the brief as **an
   instruction to go look**, not as a result you fetched for it.
 
-A cold question should be dispatched in about three steps: list the digs, write
-the brief, launch. If you are on your fifth tool call and have not launched yet,
-you have taken over the dig instead of handing it off, and the point of this was
-to keep this session's context clear.
+A cold question is two steps: write the brief, launch. If you have made a third
+tool call without launching, you have taken over the dig instead of handing it
+off, and the point of this was to keep this session's context clear.
 
 ## How
 
 **1. Pick the slug.** It names the *subject*, in kebab-case, and nothing else:
 no date, no status, no "new" or "v2" (`dns-resolution-timeouts`, not
 `2026-01-02-dns-bug`). A dig is a living thing David returns to, so its path has
-to stay stable. Check what already exists first:
+to stay stable.
 
-```bash
-ls ~/repos/digs/notes
-```
+You are naming it blind, which is fine: the slug you pick is the session's name
+and its starting point, and the brief tells the session to check `notes/` for an
+existing dig on the subject and use **that** slug if it finds one. Say in the
+brief which slug you guessed, so the difference is visible later.
 
-If a dig on the subject is already there, the work is a **new angle on that
-dig**, not a new one. Say so in the brief and use the existing slug.
+Do not spend a tool call checking for a name clash. But if you already know a
+session is running on this subject, pick a distinct name: duplicate names are
+accepted silently, and then `claude logs` and `claude attach` cannot resolve
+either one by name, and two sessions on one slug would fight over the same
+worktree.
 
 **2. Write the brief to a file** in your scratchpad directory.
 
@@ -92,9 +96,20 @@ Then add these lines:
 >
 > Orient yourself before you conclude anything: read what the directories above
 > actually contain rather than relying on this brief, which was written without
-> looking at them.
+> looking at them. Start by checking `notes/` for an existing dig on this
+> subject: if there is one, this is a new angle on it, so use its slug and add a
+> log entry rather than starting a second dig.
 >
-> Push and open a PR, then stop. Do not merge: David decides on the content.
+> Push and open a PR, then **stop there**. Do not merge, and do not run the
+> shipping command that merges. The workbench's rule is that work David has seen
+> and is happy with can be merged; he has not seen this, because you are running
+> detached and he was not in the conversation that started you. The PR is where
+> you hand it to him.
+>
+> Nobody is watching this session. Do not ask questions and do not wait for an
+> answer: where something is ambiguous, pick the sensible reading, say so in the
+> writeup, and carry on. If you are truly blocked, stop and report rather than
+> sitting idle.
 >
 > When you are done or blocked, call ListAgents, then SendMessage to the session
 > named `<this session's name, from ListAgents>` with a two-line summary and the
