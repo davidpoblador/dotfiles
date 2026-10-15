@@ -1,8 +1,16 @@
-exclude-newer = "2 days"
-
-[exclude-newer-package]
-vibetuner = false
-# Build backends must resolve or the project cannot build at all, which breaks
-# `uv run` and every pre-commit hook behind it. A fresh release is unavailable
-# for two days under the cutoff above, so exempt it.
-uv-build = false
+# Deliberately free of resolver settings.
+#
+# Do not set `exclude-newer` here. It is a resolution input, so uv records it,
+# and any `[exclude-newer-package]` exemptions, into the `[options]` block of
+# every project's uv.lock. `uv run` in an unrelated repo then re-resolves and
+# rewrites that committed lockfile on every invocation, and the exemption names
+# leak into public repos.
+#
+# It cannot be scoped to a project instead: uv honours `exclude-newer` only from
+# user config, `--exclude-newer` and `UV_EXCLUDE_NEWER`. Set in a project's
+# `pyproject.toml [tool.uv]` or `uv.toml`, it is silently ignored (uv 0.13).
+#
+# For a release cooldown, use Renovate's `minimumReleaseAge` in the repo that
+# wants one: Renovate resolves in CI and never reads this file, so a cutoff here
+# never covered the updates that actually land. For a one-off, pass
+# `--exclude-newer` on the command line.
