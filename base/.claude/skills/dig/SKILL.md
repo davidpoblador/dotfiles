@@ -24,6 +24,13 @@ same work. Follow the repo's drill instead.
 Likewise, if the question is really about the code in front of us, answer it
 here. A dig is for a question with a life of its own.
 
+**If the question only makes sense given what this conversation has already
+done** — what we tried, what broke, what we ruled out — use `dig-context`
+instead. That one hands the session a written record of all this, and is allowed
+to take the time to write it. This skill assumes there is nothing here worth
+carrying, which is right for a question asked cold and wrong the moment we have
+been debugging something together.
+
 ## Dispatch in under a minute
 
 **The investigation is the dispatched session's job, not yours.** It arrives in

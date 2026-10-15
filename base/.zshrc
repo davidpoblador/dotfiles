@@ -426,8 +426,21 @@ rc() {
 
 # Launch a background dig exploration in the digs workbench; topic inline
 digs() {
+    if [[ -z "${*//[[:space:]]/}" ]]; then
+        echo "usage: digs <topic>" >&2
+        return 2
+    fi
+
+    # Name the session after the topic, kebab-cased: an unnamed background
+    # session gets a generated name, which `claude agents`, `attach` and `logs`
+    # then make you match by id instead of by subject.
+    local name="${${(L)*}//[^a-z0-9]/-}"      # lowercase, non-alphanumerics to -
+    name="${(j:-:)${(s:-:)name}}"             # collapse runs of -, drop leading/trailing
+    name="${name[1,48]}"
+    name="${name%-}"
+
     ( cd ~/repos/digs 2>/dev/null || { echo "digs: ~/repos/digs not found" >&2; exit 1; }
-      claude --bg "$*" )
+      claude --bg -n "${name:-dig}" -- "$*" )
 }
 
 # GitHub

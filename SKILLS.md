@@ -147,19 +147,27 @@ so installing one of those on top would load the skill twice.
 Personal workflow skills, kept in `base/.claude/skills/<name>/SKILL.md` and
 symlinked into `~/.claude/skills/` by `mise dotfiles apply` like any other
 dotfile. Nothing to install: they are live on every machine this repo
-converges. They are Claude Code only, because both drive `claude --bg`, so they
+converges. They are Claude Code only, because they drive `claude --bg`, so they
 are not mirrored into `~/.agents/skills`.
 
 | Skill | Does |
 |---|---|
 | `dispatch` | Hands a piece of work to a detached background session homed in a chosen directory, so it runs outside the calling session's context |
 | `dig` | Starts an investigation in the research workbench at `~/repos/digs` as a background session. Declines to fire when the session is already inside that repo, where the repo's own instructions take over |
+| `dig-context` | The same, for a question that only makes sense given the conversation it came out of: writes that history to a `context.md` the session reads, copies into the dig and cites |
 
-Both write the prompt to a file and launch it with `claude-bg-dispatch`; the
+All three write the prompt to a file and launch it with `claude-bg-dispatch`; the
 mechanics, and the traps that wrapper exists for, are in TOOLS.md under
-*Background Claude sessions*. Neither restates the conventions of the repo it
-dispatches into: a dispatched session reads those on arrival, and keeping one
+*Background Claude sessions*. None of them restates the conventions of the repo
+it dispatches into: a dispatched session reads those on arrival, and keeping one
 copy of them is the whole point.
+
+The split between `dig` and `dig-context` is **what the dispatched session could
+find out by itself**. Repos, logs and changelogs are recoverable, and it reads
+them faster than a caller can fetch them. A conversation is not: once the
+session that held it ends, what was tried and ruled out is gone. So the default
+is to dispatch immediately and let it read, and the exception is to spend real
+time writing down only what would otherwise be lost.
 
 ## Documented, not installed by default
 
