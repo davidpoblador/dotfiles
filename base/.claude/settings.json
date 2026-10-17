@@ -7,7 +7,6 @@
     "pr": "",
     "sessionUrl": false
   },
-  "advisorModel": "opus",
   "permissions": {
     "allow": [
       "Skill(frontend-design:frontend-design)",
@@ -164,18 +163,18 @@
         "hooks": [
           {
             "type": "command",
-            "if": "Bash(git *)",
-            "command": "~/.claude/hooks/pr-flow-guard.sh"
+            "command": "~/.claude/hooks/pr-flow-guard.sh",
+            "if": "Bash(git *)"
           },
           {
             "type": "command",
-            "if": "Bash(/usr/bin/git *)",
-            "command": "~/.claude/hooks/pr-flow-guard.sh"
+            "command": "~/.claude/hooks/pr-flow-guard.sh",
+            "if": "Bash(/usr/bin/git *)"
           },
           {
             "type": "command",
-            "if": "Bash(gh pr merge *)",
-            "command": "~/.claude/hooks/pr-flow-guard.sh"
+            "command": "~/.claude/hooks/pr-flow-guard.sh",
+            "if": "Bash(gh pr merge *)"
           }
         ]
       }
@@ -272,6 +271,7 @@
     }
   },
   "alwaysThinkingEnabled": true,
+  "advisorModel": "opus",
   "tui": "fullscreen",
   "voice": {
     "enabled": true,
@@ -280,8 +280,10 @@
   "showThinkingSummaries": true,
   "skipDangerousModePermissionPrompt": true,
   "skipWorkflowUsageWarning": true,
+  "switchModelsOnFlag": false,
   "remoteControlAtStartup": true,
   "inputNeededNotifEnabled": true,
   "agentPushNotifEnabled": true,
-  "skipAutoPermissionPrompt": true
+  "skipAutoPermissionPrompt": true,
+  "model": "claude-opus-5"
 }
