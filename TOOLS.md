@@ -516,3 +516,23 @@ integration drives, so both stacks share state and there's only one window. The
 last two args only apply when the server launches Chrome itself, so under
 `--autoConnect` they're inert; they're kept as a fallback for the launch path,
 where the `--chromeArg` is load-bearing for `navigator.webdriver`.
+
+### MCP servers
+
+User-scope servers live in `~/.claude.json` under `mcpServers`. That file is
+machine-local and not tracked here (Claude Code rewrites it constantly, and it
+holds the account identity), so each server is added per machine with
+`claude mcp add`. The tracked `~/.claude/settings.json` is not an alternative
+home: the only settings key that defines servers is `managedMcpServers`, which
+is enterprise-managed-settings only.
+
+```sh
+claude mcp add -s user --transport http superlogical https://www.superlogical.com/rex/community-mcp
+```
+
+Superlogical is OAuth-gated, so after adding it run `/mcp` in a session on that
+machine and authenticate; the tools stay behind an `authenticate` call until
+you do. The token is per machine, like the config.
+
+`chrome-devtools` is the other server worth reproducing everywhere; its entry
+and flags are in the Chrome DevTools MCP section above.
