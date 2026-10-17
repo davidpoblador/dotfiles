@@ -522,9 +522,14 @@ where the `--chromeArg` is load-bearing for `navigator.webdriver`.
 User-scope servers live in `~/.claude.json` under `mcpServers`. That file is
 machine-local and not tracked here (Claude Code rewrites it constantly, and it
 holds the account identity), so each server is added per machine with
-`claude mcp add`. The tracked `~/.claude/settings.json` is not an alternative
-home: the only settings key that defines servers is `managedMcpServers`, which
-is enterprise-managed-settings only.
+`claude mcp add`. A `mcpServers` key in the tracked `~/.claude/settings.json`
+does nothing; `managedMcpServers` is the only settings key that defines
+servers, and it works in enterprise-managed settings only.
+
+The tracked route is a plugin: a plugin ships a plain `.mcp.json` at its root
+(`{"mcpServers": {…}}`, same shape as above), so enabling it in
+`enabledPlugins` gives every machine its servers on install. That is where the
+cloudflare and resend servers come from. OAuth stays per machine either way.
 
 ```sh
 claude mcp add -s user --transport http superlogical https://www.superlogical.com/rex/community-mcp
