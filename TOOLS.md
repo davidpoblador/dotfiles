@@ -528,8 +528,8 @@ session (`sudo: a terminal is required to read the password`) — install it fro
 a real terminal on the machine. Background maintenance never trips over this:
 `dotfiles-maintain` upgrades formulae only.
 
-Two steps follow the install, both needing the same password, so both are
-local-terminal only:
+Two steps follow the install. `--enable` also wants the password, so it is
+local-terminal only; the `add-json` works fine over ssh.
 
 ```sh
 /Applications/Safari\ Technology\ Preview.app/Contents/MacOS/safaridriver --enable
@@ -537,9 +537,13 @@ claude mcp add-json -s user safari-mcp-stp '{"type":"stdio","command":"/Applicat
 ```
 
 `--enable` ticks "Enable Remote Automation" in the Develop menu, which is what
-lets later WebDriver sessions start without authenticating each time.
-Reinstalling STP over a running server is safe: the pkg upgrades in place and
-the MCP server reconnects.
+lets later WebDriver sessions start without authenticating each time. STP's own
+`safaridriver` carries both `--enable` and `--mcp`; the system one at
+`/usr/bin/safaridriver` has `--enable` but no `--mcp`.
+
+Upgrading STP in place is safe for the config: a server started after the pkg
+upgrade connects normally. Sessions holding an open safaridriver still need a
+restart to pick the new binary up.
 
 ### MCP servers
 
