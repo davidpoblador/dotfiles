@@ -217,7 +217,8 @@ steps for both Chrome stacks are in `TOOLS.md` in the dotfiles repo.
 ### Safari
 
 `safaridriver --mcp` exists only in Safari Technology Preview. Stable Safari's
-`safaridriver` has no `--mcp`, so the STP path in the config is required.
+`safaridriver` has no `--mcp`, so the STP path in the config is required. Its
+install and the one-time `safaridriver --enable` are in `TOOLS.md` too.
 
 ## Code Intelligence
 
