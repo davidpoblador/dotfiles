@@ -27,3 +27,8 @@ export HOMEBREW_CASK_OPTS="--no-quarantine"
 # expose: config lives in synced secrets (server hostname is private).
 # The script falls back to ~/.config/expose.env when this is unset.
 export EXPOSE_CONFIG="$HOME/sync/secrets/expose.env"
+
+# Opt out of wrangler telemetry. The env var is the only durable place for
+# this: wrangler owns ~/.config/.wrangler/metrics.json and rewrites it,
+# so a tracked opt-out there gets flipped back on.
+export WRANGLER_SEND_METRICS=false
