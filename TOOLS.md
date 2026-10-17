@@ -517,6 +517,30 @@ last two args only apply when the server launches Chrome itself, so under
 `--autoConnect` they're inert; they're kept as a fallback for the launch path,
 where the `--chromeArg` is load-bearing for `navigator.webdriver`.
 
+#### Safari Technology Preview
+
+`safaridriver --mcp` exists only in Safari Technology Preview; stable Safari's
+`safaridriver` has no such flag. STP comes from the declared
+`brew-cask:safari-technology-preview`, which is a pkg installer rather than an
+app bundle, so it runs `/usr/sbin/installer` under `sudo` and prompts for a
+password. That means `mise bootstrap` cannot converge it over a plain ssh
+session (`sudo: a terminal is required to read the password`) — install it from
+a real terminal on the machine. Background maintenance never trips over this:
+`dotfiles-maintain` upgrades formulae only.
+
+Two steps follow the install, both needing the same password, so both are
+local-terminal only:
+
+```sh
+/Applications/Safari\ Technology\ Preview.app/Contents/MacOS/safaridriver --enable
+claude mcp add-json -s user safari-mcp-stp '{"type":"stdio","command":"/Applications/Safari Technology Preview.app/Contents/MacOS/safaridriver","args":["--mcp"]}'
+```
+
+`--enable` ticks "Enable Remote Automation" in the Develop menu, which is what
+lets later WebDriver sessions start without authenticating each time.
+Reinstalling STP over a running server is safe: the pkg upgrades in place and
+the MCP server reconnects.
+
 ### MCP servers
 
 User-scope servers live in `~/.claude.json` under `mcpServers`. That file is
@@ -539,5 +563,5 @@ Superlogical is OAuth-gated, so after adding it run `/mcp` in a session on that
 machine and authenticate; the tools stay behind an `authenticate` call until
 you do. The token is per machine, like the config.
 
-`chrome-devtools` is the other server worth reproducing everywhere; its entry
-and flags are in the Chrome DevTools MCP section above.
+The other servers worth having on every dev machine are `chrome-devtools` and
+`safari-mcp-stp`; their entries and setup are in the two sections above.

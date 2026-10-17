@@ -106,6 +106,9 @@
 "brew-cask:obsidian" = "latest"                      # knowledge base
 "brew-cask:raycast" = "latest"                       # launcher
 "brew-cask:responsively" = "latest"                  # multi-viewport browser for responsive dev
+# A pkg installer, not an app bundle: it prompts for sudo, so it cannot be
+# installed over a plain ssh session (see TOOLS.md)
+"brew-cask:safari-technology-preview" = "latest"     # the only Safari with `safaridriver --mcp`
 "brew-cask:vlc" = "latest"                           # media player
 
 #
