@@ -174,14 +174,15 @@ shows up here, and that is a different problem with a different answer.
 
 ### Installed outside Homebrew and mise
 
-Each of these has its own installer wired into a `run_` script or `.zshrc`.
+Most of these have their own installer wired into a `run_` script or `.zshrc`;
+Rex is a plain manual download.
 
 | Tool | Install method | Description |
 |---|---|---|
 | mise | curl (`mise.jdx.dev`) | Dev tool version manager |
 | antidote | mise bootstrap (git repo) | Zsh plugin manager |
 | alltuner | uv tool via bootstrap task | Internal CLI from `alltuner/infrastructure` |
-| Rex | Download from Superlogical | Terminal multiplexer and the terminal itself (see below) |
+| Rex | Manual download (Superlogical) | Terminal multiplexer and the terminal itself (see below) |
 
 ### Mise-managed dev tools
 
@@ -551,8 +552,8 @@ Rex has no Homebrew cask, so it cannot go in `[bootstrap.packages]` and a fresh
 mac needs these three steps by hand. (`brew info rex` is Rexify, an unrelated
 Perl tool. Don't install it.)
 
-1. Install **Rex Beta.app** from Superlogical into `/Applications`. The app
-   bundles its own server under
+1. Install **Rex Beta.app** from Superlogical into `/Applications` (no public
+   download URL to record here yet). The app bundles its own server under
    `~/Library/Application Support/com.superlogical.rex/RexServer/Versions/<n>/`
    and updates itself, so there is nothing to pin.
 2. `rex skill setup` — installs the agent skill and the SessionStart hook into
