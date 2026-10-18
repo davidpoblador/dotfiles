@@ -157,11 +157,13 @@ vimcmd_replace_one_symbol = '[▶](bold fg:color_purple)'
 vimcmd_replace_symbol = '[▶](bold fg:color_purple)'
 vimcmd_visual_symbol = '[▶](bold fg:color_yellow)'
 
+# Always on, not just over ssh: a Rex session can be hosted on any of the macs,
+# and the host name is what says which one a shell is actually running on.
 [hostname]
-ssh_only = true
+ssh_only = false
 style = "bg:color_orange fg:color_fg0"
-ssh_symbol = "󰖟"
-format = "[@$hostname $ssh_symbol ]($style)"
+ssh_symbol = "󰖟 "
+format = "[@$hostname $ssh_symbol]($style)"
 trim_at = "."
 
 # AWS Cloud Context
