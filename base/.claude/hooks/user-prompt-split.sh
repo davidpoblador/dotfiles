@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# ABOUTME: UserPromptSubmit hook — when the prompt is `:t`, opens a Ghostty
-# ABOUTME: split-right at the agent's cwd and blocks the LLM turn.
+# ABOUTME: UserPromptSubmit hook — when the prompt is `:t`, splits the agent's
+# ABOUTME: Rex block to the right at the agent's cwd and blocks the LLM turn.
 set -euo pipefail
 
 INPUT=$(cat)
@@ -26,9 +26,19 @@ if [ -z "$CWD" ] || [ ! -d "$CWD" ]; then
 	exit 0
 fi
 
-"$(dirname "$0")/split-pane.sh" "$CWD" 2>>"$LOGFILE" || {
+# Rex sets these in the terminal it hands the agent. Without them there is no
+# block to split, and bare `rex` would autostart a server instead of saying so.
+if [ -z "${REX_SESSION:-}" ] || [ -z "${REX_BLOCK:-}" ]; then
+	log_quiet "  WARN: not a Rex terminal (REX_SESSION/REX_BLOCK unset)"
+	jq -nc '{decision: "block", reason: "split-pane: not a Rex terminal"}'
+	exit 0
+fi
+
+# stdout is the hook's decision channel, so rex's creation report goes nowhere.
+# -c sets the new shell's cwd outright, so this path needs no OSC 7 tracking.
+rex split -s "$REX_SESSION" -b "$REX_BLOCK" -c "$CWD" >/dev/null 2>>"$LOGFILE" || {
 	rc=$?
-	log_quiet "  split-pane failed (exit $rc)"
+	log_quiet "  rex split failed (exit $rc)"
 	jq -nc '{decision: "block", reason: "split-pane: failed (see log)"}'
 	exit 0
 }

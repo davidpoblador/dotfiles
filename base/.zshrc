@@ -552,14 +552,15 @@ reset-term() {
     stty sane 2>/dev/null
 }
 
-# Ghostty occasionally doesn't receive the keyboard-mode pop on `claude` exit.
+# Run reset-term after claude exits: it can leave mouse reporting, bracketed
+# paste, the keyboard mode and the cursor shape still set.
 #
 # Capture this shell's tty path and pass it down as CLAUDE_INVOKER_TTY.
 # Detached agent-team teammates spawned by claude have no controlling tty
 # of their own, so hooks running under them can't write OSC sequences to
 # /dev/tty (those writes silently no-op). The hooks fall back to
-# $CLAUDE_INVOKER_TTY to reach the user's actual terminal — e.g. so
-# WorktreeCreate can update Ghostty's OSC 7 cwd tracking.
+# $CLAUDE_INVOKER_TTY to reach the user's actual terminal, which is how
+# cwd-changed-osc7.sh keeps Rex's tracked pwd on the agent's cwd.
 if command_exists claude; then
   claude() {
       local tty_path
