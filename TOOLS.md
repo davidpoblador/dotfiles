@@ -573,8 +573,6 @@ What the dotfiles contribute on top:
 
 - `dev/.ssh/config` includes `~/.config/rex/ssh_config` (Rex-owned, holds the
   per-host records) and downgrades TERM for everything Rex has no record of.
-- `base/.claude/hooks/user-prompt-split.sh` makes `:t` split the agent's own
-  block at its cwd via `rex split`.
 
 `~/.config/rex/` holds Rex's state: `ssh_config`, `terminfo-hosts`, and
 `init.lua` once there are keybindings to set (`rex config check` validates it,
