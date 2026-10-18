@@ -573,9 +573,6 @@ What the dotfiles contribute on top:
 
 - `dev/.ssh/config` includes `~/.config/rex/ssh_config` (Rex-owned, holds the
   per-host records) and downgrades TERM for everything Rex has no record of.
-- `base/.claude/hooks/cwd-changed-osc7.sh` emits OSC 7 so Rex tracks the agent's
-  working directory; Rex's own pane splits then open in it. Rex keeps only the
-  path and ignores the host field.
 - `base/.claude/hooks/user-prompt-split.sh` makes `:t` split the agent's own
   block at its cwd via `rex split`.
 
