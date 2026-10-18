@@ -142,17 +142,16 @@ setopt APPEND_HISTORY
 # Source cargo env first so mise activate can prepend shims over cargo/bin
 [[ -f "$HOME/.cargo/env" ]] && source "$HOME/.cargo/env"
 
-# Cache `mise activate zsh` output; regenerate when mise binary changes.
+# `mise activate zsh` embeds the PATH of the shell that generates it, so unlike
+# the tools below its output cannot be cached: a cached copy replays one shell's
+# PATH into every later shell, dropping whatever the terminal put there and
+# keeping entries for tools long since removed. Generating it costs ~10ms.
 _mise_bin=$(command -v mise 2>/dev/null)
 [[ -z "$_mise_bin" && -x "$HOME/.local/bin/mise" ]] && _mise_bin="$HOME/.local/bin/mise"
 if [[ -n "$_mise_bin" ]]; then
-  ensure_dir_exists "${XDG_CACHE_HOME}/zsh"
-  _mise_cache="${XDG_CACHE_HOME}/zsh/mise-activate.zsh"
-  [[ ! -s "$_mise_cache" || "$_mise_bin" -nt "$_mise_cache" ]] && \
-    "$_mise_bin" activate zsh > "$_mise_cache"
-  source "$_mise_cache"
+  eval "$("$_mise_bin" activate zsh)"
 fi
-unset _mise_bin _mise_cache
+unset _mise_bin
 
 # Authenticate GitHub API calls (mise, gh extension installs, etc.) to avoid
 # the 60/hour unauthenticated rate limit. Runs after mise activate so that a
@@ -274,15 +273,6 @@ setopt NO_EQUALS
 ###########################################################
 # Final PATH Adjustments                                  #
 ###########################################################
-
-# Rex puts $REX_BIN_DIR on PATH itself, but mise's hook-env rebuilds PATH from
-# the __MISE_ORIG_PATH that Rex's captured environment carries from before that,
-# so the entry is gone by the end of .zshrc. Re-adding it here keeps `rex` in the
-# shell Rex hands you, and in the agent hooks that inherit its PATH. The path is
-# version-stamped, so it follows Rex's updates.
-if [[ -n "$REX_BIN_DIR" && -d "$REX_BIN_DIR" ]]; then
-  add_to_path "$REX_BIN_DIR"
-fi
 
 # Remove duplicate PATH entries
 typeset -U PATH

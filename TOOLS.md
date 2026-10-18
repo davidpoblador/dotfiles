@@ -571,10 +571,6 @@ files and Codex's `~/.codex/hooks.json` do not, because Rex rewrites them.
 
 What the dotfiles contribute on top:
 
-- `base/.zshrc` re-adds `$REX_BIN_DIR` to `PATH`. Rex puts it there itself, but
-  mise's hook-env rebuilds `PATH` from an `__MISE_ORIG_PATH` that Rex's captured
-  environment carries from before Rex added it, so without this `rex` is missing
-  from the shell Rex hands you.
 - `dev/.ssh/config` includes `~/.config/rex/ssh_config` (Rex-owned, holds the
   per-host records) and downgrades TERM for everything Rex has no record of.
 - `base/.claude/hooks/cwd-changed-osc7.sh` emits OSC 7 so Rex tracks the agent's
