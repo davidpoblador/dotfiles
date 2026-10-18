@@ -117,16 +117,6 @@
         ]
       }
     ],
-    "UserPromptSubmit": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/user-prompt-split.sh"
-          }
-        ]
-      }
-    ],
     "SubagentStart": [
       {
         "hooks": [
