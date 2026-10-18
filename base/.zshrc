@@ -551,8 +551,8 @@ reset-term() {
 # Detached agent-team teammates spawned by claude have no controlling tty
 # of their own, so hooks running under them can't write OSC sequences to
 # /dev/tty (those writes silently no-op). The hooks fall back to
-# $CLAUDE_INVOKER_TTY to reach the user's actual terminal, which is how
-# cwd-changed-osc7.sh keeps Rex's tracked pwd on the agent's cwd.
+# $CLAUDE_INVOKER_TTY to reach the user's actual terminal, which is where
+# _common.sh sends hook output when HOOK_DEBUG=1.
 if command_exists claude; then
   claude() {
       local tty_path
