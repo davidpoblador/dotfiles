@@ -275,6 +275,15 @@ setopt NO_EQUALS
 # Final PATH Adjustments                                  #
 ###########################################################
 
+# Rex puts $REX_BIN_DIR on PATH itself, but mise's hook-env rebuilds PATH from
+# the __MISE_ORIG_PATH that Rex's captured environment carries from before that,
+# so the entry is gone by the end of .zshrc. Re-adding it here keeps `rex` in the
+# shell Rex hands you, and in the agent hooks that inherit its PATH. The path is
+# version-stamped, so it follows Rex's updates.
+if [[ -n "$REX_BIN_DIR" && -d "$REX_BIN_DIR" ]]; then
+  add_to_path "$REX_BIN_DIR"
+fi
+
 # Remove duplicate PATH entries
 typeset -U PATH
 
