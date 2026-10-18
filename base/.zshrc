@@ -544,17 +544,20 @@ reset-term() {
     stty sane 2>/dev/null
 }
 
-# A crash or kill leaves claude's mouse reporting and kitty keyboard protocol
-# switched on, and nothing else turns them back off. A graceful exit needs none
-# of this, but there is no way to tell the two apart, so reset either way.
-if command_exists claude; then
-  claude() {
-      command claude "$@"
-      local rc=$?
-      reset-term
-      return $rc
-  }
-fi
+# A program killed before it could restore the terminal leaves its input modes
+# switched on, and nothing else turns them back off: mouse events then arrive as
+# stray `0;120;45M`, the keyboard protocol as `[>1u`. Clearing them before each
+# prompt covers whatever died, rather than one program that needed a wrapper.
+#
+# Deliberately narrower than reset-term: zle re-enables bracketed paste at
+# line-init anyway, resetting the cursor shape here would fight vi mode, and
+# application cursor keys (?1) are zle's to set after this runs.
+clear-leaked-term-modes() {
+    [[ -t 1 ]] || return
+    printf '\e[?1000l\e[?1002l\e[?1003l\e[?1006l\e[?1015l\e[?1004l\e[<u\e[?25h'
+}
+autoload -Uz add-zsh-hook
+add-zsh-hook precmd clear-leaked-term-modes
 
 # Report slow interactive startup; zbench measures on demand
 if [[ -n "${_shell_t0:-}" ]]; then
