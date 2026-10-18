@@ -85,7 +85,7 @@ worktree path.
 | `.zshrc`, `.zsh_plugins.txt` | Shell config, plugins (antidote + zsh-defer) |
 | `.config/mise/config.toml` | Global tools: bun, go, uv, ripgrep, etc. (+ `config.dev.toml`: rust, ruff, claude, …) |
 | `.config/starship-{dev,prod}.toml` | Prompt (per profile) |
-| `.config/ghostty/`, `.config/tmux/` | Terminal |
+| `.config/tmux/` | Terminal multiplexer |
 | `.config/git/`, `.gitignore_global` | Git config |
 | `.config/gh/` | GitHub CLI |
 | `.config/bat/`, `.config/lazygit/` | CLI tools |

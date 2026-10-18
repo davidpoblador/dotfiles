@@ -10,7 +10,6 @@
 "brew:tmux" = "latest"
 "brew:zsh-completions" = "latest"
 "brew:zsh-syntax-highlighting" = "latest"
-"brew-cask:ghostty" = "latest"               # terminal emulator
 
 #
 # Everyday CLI utilities
@@ -136,7 +135,6 @@ login_shell = "/bin/zsh"
 "~/Library/Developer/Xcode/UserData/FontAndColorThemes" = { source = "dev/Library/Developer/Xcode/UserData/FontAndColorThemes", mode = "symlink-each" }
 "~/.config/broot" = { source = "dev/.config/broot", mode = "symlink-each" }
 "~/.config/fnox" = { source = "dev/.config/fnox", mode = "symlink-each" }
-"~/.config/ghostty" = { source = "dev/.config/ghostty", mode = "symlink-each" }
 "~/.config/opencode" = { source = "dev/.config/opencode", mode = "symlink-each" }
 "~/.config/sc-im" = { source = "dev/.config/sc-im", mode = "symlink-each" }
 "~/.config/silicon" = { source = "dev/.config/silicon", mode = "symlink-each" }

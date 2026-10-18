@@ -15,7 +15,6 @@ brew:<name>` (or `brew-cask:`) after checking `brew info <name>`; remove with
 | tmux | Terminal multiplexer |
 | zsh-completions | Additional zsh completions |
 | zsh-syntax-highlighting | Syntax highlighting for zsh |
-| ghostty | Terminal emulator (cask) |
 
 #### Everyday CLI utilities
 
@@ -182,6 +181,7 @@ Each of these has its own installer wired into a `run_` script or `.zshrc`.
 | mise | curl (`mise.jdx.dev`) | Dev tool version manager |
 | antidote | mise bootstrap (git repo) | Zsh plugin manager |
 | alltuner | uv tool via bootstrap task | Internal CLI from `alltuner/infrastructure` |
+| Rex | Download from Superlogical | Terminal multiplexer and the terminal itself (see below) |
 
 ### Mise-managed dev tools
 
@@ -544,6 +544,46 @@ lets later WebDriver sessions start without authenticating each time. STP's own
 Upgrading STP in place is safe for the config: a server started after the pkg
 upgrade connects normally. Sessions holding an open safaridriver still need a
 restart to pick the new binary up.
+
+### Rex setup
+
+Rex has no Homebrew cask, so it cannot go in `[bootstrap.packages]` and a fresh
+mac needs these three steps by hand. (`brew info rex` is Rexify, an unrelated
+Perl tool. Don't install it.)
+
+1. Install **Rex Beta.app** from Superlogical into `/Applications`. The app
+   bundles its own server under
+   `~/Library/Application Support/com.superlogical.rex/RexServer/Versions/<n>/`
+   and updates itself, so there is nothing to pin.
+2. `rex skill setup` — installs the agent skill and the SessionStart hook into
+   every agent it finds (Claude Code, Codex, OpenCode, Pi). Both are generated
+   from `rex __internal skill` on each use, so upgrading Rex updates what agents
+   are told. `rex skill status` reports what is installed.
+3. `rex terminfo setup` — installs the `xterm-rex` terminfo entry and the per-host
+   ssh guard. `rex terminfo host` adds the entry to a remote machine; `rex terminfo
+   status` reports what TERM a new terminal would get.
+
+Only the Claude Code half of step 2 is tracked here: the SessionStart hook line
+in `base/.claude/settings.json` arrives with the dotfiles, so Claude Code knows
+its Rex session on a fresh machine before `rex skill setup` ever runs. The skill
+files and Codex's `~/.codex/hooks.json` do not, because Rex rewrites them.
+
+What the dotfiles contribute on top:
+
+- `base/.zshrc` puts `$REX_BIN_DIR` on `PATH`. Rex exports the variable in its
+  own terminals but does not put the CLI there, so without this `rex` is missing
+  from the shell Rex hands you.
+- `dev/.ssh/config` includes `~/.config/rex/ssh_config` (Rex-owned, holds the
+  per-host records) and downgrades TERM for everything Rex has no record of.
+- `base/.claude/hooks/cwd-changed-osc7.sh` emits OSC 7 so Rex tracks the agent's
+  working directory; Rex's own pane splits then open in it. Rex keeps only the
+  path and ignores the host field.
+- `base/.claude/hooks/user-prompt-split.sh` makes `:t` split the agent's own
+  block at its cwd via `rex split`.
+
+`~/.config/rex/` holds Rex's state: `ssh_config`, `terminfo-hosts`, and
+`init.lua` once there are keybindings to set (`rex config check` validates it,
+`rex config reload` re-reads it). None of it is tracked.
 
 ### MCP servers
 
