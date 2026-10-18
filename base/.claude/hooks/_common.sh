@@ -26,9 +26,7 @@
 
 # Initialize logging state. Defines:
 #   $LOGFILE    — daily log under /tmp; appended to in addition to stdout
-#   $TARGET_TTY — $CLAUDE_INVOKER_TTY if set (so detached agent-team
-#                 teammates can still reach the user's terminal), else
-#                 /dev/tty
+#   $TARGET_TTY — the terminal, for the HOOK_DEBUG mirror below
 #   $OUT        — $TARGET_TTY when HOOK_DEBUG=1, else /dev/null (used to
 #                 silence chatty subcommands while still capturing failures
 #                 via log())
@@ -41,7 +39,7 @@ setup_logging() {
 	LOG_TAG="$1"
 	LOGFILE="/tmp/worktree-hooks-$(date '+%Y-%m-%d').log"
 	rotate_log_if_oversized "$LOGFILE" "${HOOK_LOG_MAX_BYTES:-5242880}"
-	TARGET_TTY="${CLAUDE_INVOKER_TTY:-/dev/tty}"
+	TARGET_TTY="/dev/tty"
 	DRY_RUN="${HOOK_DRY_RUN:-0}"
 	# Defined here, called from caller scope after we return — invisible to
 	# static analysis, hence the disables for "unreachable" / "unused".

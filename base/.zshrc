@@ -544,23 +544,12 @@ reset-term() {
     stty sane 2>/dev/null
 }
 
-# Run reset-term after claude exits: it can leave mouse reporting, bracketed
-# paste, the keyboard mode and the cursor shape still set.
-#
-# Capture this shell's tty path and pass it down as CLAUDE_INVOKER_TTY.
-# Detached agent-team teammates spawned by claude have no controlling tty
-# of their own, so hooks running under them can't write OSC sequences to
-# /dev/tty (those writes silently no-op). The hooks fall back to
-# $CLAUDE_INVOKER_TTY to reach the user's actual terminal, which is where
-# _common.sh sends hook output when HOOK_DEBUG=1.
+# A crash or kill leaves claude's mouse reporting and kitty keyboard protocol
+# switched on, and nothing else turns them back off. A graceful exit needs none
+# of this, but there is no way to tell the two apart, so reset either way.
 if command_exists claude; then
   claude() {
-      local tty_path
-      if tty_path=$(tty 2>/dev/null); then
-          CLAUDE_INVOKER_TTY="$tty_path" command claude "$@"
-      else
-          command claude "$@"
-      fi
+      command claude "$@"
       local rc=$?
       reset-term
       return $rc
