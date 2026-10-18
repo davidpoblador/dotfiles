@@ -275,13 +275,6 @@ setopt NO_EQUALS
 # Final PATH Adjustments                                  #
 ###########################################################
 
-# Rex exports REX_BIN_DIR in its own terminals but does not put the CLI on
-# PATH, so `rex` is missing from the shell it hands you, and so is the agent
-# hook's `rex`. The path is version-stamped, so it follows Rex's updates.
-if [[ -n "$REX_BIN_DIR" && -d "$REX_BIN_DIR" ]]; then
-  add_to_path "$REX_BIN_DIR"
-fi
-
 # Remove duplicate PATH entries
 typeset -U PATH
 
