@@ -151,6 +151,7 @@ if [[ -o login && -o interactive ]]; then
 
   # Side by side when there is room, info alone in a narrow terminal.
   local -i i
+  echo ""
   if (( COLUMNS >= logo_width + gutter + info_width )); then
     local -i col=$(( logo_width + gutter + 1 ))
     local -i drawn=0
@@ -167,5 +168,4 @@ if [[ -o login && -o interactive ]]; then
   fi
 
   unset -f _stale_color _relative_time _has_graphics _draw_mark
-  echo ""
 fi
