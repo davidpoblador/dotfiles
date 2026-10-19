@@ -495,6 +495,7 @@ fi
 fpath=("${XDG_DATA_HOME}/zsh/completions" $fpath)
 ensure_completion uv uv generate-shell-completion zsh
 ensure_completion uvx uvx --generate-shell-completion zsh
+ensure_completion rex rex completion zsh
 
 autoload -Uz compinit
 ensure_dir_exists "${XDG_CACHE_HOME}/zsh"
