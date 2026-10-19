@@ -447,8 +447,9 @@ alias ghp='gh pr list --web'
 alias ghpr='gh pr view --web'
 
 # System maintenance
-# Formula-only: casks belong to mise bootstrap (see dotfiles-maintain)
-command_exists brew && alias bubu='brew update && brew upgrade --formula --yes'
+# Casks split in two: brew's own, and the ones mise installed, which brew
+# cannot see, so each group needs its own upgrade. Nothing else upgrades casks
+command_exists brew && alias bubu='brew update && brew upgrade --yes && mise -C ~/repos/dotfiles bootstrap packages upgrade -m brew-cask --yes'
 if command_exists apt; then
   alias apu='sudo apt update'
   alias apg='sudo apt upgrade'

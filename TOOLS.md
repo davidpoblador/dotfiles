@@ -352,7 +352,7 @@ All plugins except zsh-defer are lazy-loaded with `kind:defer`.
 | `dfb` | `mise bootstrap --yes --skip-dirty` (full converge) |
 | `dfa` | `mise dotfiles apply` (repo-scoped) |
 | `dfc` | `cd ~/repos/dotfiles` |
-| `bubu` | `brew update && brew upgrade --formula --yes` |
+| `bubu` | `brew update && brew upgrade --yes`, then `mise bootstrap packages upgrade -m brew-cask` for the casks mise owns |
 | `apu` | `sudo apt update` (Linux) |
 | `apg` | `sudo apt upgrade` (Linux) |
 
