@@ -23,8 +23,8 @@ if command -v mise >/dev/null 2>&1 && stale mise_last_update 1380; then
   mise upgrade -y >/dev/null 2>&1 && touch "$CACHE_DIR/mise_last_update"
 fi
 
-# Formulae only: casks are converged by `mise bootstrap`, and a blanket
-# `brew upgrade` would fight mise over the Caskroom.
+# Formulae only: upgrading a cask restarts the app under you, so casks wait
+# for an interactive `bubu`.
 if command -v brew >/dev/null 2>&1 && stale brew_last_update 1380; then
   brew update >/dev/null 2>&1
   brew upgrade --formula >/dev/null 2>&1

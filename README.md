@@ -50,7 +50,7 @@ dfs    # what would change (dotfiles status)
 dfb    # full converge: packages, defaults, services, tools
 dfc    # cd into the repo
 dfa    # dotfiles apply only
-bubu   # update Homebrew formulae by hand (apu/apg on Linux)
+bubu   # update Homebrew formulae and casks by hand (apu/apg on Linux)
 zbench # time shell startup, with a zprof breakdown
 ```
 
