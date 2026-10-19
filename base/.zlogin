@@ -1,20 +1,18 @@
 # Show branding on login (after system MOTD)
 if [[ -o login && -o interactive ]]; then
-  # The All Tuner mark in sextant blocks, 20 columns wide.
+  # The All Tuner mark in sextant blocks, 16 columns wide.
   local -a logo_lines
   logo_lines=(
-    '      🬭🬭🬹🬹🬹🬹🬭🬭'
-    '   🬞🬹█🬎🬬████🬎🬬█🬹🬏'
-    '  🬵███🬭🬷████ ▐███🬱'
-    ' 🬷████🬎🬬████🬭🬷████🬲'
-    ' █████ ▐████🬝🬬█████'
-    ' █████ ▐█🬝██ ▐█████'
-    ' 🬨████🬱 🬎🬩🬜🬆 🬷████🬕'
-    '  🬨████🬺🬱 🬞🬹🬻████🬕'
-    '   🬁🬎████ ▐████🬎🬀'
-    '      🬂🬂🬎 🬁🬎🬂🬂'
+    '    🬞🬭🬹🬹🬹🬹🬭🬏'
+    '  🬵🬻█🬂███🬕🬂█🬺🬱'
+    ' 🬷███🬹███▌ ███🬲'
+    '🬦████ ████🬎████🬓'
+    '🬉████ █🬝🬬▌ ████🬄'
+    ' 🬨███🬱🬁🬀🬂🬟🬷███🬕'
+    '  🬊🬬███🬓▐███🬝🬆'
+    '    🬂🬊🬎🬄🬉🬎🬆🬂'
   )
-  local logo_width=20 gutter=3
+  local logo_width=16 gutter=3
   local mark_png="$HOME/.local/share/alltuner/mark.png"
 
   # True when the terminal answers the graphics-protocol query. The device
