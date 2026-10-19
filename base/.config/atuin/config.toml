@@ -1,6 +1,6 @@
-# Local-only mode: no sync server, all history stays on disk.
-# To enable sync later: atuin register (or atuin login) and remove these lines.
-sync_address = ""
+# Local-only mode: no automatic sync, all history stays on disk. Leave
+# sync_address unset: atuin 18.24 rejects an empty one and `atuin init` fails.
+# To enable sync later: atuin register (or atuin login) and remove this line.
 auto_sync = false
 
 # Search behavior
