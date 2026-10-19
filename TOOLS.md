@@ -595,6 +595,37 @@ What the dotfiles contribute on top:
 `~/.terminfo`: when the entry changes, setup replaces symlinked files with plain
 ones, so a tracked copy would go stale.
 
+### ArtCraft Crafting Apps
+
+The apps (PhotoCraft, FilmCraft, VectorCraft and the rest of the suite) come from
+the ArtCraft Launcher, not Homebrew, and the launcher keeps them current. Each app
+also has a `<app>-cli`, which is its MCP server, and on macOS that CLI ships as its
+own release zip the launcher does not install. None of them is installed here on
+purpose: upstream requires the CLI and the app to come from the same release, and a
+CLI that trails its app fails quietly.
+
+`craft` (in `base/.local/bin`) closes that gap per invocation. It reads the
+installed app's version out of `/Applications/<App>.app` and has mise fetch exactly
+that CLI, falling back to the newest release when the app isn't installed:
+
+```sh
+craft                      # the installed apps and their versions
+craft filmcraft inspect    # filmcraft-cli 0.9.0 against FilmCraft 0.9.0
+craft photocraft mcp --automation-read-root ~/Pictures/work
+```
+
+Being a script rather than a shell alias, it also works as an MCP server command:
+
+```sh
+claude mcp add -s user filmcraft -- craft filmcraft mcp
+open -a FilmCraft --args --control 9876   # or drive the running app
+claude mcp add -s user filmcraft-live -- craft filmcraft mcp --bridge 127.0.0.1:9876
+```
+
+The flag for the live app differs per app (`--bridge`, `--connect` or `--attach`),
+and only WordCraft and PhotoCraft authenticate that port. The digs note
+`artcraft-claude-code` has the per-app table.
+
 ### MCP servers
 
 User-scope servers live in `~/.claude.json` under `mcpServers`. That file is

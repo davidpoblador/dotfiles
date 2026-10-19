@@ -1,0 +1,84 @@
+#!/bin/bash
+# ABOUTME: Runs an ArtCraft Crafting App's CLI (also its MCP server) at the version of the
+# ABOUTME: app installed in /Applications, fetched on demand by mise. Nothing stays on PATH.
+
+set -u
+
+usage() {
+  cat >&2 <<'EOF'
+usage: craft <app> [args...]
+
+Runs <app>-cli at the version of /Applications/<App>.app, which upstream requires:
+the CLI and the desktop app must come from the same release. mise fetches it on
+demand, so no Craft CLI is installed on this machine.
+
+  craft filmcraft inspect
+  craft photocraft mcp --automation-read-root ~/Pictures/work
+  craft filmcraft mcp --bridge 127.0.0.1:9876     # the running app (filmcraft --control 9876)
+
+With no app installed, the newest release is used instead. `craft` with no
+arguments lists the installed apps.
+EOF
+}
+
+# bundle_for <slug>: the /Applications bundle whose name matches case-insensitively
+# (the apps are CamelCase, and not always predictably: CADCraft, PdfCraft).
+bundle_for() {
+  local slug="$1" path base
+  for path in /Applications/*.app; do
+    base=$(basename "$path" .app)
+    if [ "$(printf '%s' "$base" | tr '[:upper:]' '[:lower:]')" = "$slug" ]; then
+      printf '%s' "$path"
+      return 0
+    fi
+  done
+  return 1
+}
+
+version_of() {
+  plutil -extract CFBundleShortVersionString raw -o - "$1/Contents/Info.plist" 2>/dev/null
+}
+
+list_installed() {
+  local path base version
+  printf 'Crafting Apps installed:\n' >&2
+  for path in /Applications/*.app; do
+    base=$(basename "$path" .app)
+    case "$(printf '%s' "$base" | tr '[:upper:]' '[:lower:]')" in
+      *craft)
+        [ "$base" = "Minecraft" ] && continue
+        version=$(version_of "$path")
+        printf '  %-14s %s\n' "$(printf '%s' "$base" | tr '[:upper:]' '[:lower:]')" "${version:-?}" >&2
+        ;;
+    esac
+  done
+}
+
+[ $# -ge 1 ] || { usage; echo >&2; list_installed; exit 2; }
+
+case "$1" in
+  -h|--help|help) usage; exit 0 ;;
+esac
+
+app="$1"
+shift
+
+bundle=$(bundle_for "$app") || bundle=""
+if [ -n "$bundle" ]; then
+  version=$(version_of "$bundle")
+else
+  version=""
+fi
+
+if [ -z "$version" ]; then
+  version=latest
+  echo "craft: $app is not installed in /Applications, using the newest release" >&2
+  echo "craft: if that is a typo, run \`craft\` for the installed apps" >&2
+fi
+
+# minimum_release_age=0s opts out of mise's 24h delay, which would otherwise hide the
+# release the app is already on. asset_pattern picks the CLI zip out of a release that
+# also ships the app's DMG.
+exec mise x \
+  "github:storytold/${app}[asset_pattern=$app-cli-*-macos-universal.zip,minimum_release_age=0s]@$version" \
+  -- "$app-cli" "$@"
