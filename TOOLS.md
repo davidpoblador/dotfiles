@@ -626,6 +626,10 @@ The flag for the live app differs per app (`--bridge`, `--connect` or `--attach`
 and only WordCraft and PhotoCraft authenticate that port. The digs note
 `artcraft-claude-code` has the per-app table.
 
+What `craft` fetches does stay in mise's store, 50-100 MB per app, and a new app
+release means a new copy. `craft --prune` removes all of them and their cached
+downloads; the next run fetches again in a few seconds.
+
 ### MCP servers
 
 User-scope servers live in `~/.claude.json` under `mcpServers`. That file is

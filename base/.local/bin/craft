@@ -18,6 +18,9 @@ demand, so no Craft CLI is installed on this machine.
 
 With no app installed, the newest release is used instead. `craft` with no
 arguments lists the installed apps.
+
+Each run leaves its CLI in mise's store, 50-100 MB a time; `craft --prune`
+removes every one of them, along with their cached downloads.
 EOF
 }
 
@@ -56,8 +59,27 @@ list_installed() {
 
 [ $# -ge 1 ] || { usage; echo >&2; list_installed; exit 2; }
 
+# Every run leaves its CLI in mise's store, so they pile up (50-100 MB each).
+prune() {
+  local versions
+  versions=$(mise ls --installed 2>/dev/null | awk '/storytold/ {print $1 "@" $2}')
+  if [ -z "$versions" ]; then
+    echo "craft: no Craft CLI in mise's store" >&2
+  else
+    # shellcheck disable=SC2086
+    mise uninstall --all $versions || return 1
+  fi
+  # `mise uninstall` leaves the tool's folder behind holding dangling version symlinks
+  find "${MISE_DATA_DIR:-$HOME/.local/share/mise}/installs" -maxdepth 1 \
+    -name 'github-storytold-*' -type d -exec rm -rf {} + 2>/dev/null
+  find "${MISE_CACHE_DIR:-$HOME/.cache/mise}/downloads-cas" -name '*craft-cli-*' \
+    -type f -delete 2>/dev/null
+  return 0
+}
+
 case "$1" in
   -h|--help|help) usage; exit 0 ;;
+  --prune) prune; exit $? ;;
 esac
 
 app="$1"
