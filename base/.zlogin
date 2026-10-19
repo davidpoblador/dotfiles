@@ -147,7 +147,7 @@ if [[ -o login && -o interactive ]]; then
     info_lines+=( $'\033[2m'"$icon"$'\033[0m '"$color$value"$'\033[0m' )
     (( 2 + ${#value} > info_width )) && info_width=$(( 2 + ${#value} ))
   done
-  info_lines=( "$banner" "" "${info_lines[@]}" )
+  info_lines=( "$banner" "${info_lines[@]}" )
 
   # Side by side when there is room, info alone in a narrow terminal.
   local -i i
