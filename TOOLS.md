@@ -568,6 +568,9 @@ Perl tool. Don't install it.)
    server logs its own decision (`rex server logs --all | grep "TERM decided"`).
 4. `rex terminfo host install <host>` for each machine you ssh into: it compiles
    the entry there and records the host, so the guard sends it `xterm-rex`.
+   Records match the destination exactly, and `tailscale ssh <host>` hands ssh
+   the MagicDNS name with a trailing dot, so record that spelling as well:
+   `rex terminfo host install <host>.<tailnet>.ts.net. -- -o HostKeyAlias=<host>`.
 
 Rex owns the content of step 2, but the Claude Code hook line is tracked here so
 a fresh machine has it before `rex skill setup` runs. `~/.claude/settings.json` is
