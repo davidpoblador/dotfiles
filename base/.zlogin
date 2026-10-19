@@ -12,7 +12,7 @@ if [[ -o login && -o interactive ]]; then
     '  🬊🬬███🬓▐███🬝🬆'
     '    🬂🬊🬎🬄🬉🬎🬆🬂'
   )
-  local logo_width=16 gutter=3
+  local logo_width=16 gutter=2
   local mark_png="$HOME/.local/share/alltuner/mark.png"
 
   # True when the terminal answers the graphics-protocol query. The device
@@ -122,36 +122,32 @@ if [[ -o login && -o interactive ]]; then
     [[ $1 -ge 604800 || $1 -eq -1 ]] && print -n $'\033[33m'
   }
 
-  # Each info row is "label\tcolor\tvalue"; labels are dimmed and right-aligned.
+  # Each info row is "icon\tcolor\tvalue". Nerd Font icons stand in for labels
+  # so the block stays narrow enough for a split pane.
   local -a info_rows
   info_rows=(
-    $'Host\t\t'"${HOST%%.*}"
-    $'Uptime\t\t'"$uptime_str"
-    $'Sessions\t\t'"$users_count"
-    $'Disk\t\t'"$disk_usage"
-    $'Memory\t\t'"$mem_usage"
-    $'Last sync\t'"$(_stale_color $sync_secs)"$'\t'"$sync_msg"
+    $'󰍹\t\t'"${HOST%%.*}"
+    $'󰅐\t\t'"$uptime_str"
+    $'󰡉\t\t'"$users_count"
+    $'󰋊\t\t'"$disk_usage"
+    $'󰍛\t\t'"$mem_usage"
+    $'󰓦\t'"$(_stale_color $sync_secs)"$'\t'"$sync_msg"
   )
   command -v brew &>/dev/null &&
-    info_rows+=( $'Brew\t'"$(_stale_color $brew_secs)"$'\t'"$brew_msg" )
+    info_rows+=( $'󰂖\t'"$(_stale_color $brew_secs)"$'\t'"$brew_msg" )
 
-  # Widest label sets the alignment of the value column.
-  local row label color value label_width=0
+  local -a info_lines
+  local row icon color value
+  local banner=$'\033[1mAll Tuner Labs\033[0m'
+  local -i info_width=14   # the width of the banner line, unstyled
   for row in "${info_rows[@]}"; do
-    label=${row%%$'\t'*}
-    (( ${#label} > label_width )) && label_width=${#label}
-  done
-
-  local banner=$'\033[2mPowered by\033[0m \033[1mAll Tuner Labs\033[0m \033[2mS.L.\033[0m'
-  local -a info_lines=( "$banner" "" )
-  local -i info_width=30   # the width of the banner line, unstyled
-  for row in "${info_rows[@]}"; do
-    label=${row%%$'\t'*}
+    icon=${row%%$'\t'*}
     color=${${row#*$'\t'}%%$'\t'*}
     value=${row##*$'\t'}
-    info_lines+=( $'\033[2m'"${(l:label_width:)label}:"$'\033[0m '"$color$value"$'\033[0m' )
-    (( label_width + 2 + ${#value} > info_width )) && info_width=$(( label_width + 2 + ${#value} ))
+    info_lines+=( $'\033[2m'"$icon"$'\033[0m '"$color$value"$'\033[0m' )
+    (( 2 + ${#value} > info_width )) && info_width=$(( 2 + ${#value} ))
   done
+  info_lines=( "$banner" "" "${info_lines[@]}" )
 
   # Side by side when there is room, info alone in a narrow terminal.
   local -i i
