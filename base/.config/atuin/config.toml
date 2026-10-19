@@ -1,7 +1,12 @@
-# Local-only mode: no automatic sync, all history stays on disk. Leave
-# sync_address unset: atuin 18.24 rejects an empty one and `atuin init` fails.
-# To enable sync later: atuin register (or atuin login) and remove this line.
-auto_sync = false
+# Syncs with the self-hosted server (garrisson stack on durian, tailnet-only).
+# Its address is private, so it comes from ATUIN_SYNC_ADDRESS, exported by the
+# global fnox config, rather than a sync_address here. Without fnox (the Linux
+# hosts) nothing is logged in, so auto_sync has nothing to do. Never set
+# sync_address = "": atuin 18.24 rejects it and `atuin init` fails.
+#
+# A machine joins with the shared key and password from fnox's `atuin` profile;
+# see README.md (atuin sync).
+auto_sync = true
 
 # Search behavior
 search_mode = "fuzzy"

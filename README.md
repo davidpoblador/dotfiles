@@ -125,6 +125,28 @@ Per-project secrets go in a `fnox.toml` next to the code; the shell hook loads
 them on `cd` and unloads on leave. Without `-g`, `fnox set` writes to
 `./fnox.toml` — mind which one you mean.
 
+### atuin sync
+
+Shell history syncs through a self-hosted atuin server on the tailnet (the
+`garrisson` stack in the infrastructure repo). The global fnox config exports
+its address as `ATUIN_SYNC_ADDRESS`; the account password and the shared
+encryption key sit in fnox's `atuin` profile, which the shell does not export.
+Their names are the ones `atuin login` reads, so a machine joins with:
+
+```bash
+atuin store verify                                  # local records readable with this machine's key
+fnox -P atuin exec -- sh -c 'atuin store rekey "$ATUIN_ENCRYPTION_KEY"'
+atuin store verify                                  # now readable with the shared key
+fnox -P atuin exec -- atuin login -u dpoblador
+atuin sync
+```
+
+`rekey` re-encrypts the machine's existing history under the shared key so it
+uploads instead of being stranded; atuin warns it can lose data, so copy
+`~/.local/share/atuin` first. Every machine's own key differs, so skipping it
+leaves that history unreadable everywhere else. The key came from lemon, whose
+history needed no rekey.
+
 ## Agent skills
 
 Skills currently arrive as Claude Code **plugins**, declared in
