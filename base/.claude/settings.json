@@ -96,6 +96,7 @@
     "deny": [],
     "defaultMode": "auto"
   },
+  "model": "opus",
   "enableAllProjectMcpServers": true,
   "hooks": {
     "SessionStart": [
@@ -258,6 +259,5 @@
   "remoteControlAtStartup": true,
   "inputNeededNotifEnabled": true,
   "agentPushNotifEnabled": true,
-  "skipAutoPermissionPrompt": true,
-  "model": "claude-opus-5"
+  "skipAutoPermissionPrompt": true
 }
