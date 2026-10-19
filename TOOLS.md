@@ -549,7 +549,7 @@ restart to pick the new binary up.
 ### Rex setup
 
 Rex has no Homebrew cask, so it cannot go in `[bootstrap.packages]` and a fresh
-mac needs these three steps by hand. (`brew info rex` is Rexify, an unrelated
+mac needs these steps by hand. (`brew info rex` is Rexify, an unrelated
 Perl tool. Don't install it.)
 
 1. Install **Rex Beta.app** from Superlogical into `/Applications` (no public
@@ -561,8 +561,13 @@ Perl tool. Don't install it.)
    from `rex __internal skill` on each use, so upgrading Rex updates what agents
    are told. `rex skill status` reports what is installed.
 3. `rex terminfo setup` — installs the `xterm-rex` terminfo entry and the per-host
-   ssh guard. `rex terminfo host` adds the entry to a remote machine; `rex terminfo
-   status` reports what TERM a new terminal would get.
+   ssh guard. Terminals only claim `xterm-rex` once both are in place; with the
+   entry alone they get `xterm-256color`. The server decides TERM at startup, so
+   quit and reopen Rex afterwards (`rex server stop` alone isn't restarted by the
+   app). `rex terminfo status` must then report `term: xterm-rex`; the running
+   server logs its own decision (`rex server logs --all | grep "TERM decided"`).
+4. `rex terminfo host install <host>` for each machine you ssh into: it compiles
+   the entry there and records the host, so the guard sends it `xterm-rex`.
 
 Rex owns the content of step 2, but the Claude Code hook line is tracked here so
 a fresh machine has it before `rex skill setup` runs. `~/.claude/settings.json` is
@@ -576,12 +581,16 @@ regenerates those wholesale and tracking them would fight the tool.
 
 What the dotfiles contribute on top:
 
-- `dev/.ssh/config` includes `~/.config/rex/ssh_config` (Rex-owned, holds the
-  per-host records) and downgrades TERM for everything Rex has no record of.
+- `dev/.ssh/config` opens with the `Include "~/.config/rex/ssh_config"` line that
+  setup would add itself if the file weren't a symlink. Rex's guard is the only
+  TERM handling; other TERMs reach hosts unchanged (every fleet host has
+  `tmux-256color`).
 
 `~/.config/rex/` holds Rex's state: `ssh_config`, `terminfo-hosts`, and
 `init.lua` once there are keybindings to set (`rex config check` validates it,
-`rex config reload` re-reads it). None of it is tracked.
+`rex config reload` re-reads it). None of it is tracked, and neither is
+`~/.terminfo`: when the entry changes, setup replaces symlinked files with plain
+ones, so a tracked copy would go stale.
 
 ### MCP servers
 
