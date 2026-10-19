@@ -529,15 +529,13 @@ ensure_completion uv uv generate-shell-completion zsh
 ensure_completion uvx uvx --generate-shell-completion zsh
 ensure_completion rex rex completion zsh
 
-# Google Cloud SDK completions (SDK is mise-managed; gcloud itself via shims)
-if command_exists gcloud; then
-  GCP_SDK_PATH="$(mise where gcloud 2>/dev/null)"
-  if [[ -n "$GCP_SDK_PATH" && -f "${GCP_SDK_PATH}/completion.zsh.inc" ]]; then
-    if (( $+functions[zsh-defer] )); then
-      zsh-defer source "${GCP_SDK_PATH}/completion.zsh.inc"
-    else
-      source "${GCP_SDK_PATH}/completion.zsh.inc"
-    fi
+# Google Cloud SDK completions. The SDK is mise-managed, and mise exports its
+# install dir as CLOUDSDK_ROOT_DIR, saving a `mise where gcloud` per shell.
+if [[ -f "${CLOUDSDK_ROOT_DIR}/completion.zsh.inc" ]]; then
+  if (( $+functions[zsh-defer] )); then
+    zsh-defer source "${CLOUDSDK_ROOT_DIR}/completion.zsh.inc"
+  else
+    source "${CLOUDSDK_ROOT_DIR}/completion.zsh.inc"
   fi
 fi
 
