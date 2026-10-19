@@ -564,14 +564,15 @@ Perl tool. Don't install it.)
    ssh guard. `rex terminfo host` adds the entry to a remote machine; `rex terminfo
    status` reports what TERM a new terminal would get.
 
-None of step 2 is tracked here, because Rex regenerates all of it from
-`rex __internal skill` and tracking it would fight the tool. So on a fresh
-machine agents learn about Rex only once `rex skill setup` has run.
+Rex owns the content of step 2, but the Claude Code hook line is tracked here so
+a fresh machine has it before `rex skill setup` runs. `~/.claude/settings.json` is
+a symlink into this repo, so setup edits the tracked file in place, appending its
+own matcher group and leaving the existing hooks alone. When Rex changes that
+line, setup will rewrite it and the diff shows up here: commit what it wrote.
+`rex skill setup --dry-run` reports what it would change.
 
-One consequence to expect: `~/.claude/settings.json` is a symlink into this repo,
-and `rex skill setup` edits the agent's settings file in place. Running it adds
-the hook to the tracked file, which then shows as an uncommitted change here.
-Leave it uncommitted. `rex skill setup --dry-run` reports what it would write.
+The skill files and Codex's `~/.codex/hooks.json` stay untracked, because Rex
+regenerates those wholesale and tracking them would fight the tool.
 
 What the dotfiles contribute on top:
 
