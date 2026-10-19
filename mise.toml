@@ -26,6 +26,7 @@ login_shell = "/usr/bin/zsh"
 "~/.claude" = { source = "base/.claude", mode = "symlink-each" }
 "~/.config" = { source = "base/.config", mode = "symlink-each" }
 "~/.local/bin" = { source = "base/.local/bin", mode = "symlink-each" }
+"~/.local/share/alltuner" = { source = "base/.local/share/alltuner", mode = "symlink-each" }
 "~/.gitignore_global" = { source = "base/.gitignore_global" }
 "~/.zlogin" = { source = "base/.zlogin" }
 "~/.zsh_plugins.txt" = { source = "base/.zsh_plugins.txt" }

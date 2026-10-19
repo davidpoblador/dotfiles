@@ -1,24 +1,52 @@
-
 # Show branding on login (after system MOTD)
 if [[ -o login && -o interactive ]]; then
-  echo "[0m [38;2;0;0;0m           [38;2;91;35;51m▁[38;2;91;35;51m▁▂▂▂▂[38;2;91;35;51m▂[38;2;91;35;51m▁            [0m"
-  echo " [38;2;0;0;0m       [38;2;91;35;51m▂[38;2;91;35;51m▄▆[48;2;91;35;51m [48;2;91;35;51m        [48;2;91;35;51m [0m[38;2;91;35;51m▆▄[38;2;91;35;51m▂        [0m"
-  echo " [38;2;0;0;0m     [38;2;91;35;51m▄[48;2;91;35;51m [48;2;91;35;51m [0m[7m[38;2;91;35;51m▗▃▃[0m[38;2;0;0;0;48;2;91;35;51m [48;2;91;35;51m      [0m[7m[38;2;91;35;51m▗[38;2;91;35;51m▃▃[0m[38;2;0;0;0;48;2;91;35;51m  [48;2;91;35;51m [0m[38;2;91;35;51m▄[38;2;91;35;51m▁     [0m"
-  echo " [38;2;0;0;0m   [38;2;91;35;51m▄[48;2;91;35;51m [48;2;91;35;51m   [0m[38;2;91;35;51m▋  [7m▎[0m[38;2;8;2;4;48;2;91;35;51m      [0m[38;2;91;35;51m▌  [48;2;91;35;51m    [48;2;91;35;51m [0m[38;2;91;35;51m▄    [0m"
-  echo " [38;2;0;0;0m  [7m[38;2;91;35;51m▘[0m[38;2;18;7;10;48;2;91;35;51m     [0m[7m[38;2;91;35;51m▝[0m[38;2;91;35;51m▃▃[7m[38;2;91;35;51m▏[0m[38;2;39;15;22;48;2;91;35;51m      [0m[38;2;91;35;51m▌  [48;2;91;35;51m      [0m[7m[38;2;91;35;51m▝[0m[38;2;30;11;16m   [0m"
-  echo " [38;2;0;0;0m [7m[38;2;91;35;51m▘[0m[38;2;17;6;10;48;2;91;35;51m                [0m[38;2;91;35;51m▌  [48;2;91;35;51m       [0m[7m[38;2;91;35;51m▝[0m[38;2;28;10;15m  [0m"
-  echo " [7m[38;2;91;35;51m▋[0m[38;2;6;2;3;48;2;91;35;51m       [0m[38;2;91;35;51m▋[38;2;91;35;51m▔▔[7m[38;2;91;35;51m▎[0m[38;2;15;5;8;48;2;91;35;51m      [48;2;91;35;51m [0m[7m[38;2;91;35;51m▔▔[0m[38;2;0;0;0;48;2;91;35;51m        [0m[38;2;91;35;51m▍ [0m"
-  echo " [7m[38;2;91;35;51m▍[0m[38;2;8;3;4;48;2;91;35;51m       [0m[38;2;91;35;51m▋  [7m▎[0m[38;2;8;2;4;48;2;91;35;51m      [0m[7m[38;2;91;35;51m▗[38;2;91;35;51m▃▃[0m[38;2;10;4;5;48;2;91;35;51m        [0m[38;2;91;35;51m▊ [0m"
-  echo " [7m[38;2;91;35;51m▍[0m[38;2;10;3;5;48;2;91;35;51m       [0m[38;2;91;35;51m▋  [7m▎[0m[38;2;8;2;4;48;2;91;35;51m      [0m[38;2;91;35;51m▌  [48;2;91;35;51m        [0m[38;2;91;35;51m▊ [0m"
-  echo " [7m[38;2;91;35;51m▌[0m[38;2;1;0;0;48;2;91;35;51m       [0m[38;2;91;35;51m▋  [7m[38;2;91;35;51m▎[0m[38;2;1;0;0;48;2;91;35;51m [48;2;91;35;51m [0m[7m[38;2;91;35;51m▅[38;2;91;35;51m▅[0m[38;2;13;5;7;48;2;91;35;51m  [0m[38;2;91;35;51m▍  [48;2;91;35;51m        [0m[38;2;91;35;51m▌ [0m"
-  echo " [38;2;0;0;0m [7m[38;2;91;35;51m▖[0m[38;2;32;12;18;48;2;91;35;51m      [48;2;91;35;51m [0m[38;2;91;35;51m▖  [7m[38;2;91;35;51m▃[38;2;91;35;51m▁[0m[38;2;91;35;51m▅[38;2;91;35;51m▅[7m[38;2;91;35;51m▁[0m[38;2;91;35;51m▘  [7m[38;2;91;35;51m▘[0m[38;2;2;0;1;48;2;91;35;51m       [48;2;91;35;51m [0m[38;2;2;0;1m  [0m"
-  echo " [38;2;0;0;0m  [7m[38;2;91;35;51m▖[0m[38;2;36;13;20;48;2;91;35;51m       [0m[7m[38;2;91;35;51m▝[0m[38;2;91;35;51m▂      [38;2;91;35;51m▃[7m[38;2;91;35;51m▘[0m[38;2;35;13;20;48;2;91;35;51m       [48;2;91;35;51m [0m[38;2;91;35;51m▘  [0m"
-  echo " [38;2;0;0;0m   [7m[38;2;91;35;51m▖[0m[38;2;5;2;3;48;2;91;35;51m        [48;2;91;35;51m [0m[38;2;91;35;51m▌  [7m[38;2;91;35;51m▏[0m[38;2;0;0;0;48;2;91;35;51m         [0m[7m[38;2;91;35;51m▗[0m[38;2;7;2;4m    [0m"
-  echo " [38;2;0;0;0m    [38;2;91;35;51m▔[7m[38;2;91;35;51m▂[0m[38;2;6;2;3;48;2;91;35;51m [48;2;91;35;51m      [0m[38;2;91;35;51m▌  [7m▏[0m[38;2;0;0;0;48;2;91;35;51m      [48;2;91;35;51m [0m[7m[38;2;91;35;51m▂[0m[38;2;91;35;51m▘     [0m"
-  echo " [38;2;0;0;0m       [7m[38;2;91;35;51m▅[38;2;91;35;51m▃▁[0m[38;2;18;7;10;48;2;91;35;51m   [0m[38;2;91;35;51m▌  [7m▏[0m[38;2;0;0;0;48;2;91;35;51m   [0m[7m[38;2;91;35;51m▁▃[38;2;91;35;51m▅[0m[38;2;6;2;3m        [0m"
-  echo " [38;2;0;0;0m           [7m[38;2;91;35;51m▆▅[0m[38;2;91;35;51m▘  [7m[38;2;91;35;51m▅[38;2;91;35;51m▅[38;2;91;35;51m▆[0m[38;2;0;0;0m            [0m"
-  # Overlay info on the right side of the logo
-  local col=38
+  # The All Tuner mark in sextant blocks, 20 columns wide.
+  local -a logo_lines
+  logo_lines=(
+    '      🬭🬭🬹🬹🬹🬹🬭🬭'
+    '   🬞🬹█🬎🬬████🬎🬬█🬹🬏'
+    '  🬵███🬭🬷████ ▐███🬱'
+    ' 🬷████🬎🬬████🬭🬷████🬲'
+    ' █████ ▐████🬝🬬█████'
+    ' █████ ▐█🬝██ ▐█████'
+    ' 🬨████🬱 🬎🬩🬜🬆 🬷████🬕'
+    '  🬨████🬺🬱 🬞🬹🬻████🬕'
+    '   🬁🬎████ ▐████🬎🬀'
+    '      🬂🬂🬎 🬁🬎🬂🬂'
+  )
+  local logo_width=20 gutter=3
+  local mark_png="$HOME/.local/share/alltuner/mark.png"
+
+  # True when the terminal answers the graphics-protocol query. The device
+  # attributes request rides along so a terminal that ignores the first one
+  # still ends the read.
+  _has_graphics() {
+    [[ -t 0 && -t 1 && -r $mark_png ]] || return 1
+    local saved reply="" c
+    saved=$(stty -g 2>/dev/null) || return 1
+    stty -echo raw 2>/dev/null
+    print -n $'\033_Gi=1,s=1,v=1,a=q,t=d,f=24;AAAA\033\\\033[c'
+    while read -t 0.4 -k 1 c; do
+      reply+=$c
+      [[ $c == c ]] && break
+    done
+    stty "$saved" 2>/dev/null
+    [[ $reply == *$'\033'_Gi=1\;OK* ]]
+  }
+
+  # Place the mark in a logo_width x logo_rows cell box, leaving the cursor put.
+  # Payloads go out in 4096-byte chunks, which is the protocol's limit.
+  _draw_mark() {
+    local ctl="a=T,f=100,c=${logo_width},r=${#logo_lines},q=2,C=1"
+    local data=$(base64 < "$mark_png" | tr -d '\n')
+    while (( ${#data} > 4096 )); do
+      print -n "\033_G${ctl},m=1;${data[1,4096]}\033\\"
+      data=${data[4097,-1]}
+      ctl="q=2"
+    done
+    print -n "\033_G${ctl},m=0;${data}\033\\"
+  }
+
   local cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}"
 
   zmodload zsh/datetime zsh/stat
@@ -91,39 +119,59 @@ if [[ -o login && -o interactive ]]; then
     mem_usage="${used} / ${total}"
   fi
 
-  # Helper: print value in yellow if stale (>= 7 days or unknown), plain otherwise
-  _stale_value() {
-    local secs="$1" value="$2"
-    if [[ $secs -ge 604800 || $secs -eq -1 ]]; then
-      printf "\033[33m%s\033[0m" "$value"
-    else
-      printf "%s" "$value"
-    fi
+  # Yellow marks a staleness of a week or more, or a stamp that never existed.
+  _stale_color() {
+    [[ $1 -ge 604800 || $1 -eq -1 ]] && print -n $'\033[33m'
   }
 
-  # Print info lines at column $col, tracking how many we emit
-  local -a info_lines
-  info_lines+=(" \033[2mPowered by\033[0m \033[1mAll Tuner Labs\033[0m \033[2mS.L.\033[0m")
-  info_lines+=("")
-  info_lines+=(" \033[2m     Host:\033[0m ${HOST%%.*}")
-  info_lines+=(" \033[2m   Uptime:\033[0m $uptime_str")
-  info_lines+=(" \033[2m Sessions:\033[0m $users_count")
-  info_lines+=(" \033[2m     Disk:\033[0m $disk_usage")
-  info_lines+=(" \033[2m   Memory:\033[0m $mem_usage")
-  info_lines+=(" \033[2mLast sync:\033[0m $(_stale_value $sync_secs "$sync_msg")")
-  if command -v brew &>/dev/null; then
-    info_lines+=(" \033[2m     Brew:\033[0m $(_stale_value $brew_secs "$brew_msg")")
+  # Each info row is "label\tcolor\tvalue"; labels are dimmed and right-aligned.
+  local -a info_rows
+  info_rows=(
+    $'Host\t\t'"${HOST%%.*}"
+    $'Uptime\t\t'"$uptime_str"
+    $'Sessions\t\t'"$users_count"
+    $'Disk\t\t'"$disk_usage"
+    $'Memory\t\t'"$mem_usage"
+    $'Last sync\t'"$(_stale_color $sync_secs)"$'\t'"$sync_msg"
+  )
+  command -v brew &>/dev/null &&
+    info_rows+=( $'Brew\t'"$(_stale_color $brew_secs)"$'\t'"$brew_msg" )
+
+  # Widest label sets the alignment of the value column.
+  local row label color value label_width=0
+  for row in "${info_rows[@]}"; do
+    label=${row%%$'\t'*}
+    (( ${#label} > label_width )) && label_width=${#label}
+  done
+
+  local banner=$'\033[2mPowered by\033[0m \033[1mAll Tuner Labs\033[0m \033[2mS.L.\033[0m'
+  local -a info_lines=( "$banner" "" )
+  local -i info_width=30   # the width of the banner line, unstyled
+  for row in "${info_rows[@]}"; do
+    label=${row%%$'\t'*}
+    color=${${row#*$'\t'}%%$'\t'*}
+    value=${row##*$'\t'}
+    info_lines+=( $'\033[2m'"${(l:label_width:)label}:"$'\033[0m '"$color$value"$'\033[0m' )
+    (( label_width + 2 + ${#value} > info_width )) && info_width=$(( label_width + 2 + ${#value} ))
+  done
+
+  # Side by side when there is room, info alone in a narrow terminal.
+  local -i i
+  if (( COLUMNS >= logo_width + gutter + info_width )); then
+    local -i col=$(( logo_width + gutter + 1 ))
+    local -i drawn=0
+    _has_graphics && { _draw_mark; drawn=1 }
+    for (( i = 1; i <= ${#logo_lines} || i <= ${#info_lines}; i++ )); do
+      (( drawn )) || printf '\033[38;2;91;35;51m%s\033[0m' "${logo_lines[i]}"
+      (( i <= ${#info_lines} )) && printf '\033[%dG%b' $col "${info_lines[i]}"
+      printf '\n'
+    done
+  else
+    for (( i = 1; i <= ${#info_lines}; i++ )); do
+      printf '%b\n' "${info_lines[i]}"
+    done
   fi
 
-  # Move cursor up into the logo area and print info at column $col
-  printf "\033[12A"
-  local line
-  for line in "${info_lines[@]}"; do
-    printf "\033[${col}G%b\n" "$line"
-  done
-  local remaining=$(( 12 - ${#info_lines[@]} ))
-  (( remaining > 0 )) && printf "\033[${remaining}B"
-  unset -f _stale_value _relative_time
-  printf "\033[?25h"
+  unset -f _stale_color _relative_time _has_graphics _draw_mark
   echo ""
 fi
