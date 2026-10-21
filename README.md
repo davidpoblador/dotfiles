@@ -105,14 +105,14 @@ packages in `mise.dev.toml`, tools in `base/.config/mise/config.toml`
 ## Secrets
 
 [fnox](https://fnox.jdx.dev) manages secrets on dev machines (macs): age-encrypted values
-live inline in `dev/.config/fnox/config.toml` (safe to commit), decrypted
+live inline in each project's `fnox.toml` (safe to commit), decrypted
 with the Syncthing-distributed identity at `~/sync/secrets/keys.txt`
 (`FNOX_AGE_KEY_FILE`, exported by `.zshenv` where the key exists). The daemon
 caches resolved values in memory; shell integration loads project `fnox.toml`
 secrets on `cd`.
 
 ```bash
-fnox set -g NAME value       # encrypt into the global config (a repo symlink: commit it via PR)
+fnox set NAME                # encrypt into ./fnox.toml (prompts; or pipe the value in)
 fnox get NAME                # decrypt one value
 fnox list                    # names only; add --values to decrypt all
 fnox exec -- cmd args        # run a command with all secrets in its env
@@ -121,9 +121,13 @@ fnox reencrypt -p age        # after changing recipients
 fnox daemon status|clear     # in-memory cache (auto-starts; clears on config change)
 ```
 
-Per-project secrets go in a `fnox.toml` next to the code; the shell hook loads
-them on `cd` and unloads on leave. Without `-g`, `fnox set` writes to
-`./fnox.toml` — mind which one you mean.
+Secrets go in the project's `fnox.toml`, next to the code; the shell hook loads
+them on `cd` and unloads on leave. The global config is exported into every
+shell, so code would silently depend on anything put there: keep it to
+machine-level config (`[providers.age]`, `[daemon]`, and Atuin's sync secrets,
+below). To share a key between projects, copy it by piping, from the target
+repo: `(cd ~/repos/source && fnox get NAME) | fnox set NAME`. Never pass the
+value as an argument: it lands in shell history and process listings.
 
 ### atuin sync
 

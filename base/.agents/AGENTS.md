@@ -172,11 +172,22 @@ age-encrypted values stored inline in config files that are safe to commit.
   `fnox exec -- cmd` (preferred: the value never touches your transcript).
 - NEVER print decrypted secret values into output, logs, or files. Check
   presence/length instead when debugging.
-- Global secrets: `fnox set -g NAME value` writes (encrypted) to
-  `~/.config/fnox/config.toml`, which is a symlink into the dotfiles repo;
-  commit the change via PR like any dotfile edit.
-- Project secrets live in a `fnox.toml` next to the code; the shell loads them
-  on `cd`. Plain `fnox set` (no `-g`) writes to `./fnox.toml` in the cwd.
+- API keys and other secrets go in the project's `fnox.toml`, next to the
+  code: plain `fnox set NAME` (no `-g`) from the repo writes to `./fnox.toml`
+  in the cwd, and the shell loads it on `cd`. Agent sessions don't run that
+  hook, so use `fnox exec` or `fnox get` from inside the repo.
+- NEVER store secrets globally (`fnox set -g`). The global
+  `~/.config/fnox/config.toml` (a symlink into the dotfiles repo) is exported
+  into every shell and every Claude session, so code silently comes to depend
+  on it. It holds machine-level config only: `[providers.age]`, `[daemon]`,
+  and Atuin's sync secrets (the one exception: every shell needs them).
+- Don't use global keys either. A key that's in the environment but not in
+  the project's `fnox.toml` resolves only from the global store: don't rely
+  on it. Add it to the project (piped copy, below) or ask David to provision
+  one.
+- To use one key in several projects, copy it into each by piping, from the
+  target repo: `(cd ~/repos/source && fnox get NAME) | fnox set NAME`. Never
+  pass the value as an argument.
 - NEVER read, copy, or transmit `~/sync/secrets/keys.txt` (the age identity)
   or any `FNOX_AGE_KEY_FILE` target.
 - `~/repos/infrastructure` layers configs hierarchically: shared secrets in

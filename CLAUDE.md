@@ -15,11 +15,13 @@ every commit, verify that no file contains:
 - `.env` file contents
 - Cloud account IDs
 
-If something needs a secret, store it with fnox (`fnox set -g NAME value` for
-global, or a project `fnox.toml`): values are age-encrypted inline and safe to
-commit. The global config `dev/.config/fnox/config.toml` is a tracked dotfile;
+If something needs a secret, store it with fnox in that project's `fnox.toml`
+(plain `fnox set NAME` from its repo): values are age-encrypted inline and safe
+to commit. Don't add secrets to the global config `dev/.config/fnox/config.toml`:
+it is exported into every shell, so it holds only machine-level config
+(`[providers.age]`, `[daemon]`, Atuin's sync secrets). It is a tracked dotfile;
 `fnox set -g` edits it through the `~/.config/fnox/config.toml` symlink, so
-commit the result via PR. Never commit plaintext secrets, and never read or
+commit any change via PR. Never commit plaintext secrets, and never read or
 copy `~/sync/secrets/keys.txt` (the age identity).
 
 ## Repo structure
