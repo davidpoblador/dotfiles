@@ -181,6 +181,10 @@ age-encrypted values stored inline in config files that are safe to commit.
   into every shell and every Claude session, so code silently comes to depend
   on it. It holds machine-level config only: `[providers.age]`, `[daemon]`,
   and Atuin's sync secrets (the one exception: every shell needs them).
+- Don't use global keys either. A key that's in the environment but not in
+  the project's `fnox.toml` resolves only from the global store: don't rely
+  on it. Add it to the project (piped copy, below) or ask David to provision
+  one.
 - To use one key in several projects, copy it into each by piping, from the
   target repo: `(cd ~/repos/source && fnox get NAME) | fnox set NAME`. Never
   pass the value as an argument.
