@@ -22,7 +22,13 @@ done < <(
     (.worktree.name // ""), (.worktree.branch // ""), (.worktree.original_cwd // ""),
     (.pr.number // ""), (.pr.review_state // ""),
     (.rate_limits.five_hour.used_percentage // -1 | floor),
-    (.rate_limits.seven_day.used_percentage // -1 | floor)] | .[]'
+    (.rate_limits.seven_day.used_percentage // -1 | floor),
+    (.session_id // ""), (.pr.url // ""),
+    (.context_window.total_input_tokens // 0),
+    (.context_window.context_window_size // 0),
+    (.rate_limits.five_hour.resets_at // 0 | floor),
+    (.rate_limits.seven_day.resets_at // 0 | floor),
+    (.thinking.enabled // false), (.output_style.name // "")] | .[]'
 )
 
 cwd=${f[0]};        project_dir=${f[1]};  repo_name=${f[2]}
@@ -33,6 +39,10 @@ session_name=${f[12]}
 wt_name=${f[13]};   wt_branch=${f[14]};   wt_origin=${f[15]}
 pr_num=${f[16]};    pr_state=${f[17]}
 rl5=${f[18]};       rl7=${f[19]}
+session_id=${f[20]}; pr_url=${f[21]}
+ctx_tokens=${f[22]}; ctx_size=${f[23]}
+rl5_reset=${f[24]}; rl7_reset=${f[25]}
+thinking=${f[26]};  output_style=${f[27]}
 
 # ── Colors (Gruvbox-inspired) ────────────────────────────────────────
 bold='\033[1m'
@@ -54,6 +64,23 @@ heat() {
     elif [ "$1" -ge 70 ]; then printf '%s' "$fg_yellow"
     elif [ "$1" -ge 40 ]; then printf '%s' "$fg_aqua"
     else printf '%s' "$fg_green"; fi
+}
+
+# Token count, shortened: 950, 120k, 1M, 1.2M.
+tokens() {
+    if [ "$1" -ge 1000000 ]; then
+        printf '%s' "$(awk -v n="$1" 'BEGIN { s = sprintf("%.1f", n / 1000000); sub(/\.0$/, "", s); print s "M" }')"
+    elif [ "$1" -ge 1000 ]; then printf '%dk' $(($1 / 1000))
+    else printf '%d' "$1"; fi
+}
+
+# Coarse time left until an epoch timestamp: 3d, 2h15m, 40m.
+until_epoch() {
+    left=$(($1 - $(date +%s)))
+    [ "$left" -lt 0 ] && left=0
+    if [ "$left" -ge 86400 ]; then printf '%dd' $((left / 86400))
+    elif [ "$left" -ge 3600 ]; then printf '%dh%dm' $((left / 3600)) $(((left % 3600) / 60))
+    else printf '%dm' $((left / 60)); fi
 }
 
 # ── Git info ─────────────────────────────────────────────────────────
@@ -135,9 +162,13 @@ esac
 
 model_label="$model"
 [ -n "$effort" ] && model_label="${model_label} ${effort}"
+[ "$thinking" = "true" ] && model_label="${model_label} 💭"
 [ "$fast_mode" = "true" ] && model_label="${model_label} ⚡"
 
 line1="🤖 ${fg_orange}${bold}${model_label}${reset}"
+if [ -n "$output_style" ] && [ "$output_style" != "default" ]; then
+    line1="${line1}${sep}🎨 ${fg_purple}${output_style}${reset}"
+fi
 line1="${line1}${sep}${os_emoji} ${fg_gray}${hostname}${reset}"
 line1="${line1}${sep}📁 ${fg_white}${display_project}${reset}"
 
@@ -149,26 +180,46 @@ fi
 [ -n "$wt_name" ] && line1="${line1}${sep}🌳 ${fg_purple}${wt_name}${reset}"
 
 if [ -n "$pr_num" ]; then
+    pr_label="#${pr_num}"
     case "$pr_state" in
         approved)          pr_color="$fg_green" ;;
         changes_requested) pr_color="$fg_red" ;;
+        pending)           pr_color="$fg_yellow" ;;
+        draft)             pr_color="$fg_gray"; pr_label="${pr_label} draft" ;;
         *)                 pr_color="$fg_gray" ;;
     esac
-    line1="${line1}${sep}⇧ ${pr_color}#${pr_num}${reset}"
+    # OSC 8 hyperlink, so the number opens the PR on Cmd-click.
+    [ -n "$pr_url" ] && pr_label="\033]8;;${pr_url}\a${pr_label}\033]8;;\a"
+    line1="${line1}${sep}⇧ ${pr_color}${pr_label}${reset}"
 fi
 
 [ -n "$agent_name" ] && line1="${line1}${sep}🕵️ ${fg_purple}${agent_name}${reset}"
 
-# ── LINE 0: Session label, only once one exists ──────────────────────
-# Absent until the session is named with --name or /rename, or picks up an
-# AI-generated title; the default handle (my-app-3f) does not populate it.
+# ── LINE 0: Session label + messaging handle ─────────────────────────
+# session_name is absent until the session is named with --name or /rename,
+# or picks up an AI-generated title. The handle other sessions message this
+# one by (dotfiles-96) is not in the payload; Claude Code keeps it in its
+# undocumented per-process registry, matched here by session id.
+handle=""
+if [ -n "$session_id" ]; then
+    registry=$(grep -l "\"sessionId\": *\"${session_id}\"" ~/.claude/sessions/*.json 2>/dev/null | head -n 1)
+    [ -n "$registry" ] && handle=$(jq -r '.name // ""' "$registry" 2>/dev/null)
+fi
+
 line0=""
 [ -n "$session_name" ] && line0="🏷️ ${fg_white}${bold}${session_name}${reset}"
+if [ -n "$handle" ] && [ "$handle" != "$session_name" ]; then
+    [ -n "$line0" ] && line0="${line0}${sep}"
+    line0="${line0}📮 ${fg_gray}${handle}${reset}"
+fi
 
 # ── LINE 2: Context bar + Cost + Duration + Lines + Quota ────────────
 cost_fmt=$(printf '$%.2f' "$cost")
 
 line2="🧠 ${bar_color}${bar}${reset} ${fg_gray}${pct}%${reset}"
+if [ "$ctx_size" -gt 0 ]; then
+    line2="${line2} ${fg_gray}$(tokens "$ctx_tokens")/$(tokens "$ctx_size")${reset}"
+fi
 line2="${line2}${sep}💰 ${fg_yellow}${cost_fmt}${reset}"
 line2="${line2}${sep}⏱️ ${fg_gray}${duration_fmt}${reset}"
 
@@ -176,10 +227,15 @@ if [ "$lines_add" -gt 0 ] || [ "$lines_rm" -gt 0 ]; then
     line2="${line2}${sep}✏️ ${fg_green}+${lines_add}${reset} ${fg_red}-${lines_rm}${reset}"
 fi
 
-# Plan quota: five-hour window, then the weekly one.
+# Plan quota: five-hour window, then the weekly one, each with the time
+# left until it resets.
+quota() {
+    printf '%s' "$(heat "$1")${1}%${reset}"
+    [ "$2" -gt 0 ] && printf '%s' " ${fg_gray}↻$(until_epoch "$2")${reset}"
+}
 if [ "$rl5" -ge 0 ]; then
-    line2="${line2}${sep}⏳ $(heat "$rl5")${rl5}%${reset}"
-    [ "$rl7" -ge 0 ] && line2="${line2}${fg_gray}/${reset}$(heat "$rl7")${rl7}%${reset}"
+    line2="${line2}${sep}⏳ $(quota "$rl5" "$rl5_reset")"
+    [ "$rl7" -ge 0 ] && line2="${line2}${fg_gray} / ${reset}$(quota "$rl7" "$rl7_reset")"
 fi
 
 # ── Output ───────────────────────────────────────────────────────────
