@@ -227,15 +227,15 @@ if [ "$lines_add" -gt 0 ] || [ "$lines_rm" -gt 0 ]; then
     line2="${line2}${sep}✏️ ${fg_green}+${lines_add}${reset} ${fg_red}-${lines_rm}${reset}"
 fi
 
-# Plan quota: five-hour window, then the weekly one, each with the time
-# left until it resets.
+# Plan quota: five-hour window, then the weekly one, each labelled with its
+# window and the time left until it resets.
 quota() {
-    printf '%s' "$(heat "$1")${1}%${reset}"
-    [ "$2" -gt 0 ] && printf '%s' " ${fg_gray}↻$(until_epoch "$2")${reset}"
+    printf '%s' "${fg_gray}${1}${reset} $(heat "$2")${2}%${reset}"
+    [ "$3" -gt 0 ] && printf '%s' " ${fg_gray}↻$(until_epoch "$3")${reset}"
 }
 if [ "$rl5" -ge 0 ]; then
-    line2="${line2}${sep}⏳ $(quota "$rl5" "$rl5_reset")"
-    [ "$rl7" -ge 0 ] && line2="${line2}${fg_gray} / ${reset}$(quota "$rl7" "$rl7_reset")"
+    line2="${line2}${sep}⏳ $(quota 5h "$rl5" "$rl5_reset")"
+    [ "$rl7" -ge 0 ] && line2="${line2}${fg_gray} · ${reset}$(quota 7d "$rl7" "$rl7_reset")"
 fi
 
 # ── Output ───────────────────────────────────────────────────────────
