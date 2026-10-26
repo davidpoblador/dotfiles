@@ -10,6 +10,7 @@
   "permissions": {
     "allow": [
       "Skill(frontend-design:frontend-design)",
+      "Bash(cf dns records:*)",
       "Bash(curl:*)",
       "Bash(djlint:*)",
       "Bash(docker build:*)",
