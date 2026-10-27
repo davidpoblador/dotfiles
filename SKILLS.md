@@ -31,6 +31,13 @@ to it through `~/.claude/skills/`, but **only if no plugin already provides it**
 All of it currently arrives as Claude Code plugins, declared in
 `base/.claude/settings.json`.
 
+`commit-commands`, `resend` and `astral` are installed but set to `false` in
+`enabledPlugins`. An enabled plugin lists its skills and MCP instructions in
+every request, and these went unused for 14 days (digs
+`agent-session-friction`). Turn one on for one repo with `true` in its
+`.claude/settings.local.json` (project settings beat user settings). `/plugin`
+turns it on everywhere, by writing this tracked file through its symlink. `skills-mirror` skips them too, so Codex and pi don't see them.
+
 ### From the official marketplace — Claude Code only
 
 `claude-plugins-official` is Claude Code's built-in marketplace, backed by the
@@ -226,8 +233,10 @@ restore, so a new machine needs the install commands re-run.
 
 ## Removing a skill
 
-- Plugin-provided: delete its line from `enabledPlugins` and restart Claude Code.
-  A plugin is all-or-nothing; its MCP server, commands and agents go with it.
+- Plugin-provided: set it to `false` in `enabledPlugins` and restart Claude
+  Code. Deleting the line doesn't disable it: a plugin with no entry falls back
+  to its own `defaultEnabled`. A plugin is all-or-nothing; its MCP server,
+  commands and agents go with it.
 - CLI-installed: `npx skills@latest remove <name> --global`
 
 ## Checking what an agent sees
