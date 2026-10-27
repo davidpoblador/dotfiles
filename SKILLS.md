@@ -97,7 +97,9 @@ The README explicitly recommends the CLI over its own marketplace:
 npx skills add ast-grep/agent-skill
 ```
 
-Skills: `ast-grep`, `outline`.
+Skills: `ast-grep`, `outline`. Neither covers rewriting code; that is
+`ast-grep-rewrite`, written here (below) as a complement rather than a fork,
+so the upstream search guidance keeps updating.
 
 ### astral-sh/claude-code-plugins — 3 skills
 
@@ -161,16 +163,17 @@ so installing one of those on top would load the skill twice.
 Personal workflow skills, kept in `base/.claude/skills/<name>/SKILL.md` and
 symlinked into `~/.claude/skills/` by `mise dotfiles apply` like any other
 dotfile. Nothing to install: they are live on every machine this repo
-converges. They are Claude Code only, because they drive `claude --bg`, so they
-are not mirrored into `~/.agents/skills`.
+converges. They are Claude Code only (the dispatch skills drive `claude --bg`):
+`skills-mirror` publishes plugin skills to `~/.agents/skills`, not these.
 
 | Skill | Does |
 |---|---|
 | `dispatch` | Hands a piece of work to a detached background session homed in a chosen directory, so it runs outside the calling session's context |
 | `dig` | Starts an investigation in the research workbench at `~/repos/digs` as a background session. Declines to fire when the session is already inside that repo, where the repo's own instructions take over |
 | `dig-context` | The same, for a question that only makes sense given the conversation it came out of: writes that history to a `context.md` the session reads, copies into the dig and cites |
+| `ast-grep-rewrite` | Teaches structural rewrites with the ast-grep CLI (`run --rewrite -U`, YAML `fix:` and `transform`), checked with the formatter and type checker. Complements the upstream `ast-grep` skill, which covers search only |
 
-All three write the prompt to a file and launch it with `claude-bg-dispatch`; the
+`dispatch`, `dig` and `dig-context` write the prompt to a file and launch it with `claude-bg-dispatch`; the
 mechanics, and the traps that wrapper exists for, are in TOOLS.md under
 *Background Claude sessions*. None of them restates the conventions of the repo
 it dispatches into: a dispatched session reads those on arrival, and keeping one
