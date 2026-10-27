@@ -206,6 +206,7 @@
     "vacant@alltuner": true,
     "selfmail@alltuner": true,
     "reference@alltuner-reference": true,
+    "fleet@alltuner-infrastructure": true,
     "i-have-adhd@i-have-adhd": true
   },
   "extraKnownMarketplaces": {
@@ -225,6 +226,17 @@
       "source": {
         "source": "github",
         "repo": "alltuner/reference",
+        "sparsePaths": [
+          ".claude-plugin",
+          "plugin"
+        ]
+      },
+      "autoUpdate": true
+    },
+    "alltuner-infrastructure": {
+      "source": {
+        "source": "github",
+        "repo": "alltuner/infrastructure",
         "sparsePaths": [
           ".claude-plugin",
           "plugin"
