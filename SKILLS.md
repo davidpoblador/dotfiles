@@ -122,6 +122,24 @@ npx skills add alltuner/skills --skill vacant  # one
 `vacant` and `selfmail`. The marketplace publishes only skills written here —
 it does not republish anyone else's.
 
+### alltuner/reference — 2 skills
+
+The reference architecture is its own marketplace (`alltuner-reference`), so
+its skills ship and version with the docs they point to: the plugin's version
+is the reference's release, and installs move only on releases.
+
+```
+/plugin install reference --marketplace alltuner/reference
+```
+
+`new-project` (`/reference:new-project` plus a brief, in an empty directory)
+and `update-project` (in a project, from its `.reference-version`). The repo
+is private: Claude Code clones it with this machine's git credentials (SSH, or
+the `gh auth setup-git` helper). `settings.json` declares it with
+`sparsePaths`, so only the plugin's folders are checked out, and with
+`autoUpdate: true`, so a session picks up a new release within ten minutes of
+its first message.
+
 ### ayghri/i-have-adhd — 1 skill
 
 ```
