@@ -51,7 +51,7 @@ digs dig `agent-session-friction`. Judge it a week after it is applied:
   - per project, since digs is 147 of 254 sessions and a shift in the mix can
     move the totals.
 - It is a before/after, not an A/B, and `enableArtifact: false` and the plugin
-  trims landed in the same days (about 13k tokens off every request). Rerun
+  trims landed in the same days (about 10k to 13k tokens off every request). Rerun
   `overhead.py` to check how much of the drop is theirs.
 - Don't run `/autocompact` while it runs: it saves a per-model value under
   `modelSettings` in the same tracked file, which overrides this key.

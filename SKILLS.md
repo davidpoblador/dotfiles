@@ -31,7 +31,7 @@ to it through `~/.claude/skills/`, but **only if no plugin already provides it**
 All of it currently arrives as Claude Code plugins, declared in
 `base/.claude/settings.json`.
 
-`commit-commands`, `resend` and `astral` are installed but set to `false` in
+`commit-commands` and `resend` are installed but set to `false` in
 `enabledPlugins`. An enabled plugin lists its skills and MCP instructions in
 every request, and these went unused for 14 days (digs
 `agent-session-friction`). Turn one on for one repo with `true` in its
@@ -116,6 +116,10 @@ Claude Code only; no CLI path is documented.
 /plugin marketplace add astral-sh/claude-code-plugins
 /plugin install astral@astral-sh
 ```
+
+It also declares `ty` as the LSP server for `.py` and `.pyi` files, which gives
+Claude Code its Python LSP tool and the type diagnostics after each edit. That,
+not the skills, is why it stays enabled.
 
 Skills: `ruff`, `ty`, `uv` — invoked as `/astral:<skill>`. Note their
 `SKILL.md` files omit the `name` frontmatter field, so the skills CLI skips
