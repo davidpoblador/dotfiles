@@ -100,6 +100,7 @@
     "defaultMode": "auto"
   },
   "model": "opus",
+  "autoCompactWindow": 500000,
   "enableAllProjectMcpServers": true,
   "enableArtifact": false,
   "hooks": {
@@ -195,13 +196,13 @@
     "clangd-lsp@claude-plugins-official": true,
     "swift-lsp@claude-plugins-official": true,
     "frontend-design@claude-plugins-official": true,
-    "commit-commands@claude-plugins-official": true,
+    "commit-commands@claude-plugins-official": false,
     "feature-dev@claude-plugins-official": true,
     "ast-grep@ast-grep-marketplace": true,
     "cloudflare@cloudflare": true,
     "figma@claude-plugins-official": true,
     "impeccable@impeccable": true,
-    "resend@resend-skills": true,
+    "resend@resend-skills": false,
     "vacant@alltuner": true,
     "selfmail@alltuner": true,
     "reference@alltuner-reference": true,

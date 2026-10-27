@@ -138,6 +138,15 @@ Your memory doesn't carry between conversations on its own, so use the memory sy
 - Otherwise, use whatever task runner the project has configured
 - Read `.github/workflows` to understand how tests run; CI should behave the same locally
 
+## Shell commands in a Claude Code worktree
+
+Inside a worktree, Claude Code refuses any Bash call it can't prove keeps git in that worktree. It checks every call, not just git ones, it reads only the command text, and it can't be turned off. Write commands it can verify:
+
+- One plain command per call: no `&&` or `;` chains and no leading `cd` (the session already sits in the worktree); keep pipes to a short filter. Several independent calls can go in one turn.
+- Literal paths and arguments: no `$VAR`, `$(…)` or backticks. To use a variable's value, print it first and paste the literal.
+- No loops or heredocs. Multi-step logic goes in a script file written with `Write`, run in one call; file content goes through `Write`, not `cat <<EOF`.
+- When a call is refused, rewrite it into these shapes rather than rewording the same one.
+
 ## Dependencies
 
 - Research well-maintained options before adding a dependency
