@@ -86,7 +86,7 @@ Names and comments describe the code as it is now, in domain terms. No history (
 ## Version Control
 
 - If the project isn't in a git repo, ask before initializing one (the worktree rule doesn't apply to non-git folders).
-- Do every body of work in a worktree based on the default branch on `origin` (fetch first; fall back to the local default branch when there's no remote). This applies to subagents and other agents too. Leave the main checkout pristine: no branch switching, commits, stashes, or rebases there.
+- Do every body of work in a worktree based on the default branch on `origin` (fetch first; fall back to the local default branch when there's no remote). This applies to subagents and other agents too. Worktrees live in the main checkout's `.claude/worktrees/`, never in a sibling directory. Create one with `EnterWorktree`; when that tool isn't available, or a session runs several worktrees at once, run `git worktree add -b <branch> .claude/worktrees/<name> origin/<default>` from the main checkout's root. A brief that hands a subagent a worktree gives it that path. Leave the main checkout pristine: no branch switching, commits, stashes, or rebases there.
 - Track all non-trivial changes in git and commit frequently, even before the larger task is done.
 - Never skip or disable a pre-commit hook.
 - Run `git status` before any `git add -A`, so stray files don't get committed.
