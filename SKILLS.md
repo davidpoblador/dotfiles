@@ -38,14 +38,22 @@ public `anthropics/claude-plugins-official` repo. Install from it only: the
 older `claude-code-plugins` marketplace (`anthropics/claude-code`) carries
 stale copies of the same plugins, and installing both loads them twice.
 
-Installed: `frontend-design`, `commit-commands`, `feature-dev`, and the
-`clangd`, `gopls`, `rust-analyzer`, `swift` and `typescript` LSP plugins.
+Installed: `frontend-design`, `commit-commands`, `feature-dev`, `figma`, and
+the `clangd`, `gopls`, `rust-analyzer`, `swift` and `typescript` LSP plugins.
 
 ```
 /plugin install frontend-design@claude-plugins-official
 /plugin install commit-commands@claude-plugins-official
 /plugin install feature-dev@claude-plugins-official
+/plugin install figma@claude-plugins-official
 ```
+
+`figma` connects Figma's remote MCP server (`mcp.figma.com`), signed in through
+`/plugin`. It works without the desktop app, which the local server
+(`127.0.0.1:3845`) needs running; the local one also requires a paid Dev or Full
+seat, while the remote one works on the free Starter plan at about 20 calls a
+month. Work from links to frames: selecting in the app only reaches the local
+server.
 
 Install them at user scope only. A project-scope install is recorded against
 that project's path and outlives it when the directory is deleted.
