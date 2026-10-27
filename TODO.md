@@ -31,19 +31,25 @@
 digs dig `agent-session-friction`. Judge it a week after it is applied:
 
 - Rerun the dig's scripts from a digs worktree, with the window starting on the
-  apply date: `notes/agent-session-friction/regen.sh <apply-date>`. Settings
-  load at session start, so sessions already open on that day still compact at
-  the old window; leave them out (`regen.sh` takes session ids to exclude).
-- Compare against the dig's 14-day baseline:
-  - requests at 500k or more: 16% of requests, 40% of cache reads
-    (`data/probe.md`);
-  - sessions peaking above 500k: 39 of 196 with more than 20 requests;
-  - median model time per call: 4.3 to 4.8 s under 200k, 5.2 s at 200 to 500k,
-    5.9 to 6.2 s at 500k and over;
-  - auto-compactions: 26 runs in 17 sessions, 34 min in total.
-- The cost side: count compactions and their minutes, and read a few sessions
-  just after one for re-orientation (re-reads, repeated searches). If those eat
-  most of the saving, revert.
+  day dotfiles PR #233 was merged and pulled (`gh pr view 233`):
+  `notes/agent-session-friction/regen.sh <that date>`. Settings load at session
+  start, so sessions already open that day still compact at the old window;
+  leave them out (`regen.sh` takes session ids to exclude). It overwrites the
+  dig's committed `data/`, so record the results in the dig's Log rather than
+  committing over the baseline.
+- The share of requests at 500k or more (baseline 16% of requests, 40% of
+  cache reads) and sessions peaking above 500k (39 of 196) fall to about zero
+  by construction. They only confirm the setting took effect.
+- Judge it on what can go either way, against the dig's 14-day baseline:
+  - cache-read tokens per request: 10.7B over 38,045, about 281k;
+  - model time per tool call: median 5.0 s, mean 7.4 s, overall rather than per
+    band;
+  - net time: compactions will rise (baseline 26 runs in 17 sessions, 34 min).
+    The dig estimates the 500k+ band cost 3 to 4 h of model time per 14 days.
+    Added compaction minutes plus re-orientation after each one (read a few:
+    re-reads, repeated searches) must stay well below that, or revert;
+  - per project, since digs is 147 of 254 sessions and a shift in the mix can
+    move the totals.
 - It is a before/after, not an A/B, and `enableArtifact: false` and the plugin
   trims landed in the same days (about 13k tokens off every request). Rerun
   `overhead.py` to check how much of the drop is theirs.
