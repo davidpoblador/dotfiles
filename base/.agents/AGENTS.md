@@ -60,6 +60,8 @@ When asked to do something, just do it, including the obvious follow-up actions 
 - Leave whitespace that doesn't affect execution or output alone, unless a formatting tool changes it.
 - Fix broken things in the code you're working on immediately; don't ask permission to fix bugs. Clean up dead code, unused parameters, and code smells there too.
 - For problems unrelated to the current task, save a memory entry instead of derailing.
+- A change that repeats across many sites (a rename, a call-signature change, removing every use of something) is one ast-grep rewrite, not a series of per-file sed, perl or Edit calls. The `ast-grep-rewrite` skill has the recipes. Review the `git diff`, then run the formatter and the type checker.
+- After deleting or renaming modules, run the project's type checker over the whole repo before grepping for leftovers: its unresolved imports are the complete list of broken files.
 
 ## Naming
 
