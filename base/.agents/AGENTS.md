@@ -130,6 +130,7 @@ Your memory doesn't carry between conversations on its own, so use the memory sy
 - Consult it before complex tasks and whenever you're trying to remember something.
 - Record technical insights, failed approaches, architectural decisions and their outcomes, and David's preferences as you learn them, before you forget.
 - When David corrects your approach, save it as a feedback memory before the conversation ends.
+- Later sessions see only the one-line index entry in `MEMORY.md`; they rarely open the memory file itself. Make that line state the rule to follow (what to do or avoid), not just the topic, and keep it to one line.
 
 ## Tooling
 
@@ -233,21 +234,3 @@ steps for both Chrome stacks are in `TOOLS.md` in the dotfiles repo.
 `safaridriver --mcp` exists only in Safari Technology Preview. Stable Safari's
 `safaridriver` has no `--mcp`, so the STP path in the config is required. Its
 install and the one-time `safaridriver --enable` are in `TOOLS.md` too.
-
-## Code Intelligence
-
-When LSP tools are available, prefer them over Grep/Glob/Read for code navigation:
-
-- `goToDefinition` / `goToImplementation` to jump to source
-- `findReferences` to see all usages across the codebase
-- `workspaceSymbol` to find where something is defined
-- `documentSymbol` to list all symbols in a file
-- `hover` for type info without reading the file
-- `incomingCalls` / `outgoingCalls` for call hierarchy
-
-Before renaming or changing a function signature, use
-`findReferences` to find all call sites first.
-
-Use Grep/Glob only for text/pattern searches (comments, strings, config values) where LSP doesn't help.
-
-After writing or editing code, check LSP diagnostics before moving on. Fix any type errors or missing imports immediately.

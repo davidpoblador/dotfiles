@@ -101,6 +101,7 @@
   },
   "model": "opus",
   "enableAllProjectMcpServers": true,
+  "enableArtifact": false,
   "hooks": {
     "SessionStart": [
       {
