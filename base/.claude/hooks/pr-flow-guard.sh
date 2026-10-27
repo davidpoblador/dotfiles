@@ -19,7 +19,18 @@ deny() {
 
 is_protected() { case "$1" in main | master) return 0 ;; *) return 1 ;; esac; }
 
+# Tokens arrive unexpanded, so a leading ~ is resolved here.
+expand_home() {
+	# shellcheck disable=SC2088  # matching a literal ~ is the point
+	case "$1" in
+	"~") printf '%s' "$HOME" ;;
+	"~/"*) printf '%s' "$HOME/${1#"~/"}" ;;
+	*) printf '%s' "$1" ;;
+	esac
+}
+
 # Checks one simple command (no ;, &&, ||, |) for a forbidden git push or merge.
+# A `cd` changes the directory later segments' branch lookups resolve from.
 check_segment() {
 	# shellcheck disable=SC2086  # word splitting into tokens is the point
 	set -- $1
@@ -28,6 +39,10 @@ check_segment() {
 	[ $# -gt 0 ] || return 0
 
 	case "${1##*/}" in
+	cd)
+		cd "$(expand_home "${2:-~}")" 2>/dev/null || true
+		return 0
+		;;
 	gh)
 		[ "${2:-}" = pr ] && [ "${3:-}" = merge ] || return 0
 		shift 3
@@ -48,7 +63,7 @@ check_segment() {
 	local dir=.
 	while [ $# -gt 0 ]; do
 		case "$1" in
-		-C) dir="$2"; shift 2 ;;
+		-C) dir=$(expand_home "$2"); shift 2 ;;
 		-c) shift 2 ;;
 		-*) shift ;;
 		*) break ;;
