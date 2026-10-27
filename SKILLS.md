@@ -33,16 +33,22 @@ All of it currently arrives as Claude Code plugins, declared in
 
 ### From the official marketplace — Claude Code only
 
-`anthropics/claude-code-plugins` is **not a public repository** (`gh api` and a
-plain fetch both 404). It is served through Claude Code's own channel, so these
-cannot be installed by the skills CLI or copied by hand. Claude Code is the
-only way to get them.
+`claude-plugins-official` is Claude Code's built-in marketplace, backed by the
+public `anthropics/claude-plugins-official` repo. Install from it only: the
+older `claude-code-plugins` marketplace (`anthropics/claude-code`) carries
+stale copies of the same plugins, and installing both loads them twice.
 
-Installed: `frontend-design` (1 skill).
+Installed: `frontend-design`, `commit-commands`, `feature-dev`, and the
+`clangd`, `gopls`, `rust-analyzer`, `swift` and `typescript` LSP plugins.
 
 ```
 /plugin install frontend-design@claude-plugins-official
+/plugin install commit-commands@claude-plugins-official
+/plugin install feature-dev@claude-plugins-official
 ```
+
+Install them at user scope only. A project-scope install is recorded against
+that project's path and outlives it when the directory is deleted.
 
 ### cloudflare/skills — 11 skills
 
@@ -183,8 +189,8 @@ remove again.
 | **remotion-best-practices** | `npx skills add remotion-dev/skills` |
 | **find-skills** | `npx skills add vercel-labs/skills --skill find-skills` |
 
-expo and stripe are Claude Code only, for the marketplace reason above. The
-other four are installed straight from their upstreams rather than through a
+expo and stripe come from the official marketplace above; don't add a second
+copy from a publisher's own marketplace (`stripe/ai`). The other four are installed straight from their upstreams rather than through a
 re-host.
 
 ## Adding a skill
