@@ -1,0 +1,8 @@
+#!/bin/bash
+# ABOUTME: Prints the Authorization header for the Umami MCP server as JSON, for Claude Code's
+# ABOUTME: headersHelper. The key stays age-encrypted in ~/repos/infrastructure/fnox.toml.
+
+set -euo pipefail
+
+key="$(cd "$HOME/repos/infrastructure" && fnox get UMAMI_MCP_API_KEY)"
+printf '{"Authorization": "Bearer %s"}\n' "$key"
