@@ -652,8 +652,10 @@ Superlogical is OAuth-gated, so after adding it run `/mcp` in a session on that
 machine and authenticate; the tools stay behind an `authenticate` call until
 you do. The token is per machine, like the config.
 
-Umami (our self-hosted `analytics.alltuner.com`) serves a read-only MCP server
-at `/mcp` that takes an API key as a bearer token, no OAuth. A static `headers`
+Umami (our self-hosted analytics) serves a read-only MCP server at `/mcp` that
+takes an API key as a bearer token, no OAuth. The entry uses Umami's tailnet
+node, not `analytics.alltuner.com`: that hostname is the dashboard, behind
+Cloudflare Access, so the server is reachable only on the tailnet. A static `headers`
 entry would put the key in plaintext in `~/.claude.json`, so the entry uses
 `headersHelper` instead: `umami-mcp-headers` (in `base/.local/bin`) decrypts
 `UMAMI_MCP_API_KEY` from the infrastructure repo's `fnox.toml` each time the
@@ -661,7 +663,7 @@ server connects. That needs `~/repos/infrastructure` cloned on the machine. The
 server side and the key's creation are in that repo's README (`umami` section).
 
 ```sh
-claude mcp add-json -s user umami '{"type":"http","url":"https://analytics.alltuner.com/mcp","headersHelper":"umami-mcp-headers"}'
+claude mcp add-json -s user umami '{"type":"http","url":"https://alltuner-umami.long-python.ts.net/mcp","headersHelper":"umami-mcp-headers"}'
 ```
 
 The other servers worth having on every dev machine are `chrome-devtools` and
