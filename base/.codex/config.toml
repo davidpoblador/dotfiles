@@ -1,0 +1,8 @@
+# ABOUTME: Shared Codex sandbox and approval settings for every machine.
+# ABOUTME: Merged into the local config while preserving application-managed keys.
+sandbox_mode = "workspace-write"
+approval_policy = "on-request"
+approvals_reviewer = "auto_review"
+
+[sandbox_workspace_write]
+network_access = true
