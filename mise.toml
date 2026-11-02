@@ -24,6 +24,7 @@ login_shell = "/usr/bin/zsh"
 # The cost of that: a new top-level directory under base/ needs its own entry.
 "~/.agents" = { source = "base/.agents", mode = "symlink-each" }
 "~/.claude" = { source = "base/.claude", mode = "symlink-each" }
+"~/.codex/config.toml/shared" = { source = "base/.codex/config.toml", merge = true, permissions = "600" }
 "~/.config" = { source = "base/.config", mode = "symlink-each" }
 "~/.local/bin" = { source = "base/.local/bin", mode = "symlink-each" }
 "~/.local/share/alltuner" = { source = "base/.local/share/alltuner", mode = "symlink-each" }

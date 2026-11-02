@@ -90,6 +90,7 @@ worktree path.
 | `.config/gh/` | GitHub CLI |
 | `.config/bat/`, `.config/lazygit/` | CLI tools |
 | `.claude/` | Claude Code settings and hooks |
+| `.codex/config.toml` | Shared sandbox, approval, and network settings, merged with machine-local Codex state |
 | `.agents/` | Shared `AGENTS.md`/`CLAUDE.md` and the generated cross-agent skills mirror |
 | `.ssh/` | SSH config (no keys) |
 | `.config/vim/vimrc` | Vim config |
