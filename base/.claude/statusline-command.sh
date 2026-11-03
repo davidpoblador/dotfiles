@@ -227,16 +227,19 @@ if [ "$lines_add" -gt 0 ] || [ "$lines_rm" -gt 0 ]; then
     line2="${line2}${sep}✏️ ${fg_green}+${lines_add}${reset} ${fg_red}-${lines_rm}${reset}"
 fi
 
-# Plan quota: five-hour window, then the weekly one, each labelled with its
-# window and the time left until it resets.
+# Plan quota: each window the payload reports (five-hour, weekly), labelled
+# with the window and the time left until it resets. Either may be absent.
 quota() {
     printf '%s' "${fg_gray}${1}${reset} $(heat "$2")${2}%${reset}"
     [ "$3" -gt 0 ] && printf '%s' " ${fg_gray}↻$(until_epoch "$3")${reset}"
 }
-if [ "$rl5" -ge 0 ]; then
-    line2="${line2}${sep}⏳ $(quota 5h "$rl5" "$rl5_reset")"
-    [ "$rl7" -ge 0 ] && line2="${line2}${fg_gray} · ${reset}$(quota 7d "$rl7" "$rl7_reset")"
+quotas=""
+[ "$rl5" -ge 0 ] && quotas="$(quota 5h "$rl5" "$rl5_reset")"
+if [ "$rl7" -ge 0 ]; then
+    [ -n "$quotas" ] && quotas="${quotas}${fg_gray} · ${reset}"
+    quotas="${quotas}$(quota 7d "$rl7" "$rl7_reset")"
 fi
+[ -n "$quotas" ] && line2="${line2}${sep}⏳ ${quotas}"
 
 # ── Output ───────────────────────────────────────────────────────────
 [ -n "$line0" ] && printf '%b\n' "$line0"
