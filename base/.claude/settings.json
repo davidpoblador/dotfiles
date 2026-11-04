@@ -100,9 +100,7 @@
     "defaultMode": "auto"
   },
   "model": "opus",
-  "autoCompactWindow": 500000,
   "enableAllProjectMcpServers": true,
-  "enableArtifact": false,
   "hooks": {
     "SessionStart": [
       {
@@ -184,6 +182,7 @@
   "worktree": {
     "baseRef": "fresh"
   },
+  "enableArtifact": false,
   "statusLine": {
     "type": "command",
     "command": "~/.claude/statusline-command.sh"
@@ -207,7 +206,8 @@
     "selfmail@alltuner": true,
     "reference@alltuner-reference": true,
     "fleet@alltuner-infrastructure": true,
-    "i-have-adhd@i-have-adhd": true
+    "i-have-adhd@i-have-adhd": true,
+    "brand@alltuner-presence": true
   },
   "extraKnownMarketplaces": {
     "astral-sh": {
@@ -273,10 +273,25 @@
         "source": "github",
         "repo": "resend/resend-skills"
       }
+    },
+    "alltuner-presence": {
+      "source": {
+        "source": "github",
+        "repo": "alltuner/alltuner"
+      }
     }
   },
   "alwaysThinkingEnabled": true,
+  "autoCompactWindow": 500000,
   "advisorModel": "opus",
+  "askUserQuestionTimeout": "5m",
+  "pluginConfigs": {
+    "cc-plugin-agents-md@builtin": {
+      "options": {
+        "instructionFiles": "claude-md-or-agents-md"
+      }
+    }
+  },
   "tui": "fullscreen",
   "voice": {
     "enabled": true,
