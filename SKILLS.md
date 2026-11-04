@@ -149,6 +149,24 @@ npx skills add alltuner/skills --skill vacant  # one
 `vacant` and `selfmail`. The marketplace publishes only skills written here —
 it does not republish anyone else's.
 
+### alltuner/alltuner — 1 skill (private)
+
+```
+/plugin marketplace add alltuner/alltuner
+/plugin install brand@alltuner
+```
+
+`brand:identity`: what a project built on alltuner/reference is told about its
+name, owner, footer, profiles and mark, read from the presence repo's
+`projects.yaml`. The repo is private; the marketplace is cloned with your
+GitHub credentials and published nowhere else. Its sibling is the fleet's
+deploy skill, from the infrastructure repo:
+
+```
+/plugin marketplace add alltuner/infrastructure
+/plugin install fleet@alltuner-infrastructure
+```
+
 ### ayghri/i-have-adhd — 1 skill
 
 ```
