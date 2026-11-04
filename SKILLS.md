@@ -153,13 +153,14 @@ it does not republish anyone else's.
 
 ```
 /plugin marketplace add alltuner/alltuner
-/plugin install brand@alltuner
+/plugin install brand@alltuner-presence
 ```
 
 `brand:identity`: what a project built on alltuner/reference is told about its
 name, owner, footer, profiles and mark, read from the presence repo's
-`projects.yaml`. The repo is private; the marketplace is cloned with your
-GitHub credentials and published nowhere else. Its sibling is the fleet's
+`projects.yaml`. The marketplace is named `alltuner-presence` because `alltuner`
+is the public skills marketplace above. The repo is private; the marketplace is
+cloned with your GitHub credentials and published nowhere else. Its sibling is the fleet's
 deploy skill, from the infrastructure repo:
 
 ```
