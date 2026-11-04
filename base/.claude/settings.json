@@ -99,7 +99,7 @@
     "deny": [],
     "defaultMode": "auto"
   },
-  "model": "opus",
+  "model": "claude-opus-5-5",
   "enableAllProjectMcpServers": true,
   "hooks": {
     "SessionStart": [
@@ -283,7 +283,7 @@
   },
   "alwaysThinkingEnabled": true,
   "autoCompactWindow": 500000,
-  "advisorModel": "opus",
+  "advisorModel": "claude-opus-5-5",
   "askUserQuestionTimeout": "5m",
   "pluginConfigs": {
     "cc-plugin-agents-md@builtin": {
