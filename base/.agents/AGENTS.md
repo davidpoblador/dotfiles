@@ -233,6 +233,9 @@ code; start each script from `await snapshot()` and act on its refs.
   page handle ("Target page closed"). The tab survives: re-select it with
   `targetUrl` and carry on.
 - Delete your sessions when done.
+- On the mac mini, Browse drives the laptop's Helium through a tunnel, so it
+  works only while the laptop is awake. "browse relay is not reachable" there
+  means stop and report, not retry or `browse serve`.
 
 ### Chrome DevTools MCP
 

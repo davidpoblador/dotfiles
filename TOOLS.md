@@ -510,6 +510,47 @@ Finder and install the cask instead. The profile lives in
 `~/Library/Application Support/net.imput.helium`, so nothing is lost. Never
 `brew uninstall --zap helium-browser`: the zap deletes that profile.
 
+#### Sharing the browser with an agent-only host
+
+One machine (the laptop) holds Helium and the relay; agents on another (the
+mac mini) drive that same Helium through a reverse ssh tunnel. This isn't
+Browse's documented remote setup: that one points the extension's single relay
+address at the other machine, which takes the browser away from the laptop's
+own agents. The agent side always talks to `http://127.0.0.1:19988` with the
+token in `~/.local/share/browse/relay-token`, so the agent host gets a copy of
+the laptop's token and a tunnel to the laptop's relay.
+
+On the browser host, name the agent host (its ssh name) in an untracked file
+and run `mise bootstrap`; the `browse-share` launchd job then holds
+`ssh -R 127.0.0.1:19988:127.0.0.1:19988` open and relaunches it on failure. It
+first frees that port on the agent host, since a tunnel from before a sleep can
+keep it bound until sshd notices (hours, without `ClientAliveInterval`).
+
+```sh
+mkdir -p ~/.config/browse-share
+echo agent-host-name > ~/.config/browse-share/host
+ssh agent-host-name 'umask 077; cat > ~/.local/share/browse/relay-token' < ~/.local/share/browse/relay-token
+```
+
+On the agent host, skip the extension and pairing (step 1 and `browse pair`)
+and add the server with relay autostart off. Otherwise an agent that calls
+Browse while the tunnel is down starts a local relay with no browser behind it,
+and that relay holds the port so the tunnel can't come back:
+
+```sh
+claude mcp add-json -s user browse '{"type":"stdio","command":"browse","args":["mcp"],"env":{"OPENCODE_BROWSER_AUTOSTART":"0"}}'
+```
+
+Caveats:
+
+- The agent host has the browser only while the laptop is awake and online.
+- Keep Browse on the same version on both machines (mise upgrades each on its
+  own). Never run `browse relay restart` on the agent host: it would restart
+  the laptop's relay through the tunnel.
+- If the laptop's relay token changes, copy it again.
+- chrome-devtools doesn't go through the tunnel; on the agent host it only
+  works against a local Helium.
+
 #### Chrome DevTools MCP
 
 It lives in `~/.claude.json` under `mcpServers`, which is machine-local and not

@@ -1,0 +1,27 @@
+#!/bin/bash
+# ABOUTME: Shares this machine's Browse relay with an agent-only host over a reverse
+# ABOUTME: ssh tunnel, so agents there drive the local browser. Run by launchd.
+
+# The agent host's ssh name lives in an untracked file (host names stay out of
+# the repo). Without it this machine shares nothing: exit 0 so launchd's
+# keep-alive-on-failure leaves the job stopped.
+HOST_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/browse-share/host"
+[ -r "$HOST_FILE" ] || exit 0
+HOST="$(head -n 1 "$HOST_FILE")"
+[ -n "$HOST" ] || exit 0
+
+PORT=19988
+SSH_OPTS="-o BatchMode=yes -o ConnectTimeout=10 -o ControlMaster=no -o ControlPath=none -o ServerAliveInterval=30 -o ServerAliveCountMax=3"
+
+# A tunnel from before a sleep or network change can keep the remote port bound
+# until the remote sshd notices the client is gone (hours, without
+# ClientAliveInterval). Free it first; nothing else should hold the port there.
+# shellcheck disable=SC2086,SC2029
+ssh $SSH_OPTS "$HOST" "/usr/sbin/lsof -t -nP -iTCP:$PORT -sTCP:LISTEN | xargs kill 2>/dev/null; true"
+
+# shellcheck disable=SC2086
+ssh $SSH_OPTS -N -o ExitOnForwardFailure=yes \
+  -R "127.0.0.1:$PORT:127.0.0.1:$PORT" "$HOST"
+
+# Any return, clean or not, means the tunnel is down: fail so launchd relaunches.
+exit 1
