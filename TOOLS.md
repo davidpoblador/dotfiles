@@ -486,10 +486,15 @@ version. Per machine:
 1. In Helium, add the [iCloud Passwords](https://chromewebstore.google.com/detail/icloud-passwords/pejdijmoenmkgeppbflobdenhhabjlaj)
    and [Browse](https://chromewebstore.google.com/detail/mfnicocicmmlkpjnaffgihfjhdgjkdjg)
    extensions from the Chrome Web Store.
-2. Run `browse install -a claude`. It adds the `browse` server to
-   `~/.claude.json` and prints a pairing code; enter it under Extensions >
-   browse > Options > "Pair with a code". `browse status` should then show
-   `Extension: connected`.
+2. Add the server and pair the extension. `browse pair` prints a one-time
+   code; enter it under Extensions > browse > Options > "Pair with a code".
+   `browse status` should then show `Extension: connected`. Skip `browse install`:
+   it also installs a global npm copy of itself next to mise's.
+
+   ```sh
+   claude mcp add -s user browse -- browse mcp
+   browse pair
+   ```
 3. In Helium, turn on remote debugging once at `chrome://inspect/#remote-debugging`
    (for the chrome-devtools server below).
 4. If Claude in Chrome was enabled by default on the machine, run `/chrome` and
