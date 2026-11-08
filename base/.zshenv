@@ -32,3 +32,7 @@ export EXPOSE_CONFIG="$HOME/sync/secrets/expose.env"
 # this: wrangler owns ~/.config/.wrangler/metrics.json and rewrites it,
 # so a tracked opt-out there gets flipped back on.
 export WRANGLER_SEND_METRICS=false
+
+# Browse updates itself hourly by reinstalling with npm, behind mise's back.
+# mise owns the version (config.dev.toml), so switch the updater off.
+export OPENCODE_BROWSER_AUTO_UPDATE=off

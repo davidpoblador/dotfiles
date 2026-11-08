@@ -476,14 +476,24 @@ which is how a fresh daemon adopts them.
 Which stack to use for what lives in `base/.agents/AGENTS.md`. This is the
 one-time setup per machine.
 
-#### Claude in Chrome
+#### Helium and Browse
 
-1. Install the [Claude in Chrome](https://chromewebstore.google.com/detail/claude/fcoeoabgfenejglbffodgkkbkcdhcgfn)
-   extension (works with Chrome and Edge).
-2. Start Claude Code with `claude --chrome`. The native messaging host config is
-   installed automatically on first use.
-3. To keep it on by default, run `/chrome` and choose "Enabled by default" (this
-   keeps the browser tools loaded, which costs context).
+Helium (`brew-cask:helium-browser`) is the agents' browser; the `browse` CLI
+comes from mise (`npm:@opencode/browse`). Browse updates itself hourly unless
+`OPENCODE_BROWSER_AUTO_UPDATE=off`, which `.zshenv` sets so mise keeps the
+version. Per machine:
+
+1. In Helium, add the [iCloud Passwords](https://chromewebstore.google.com/detail/icloud-passwords/pejdijmoenmkgeppbflobdenhhabjlaj)
+   and [Browse](https://chromewebstore.google.com/detail/mfnicocicmmlkpjnaffgihfjhdgjkdjg)
+   extensions from the Chrome Web Store.
+2. Run `browse install -a claude`. It adds the `browse` server to
+   `~/.claude.json` and prints a pairing code; enter it under Extensions >
+   browse > Options > "Pair with a code". `browse status` should then show
+   `Extension: connected`.
+3. In Helium, turn on remote debugging once at `chrome://inspect/#remote-debugging`
+   (for the chrome-devtools server below).
+4. If Claude in Chrome was enabled by default on the machine, run `/chrome` and
+   turn it off; that setting is machine-local too.
 
 #### Chrome DevTools MCP
 
@@ -496,7 +506,8 @@ tracked here, so reproduce it by hand on each machine:
   "command": "npx",
   "args": [
     "-y", "chrome-devtools-mcp@latest",
-    "--autoConnect",                 // attach to the running Chrome, don't launch one
+    "--autoConnect",                 // attach to the running Helium, don't launch one
+    "--userDataDir=/Users/<you>/Library/Application Support/net.imput.helium",
     "--usageStatistics=false",       // Google telemetry, on by default
     "--performanceCrux=false",       // stops trace URLs going to Google's CrUX API
     "--redactNetworkHeaders",        // keeps auth headers out of the transcript
@@ -511,12 +522,14 @@ tracked here, so reproduce it by hand on each machine:
 `npx`, not `bunx`: `bunx pkg@latest` resolves `latest` once and then serves that
 cached version forever, so the pin silently rots.
 
-`--autoConnect` needs Chrome 144+ with remote debugging enabled once via
-`chrome://inspect/#remote-debugging`. It attaches to the same Chrome the native
-integration drives, so both stacks share state and there's only one window. The
-last two args only apply when the server launches Chrome itself, so under
-`--autoConnect` they're inert; they're kept as a fallback for the launch path,
-where the `--chromeArg` is load-bearing for `navigator.webdriver`.
+`--autoConnect` needs Chromium 144+ with remote debugging enabled (step 3
+above). `--userDataDir` points it at Helium's profile, where it finds the
+running browser's `DevToolsActivePort`; it takes a literal absolute path. It
+attaches to the same Helium that Browse drives, so both stacks share state and
+there's only one window. The last two args only apply when the server launches
+a browser itself (stable Chrome, not Helium), so under `--autoConnect` they're
+inert; they're kept as a fallback for the launch path, where the `--chromeArg`
+is load-bearing for `navigator.webdriver`.
 
 #### Safari Technology Preview
 
@@ -666,5 +679,6 @@ server side and the key's creation are in that repo's README (`umami` section).
 claude mcp add-json -s user umami '{"type":"http","url":"https://alltuner-umami.long-python.ts.net/mcp","headersHelper":"umami-mcp-headers"}'
 ```
 
-The other servers worth having on every dev machine are `chrome-devtools` and
-`safari-mcp-stp`; their entries and setup are in the two sections above.
+The other servers worth having on every dev machine are `browse`,
+`chrome-devtools` and `safari-mcp-stp`; their entries and setup are in the
+browser automation sections above.
