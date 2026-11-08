@@ -54,6 +54,16 @@ process_type = "Background"
 stdout_path = "~/Library/Logs/dotfiles-maintain.log"
 stderr_path = "~/Library/Logs/dotfiles-maintain.log"
 
+# Shares the Browse relay with an agent-only host; a no-op unless
+# ~/.config/browse-share/host names one (see TOOLS.md)
+[bootstrap.macos.launchd.agents.browse-share]
+program = "~/.local/bin/browse-share"
+run_at_load = true
+keep_alive_on_failure = true
+throttle_interval = 30
+stdout_path = "~/Library/Logs/browse-share.log"
+stderr_path = "~/Library/Logs/browse-share.log"
+
 [bootstrap.linux.systemd.units.dotfiles-maintain]
 description = "dotfiles maintenance (mise tools, antidote plugins)"
 type = "oneshot"
