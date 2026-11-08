@@ -210,33 +210,36 @@ age-encrypted values stored inline in config files that are safe to commit.
 
 ## Browser Automation
 
-Three stacks, each with a job. All three are in active use; don't collapse them
-into one.
+Agents get their own browser, Helium (Chromium-based), separate from David's
+everyday one. Three stacks, each with a job; don't collapse them into one.
 
 | stack | use it for |
 |---|---|
-| Claude in Chrome (native) | driving pages, logged-in sessions, clicking and filling |
-| `chrome-devtools` MCP | perf traces, heap snapshots, network and console inspection, device emulation |
+| `browse` MCP (Helium) | driving pages, logged-in sessions, clicking and filling |
+| `chrome-devtools` MCP (Helium) | perf traces, heap snapshots, network and console inspection, device emulation |
 | `safari-mcp-stp` MCP | WebKit-specific checks |
 
-### Claude in Chrome (default)
+### Browse (default)
 
-Claude Code's first-party Chrome integration connects the CLI to a real Chrome
-via the official extension and native messaging.
+[Browse](https://github.com/anomalyco/browse) drives Helium through its
+extension: real tabs, David's logins (iCloud Passwords and passkeys work
+there), and handoffs for login, 2FA or captchas. `execute` runs Playwright
+code; start each script from `await snapshot()` and act on its refs.
 
-It drives a visible Chrome window, reuses sessions you're already logged into,
-navigates/clicks/fills, and reads console logs for debugging. Site permissions
-live in the extension settings.
-
-Requires a direct Anthropic plan (Pro/Max/Team/Enterprise); not available on
-Bedrock, Vertex, or Foundry, and not supported on WSL.
+- Give sessions an `allowedOrigins` list for the sites the task needs.
+- Read-only sessions can't open tabs, only watch existing ones, so they're
+  useless for starting a task.
+- A navigation that redirects (e.g. to a login page) can close the script's
+  page handle ("Target page closed"). The tab survives: re-select it with
+  `targetUrl` and carry on.
+- Delete your sessions when done.
 
 ### Chrome DevTools MCP
 
-For DevTools-grade work the native integration doesn't cover. It attaches to the
-same Chrome the native integration drives (`--autoConnect`), so both share state.
+For DevTools-grade work Browse doesn't cover. It attaches to the running
+Helium (`--autoConnect` with Helium's profile), so both stacks share state.
 Its config is machine-local in `~/.claude.json`; the canonical entry and setup
-steps for both Chrome stacks are in `TOOLS.md` in the dotfiles repo.
+steps for both Helium stacks are in `TOOLS.md` in the dotfiles repo.
 
 ### Safari
 

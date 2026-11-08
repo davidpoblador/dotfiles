@@ -101,6 +101,8 @@
 "brew-cask:docker-desktop" = { version = "latest", adopt = true } # docker engine + CLI (completions wired in .zshrc)
 "brew-cask:font-jetbrains-mono-nerd-font" = "latest"
 "brew-cask:gitkraken-cli" = "latest"                 # GitKraken terminal UI
+# Self-updating: adopt a hand-installed Helium.app rather than replace it
+"brew-cask:helium-browser" = { version = "latest", adopt = true } # the agent browser (Browse + chrome-devtools MCP)
 "brew-cask:ngrok" = "latest"                         # tunnels to local servers
 "brew-cask:obsidian" = "latest"                      # knowledge base
 "brew-cask:raycast" = "latest"                       # launcher
