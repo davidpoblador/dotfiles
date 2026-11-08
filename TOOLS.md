@@ -478,10 +478,19 @@ one-time setup per machine.
 
 #### Helium and Browse
 
-Helium (`brew-cask:helium-browser`) is the agents' browser; the `browse` CLI
-comes from mise (`npm:@opencode/browse`). Browse updates itself hourly unless
-`OPENCODE_BROWSER_AUTO_UPDATE=off`, which `.zshenv` sets so mise keeps the
-version. Per machine:
+Helium is the agents' browser and lives on one machine, the browser host (the
+laptop). Its cask is declared there only, in the untracked
+`~/.config/mise/config.local.toml` (bootstrap reads it), so other macs don't
+install it and `mise packages prune` on the laptop doesn't remove it:
+
+```toml
+[bootstrap.packages]
+"brew-cask:helium-browser" = "latest"
+```
+
+The `browse` CLI comes from mise (`npm:@opencode/browse`) on every mac.
+Browse updates itself hourly unless `OPENCODE_BROWSER_AUTO_UPDATE=off`, which
+`.zshenv` sets so mise keeps the version. On the browser host:
 
 1. In Helium, add the [iCloud Passwords](https://chromewebstore.google.com/detail/icloud-passwords/pejdijmoenmkgeppbflobdenhhabjlaj)
    and [Browse](https://chromewebstore.google.com/detail/mfnicocicmmlkpjnaffgihfjhdgjkdjg)
@@ -548,8 +557,9 @@ Caveats:
   own). Never run `browse relay restart` on the agent host: it would restart
   the laptop's relay through the tunnel.
 - If the laptop's relay token changes, copy it again.
-- chrome-devtools doesn't go through the tunnel; on the agent host it only
-  works against a local Helium.
+- chrome-devtools doesn't go through the tunnel (Helium's debug port is
+  random and bound to localhost), so the agent host has no chrome-devtools
+  server; that work happens on the browser host.
 
 #### Chrome DevTools MCP
 
