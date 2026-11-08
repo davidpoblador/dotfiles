@@ -213,6 +213,18 @@ age-encrypted values stored inline in config files that are safe to commit.
 Agents get their own browser, Helium (Chromium-based), separate from David's
 everyday one. Three stacks, each with a job; don't collapse them into one.
 
+Helium runs on one machine only, the laptop (the browser host). The mac mini
+(an agent-only host) has no Helium: never install or launch it there; reach
+the laptop's through Browse. Tell them apart without guessing: the browser
+host has `~/.config/browse-share/host` (naming the agent host it shares with)
+and `/Applications/Helium.app`; the agent host has neither.
+
+`browse status` names the browser `chrome-<host>` / "Chrome on <host>", where
+`<host>` is the laptop's hostname, and Helium's user agent says Chrome. That
+is Helium, not David's everyday Chrome (which has no Browse extension). Seeing
+another machine's hostname there means you're on the agent host, going through
+the tunnel, which is normal.
+
 | stack | use it for |
 |---|---|
 | `browse` MCP (Helium) | driving pages, logged-in sessions, clicking and filling |
@@ -233,14 +245,17 @@ code; start each script from `await snapshot()` and act on its refs.
   page handle ("Target page closed"). The tab survives: re-select it with
   `targetUrl` and carry on.
 - Delete your sessions when done.
-- On the mac mini, Browse drives the laptop's Helium through a tunnel, so it
-  works only while the laptop is awake. "browse relay is not reachable" there
-  means stop and report, not retry or `browse serve`.
+- On the agent host, Browse's relay at `127.0.0.1:19988` is a reverse ssh
+  tunnel to the laptop, so it works only while the laptop is awake. "browse
+  relay is not reachable" there means stop and report, not retry or
+  `browse serve`.
 
 ### Chrome DevTools MCP
 
-For DevTools-grade work Browse doesn't cover. It attaches to the running
-Helium (`--autoConnect` with Helium's profile), so both stacks share state.
+For DevTools-grade work Browse doesn't cover, on the browser host only (the
+agent host has no chrome-devtools server; do that work from the laptop). It
+attaches to the running Helium (`--autoConnect` with Helium's profile), so
+both stacks share state.
 Its config is machine-local in `~/.claude.json`; the canonical entry and setup
 steps for both Helium stacks are in `TOOLS.md` in the dotfiles repo.
 
