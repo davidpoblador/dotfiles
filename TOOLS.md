@@ -497,8 +497,18 @@ version. Per machine:
    ```
 3. In Helium, turn on remote debugging once at `chrome://inspect/#remote-debugging`
    (for the chrome-devtools server below).
-4. If Claude in Chrome was enabled by default on the machine, run `/chrome` and
-   turn it off; that setting is machine-local too.
+
+Claude in Chrome stays off everywhere through `CLAUDE_CODE_ENABLE_CFC=0` in the
+tracked `settings.json` `env`; it overrides the machine-local "Enabled by
+default" that `/chrome` writes to `~/.claude.json`. Only `claude --chrome`
+beats it.
+
+Install Helium through the cask, not by hand. Adopting a hand-installed
+`Helium.app` fails from a terminal without macOS's App Management permission
+(`chgrp: Operation not permitted` on every file); move the app to the Trash in
+Finder and install the cask instead. The profile lives in
+`~/Library/Application Support/net.imput.helium`, so nothing is lost. Never
+`brew uninstall --zap helium-browser`: the zap deletes that profile.
 
 #### Chrome DevTools MCP
 
