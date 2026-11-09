@@ -238,12 +238,25 @@ extension: real tabs, David's logins (iCloud Passwords and passkeys work
 there), and handoffs for login, 2FA or captchas. `execute` runs Playwright
 code; start each script from `await snapshot()` and act on its refs.
 
-- Give sessions an `allowedOrigins` list for the sites the task needs.
+- Set an `allowedOrigins` list before `secrets.type` or reading untrusted
+  content, naming only the sites the task needs. If the task starts with a
+  login (handoff, "Continue with Google", SSO), open the session without one
+  and set it with `session_allowlist` once the tab is back on the target
+  site: sign-in flows hop through hosts nobody predicts (Google's goes via
+  `accounts.youtube.com`), and a blocked hop strands the login with the user
+  seeing only a page that won't load. Don't keep a standing list of identity
+  provider hosts; it goes stale.
+- A blocked hop is named in the execute result's `warnings` ("Domain
+  allowlist: ... is not in the allowed origins"), even when the error itself
+  just says "Target page closed". Check `warnings` before anything else, and
+  tell the user which host was blocked; widen the list only with their OK.
+  When the agent types the login password itself, the list has to exist
+  before sign-in, so expect this and add the hosts as they're named.
 - Read-only sessions can't open tabs, only watch existing ones, so they're
   useless for starting a task.
 - A navigation that redirects (e.g. to a login page) can close the script's
-  page handle ("Target page closed"). The tab survives: re-select it with
-  `targetUrl` and carry on.
+  page handle ("Target page closed"). Once `warnings` shows no allowlist
+  block, the tab survives: re-select it with `targetUrl` and carry on.
 - Delete your sessions when done.
 - On the agent host, Browse's relay at `127.0.0.1:19988` is a reverse ssh
   tunnel to the laptop, so it works only while the laptop is awake. "browse
