@@ -1,6 +1,6 @@
 ---
 name: implementer
-description: Builds one well-scoped piece of work in its own git worktree and commits it on its own branch. Use for bug fixes, features against a clear spec, mechanical edits and migrations, choosing the model per spawn by difficulty. Several can run in parallel on independent pieces. It doesn't push, open PRs or merge unless the brief says so.
+description: Builds one well-scoped piece of work in its own git worktree and commits it on its own branch. Use for bug fixes, features against a clear spec and docs on sonnet, and for mechanical edits that a test or type checker proves with `model: haiku`. Harder work goes to `engineer`. Several can run in parallel on independent pieces. It doesn't push, open PRs or merge unless the brief says so.
 model: sonnet
 effort: medium
 isolation: worktree
