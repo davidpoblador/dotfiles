@@ -40,6 +40,38 @@ When asked to do something, just do it, including the obvious follow-up actions 
 - YAGNI. The best code is no code. Don't add features we don't need right now.
 - When it doesn't conflict with YAGNI, architect for extensibility and flexibility.
 
+## Coordinating and delegating
+
+A session in a repo is usually the only one working there, and it acts as the coordinator. It scopes the work, splits it, hands the pieces to subagents, reviews what comes back, and lands it. Keep design decisions, judgment calls and the review of every diff in your own context. Hand off reading, running commands and well-scoped building. Your context is the most expensive one in the session, so spend it on decisions.
+
+- Fan out only when the pieces are independent, meaning separate files, modules or issues that can each be verified on their own. Launch them in a single turn so they run in parallel, each building in its own worktree.
+- Don't fan out a chain of dependent steps, or work that fits easily in one context. Planning and merging cost more than they save there, so do it yourself.
+- Write every brief so it stands on its own. Give the goal, the files to start from, what's decided and what's ruled out, the command or test that proves the work, and what to report back. A worker that can't check its own work needs a fix to its brief, not a bigger model.
+- Workers commit on their own branch. They don't push, open PRs or merge unless the brief says so. Review each diff yourself before it lands, and merge branches that are ready together as one batch.
+- When you delegate something, don't also do it yourself. Keep working on whatever doesn't depend on the result.
+
+### Picking the model (Claude Code)
+
+Choose by how hard the work is and by what a mistake costs and how quickly it shows, not by how big the task looks. Name a `model` on every Agent call, because a spawn without one inherits the session's model. The effort levels below are an explicit instruction for the Agent tool's `effort` parameter. Leave it unset where the table says "default".
+
+| Work | Agent | model | effort |
+|---|---|---|---|
+| Finding files, reading logs and output, summarizing, running tests and reporting the failures | `Explore` | haiku | default |
+| Mechanical edits that a test, linter or type checker proves (renames, codemods, fixture updates) | `implementer` | haiku | default |
+| Well-scoped building: a bug fix, a feature against a clear spec, docs | `implementer` | sonnet | medium, then high |
+| A second-opinion review of a diff, given the code but not your conclusion | `reviewer` | sonnet | medium |
+| Migrations, performance work, concurrency, cross-cutting or ambiguous changes, anything where a subtle mistake is expensive, or work where sonnet fell short | `engineer` | opus | medium, then high |
+| The most ambitious work only: major refactors and migrations across a codebase, architecture that sets direction, deep research, or work where `engineer` at high fell short | `architect` | fable | medium, then high |
+
+- Ask David before every fable spawn, including `architect`, a `model: fable` override and a fable fork. Say why `engineer` at high isn't enough and roughly what the work involves. His yes covers that one task only.
+- A clear spec doesn't make something Sonnet work on its own. A migration with a crisp spec still belongs on `engineer`.
+- When a worker falls short, escalate in this order. First make sure it can verify its own work. Then raise effort one level. Then move to the next agent up (`implementer` → `engineer` → `architect`), starting at a lower effort.
+- A fork (`subagent_type: "fork"`) always runs on the session's model. Use one only when the work depends on context from this conversation that a brief can't carry. Otherwise brief a fresh agent and choose its model.
+- `implementer`, `engineer` and `architect` each get their own worktree at `.claude/worktrees/agent-<id>` in the main checkout, on branch `worktree-agent-<id>`, branched from `origin`'s default branch. That branch is fetched only when the local copy is over a day old, so run `git fetch` before spawning. The worktree is removed when the worker made no changes.
+- Workers can't see your unpushed commits. When the pieces build on a shared base (a scaffold, an interface, a migration), push that base first, or tell each worker to merge your branch before it starts.
+- Switching the main session's model mid-task drops the prompt cache. Run `/compact` first, or start fresh from a written plan.
+- A repo can define its own agents in `.claude/agents/`. Those win over the global ones with the same name, and a repo-specific worker (its gate, its worktree setup) takes the place of the generic row it covers.
+
 ## Test Driven Development (TDD)
 
 - TDD applies when the repo already has working test infrastructure. If the repo has no tests and no test framework, skip TDD and just make the change (see Testing).
@@ -86,7 +118,7 @@ Names and comments describe the code as it is now, in domain terms. No history (
 ## Version Control
 
 - If the project isn't in a git repo, ask before initializing one (the worktree rule doesn't apply to non-git folders).
-- Do every body of work in a worktree based on the default branch on `origin` (fetch first; fall back to the local default branch when there's no remote). This applies to subagents and other agents too. Worktrees live in the main checkout's `.claude/worktrees/`, never in a sibling directory. Create one with `EnterWorktree`; when that tool isn't available, or a session runs several worktrees at once, run `git worktree add -b <branch> .claude/worktrees/<name> origin/<default>` from the main checkout's root. A brief that hands a subagent a worktree gives it that path. Leave the main checkout pristine: no branch switching, commits, stashes, or rebases there.
+- Do every body of work in a worktree based on the default branch on `origin` (fetch first; fall back to the local default branch when there's no remote). This applies to subagents and other agents too. Worktrees live in the main checkout's `.claude/worktrees/`, never in a sibling directory. Create one with `EnterWorktree`; when that tool isn't available, or a session runs several worktrees at once, run `git worktree add -b <branch> .claude/worktrees/<name> origin/<default>` from the main checkout's root. A subagent spawned with `isolation: "worktree"` (or as `implementer`, `engineer` or `architect`) gets one there automatically. A brief that hands a subagent a worktree gives it that path. Leave the main checkout pristine: no branch switching, commits, stashes, or rebases there.
 - Track all non-trivial changes in git and commit frequently, even before the larger task is done.
 - Never skip or disable a pre-commit hook.
 - Run `git status` before any `git add -A`, so stray files don't get committed.
