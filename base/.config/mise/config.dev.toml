@@ -13,7 +13,7 @@ pi = "latest"
 gcloud = "latest"
 # mise leaves prereleases out of both "latest" and prefix matching, so only an
 # exact version selects a beta; Renovate bumps it (see renovate.json).
-"npm:cf" = "1.0.0-beta.24"
+"npm:cf" = "1.0.0-beta.32"
 # Browse: MCP server + relay for the agent browser (Helium); see TOOLS.md.
 # First published 2026-10-30, inside the npm backend's 30-day minimum package
 # age; allow_low_downloads waives that check until it ages out (2026-11-29).
