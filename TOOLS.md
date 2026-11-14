@@ -667,6 +667,13 @@ What the dotfiles contribute on top:
   setup would add itself if the file weren't a symlink. Rex's guard is the only
   TERM handling; other TERMs reach hosts unchanged (every fleet host has
   `tmux-256color`).
+- `base/.local/bin/rex` comes before Rex's own directory on PATH. It passes
+  every command through to the real `rex`, except that under a coding agent
+  (`CLAUDECODE=1`, which scripts the agent runs inherit) it refuses
+  `server stop`, `server uninstall`, `kill` and `session kill`. Each of those
+  kills every program in the panes it reaches. An agent once stopped the real
+  server while aiming at a throwaway one, so agents stop their test servers by
+  pid and leave the rest to you.
 
 `~/.config/rex/` holds Rex's state: `ssh_config`, `terminfo-hosts`, and
 `init.lua` once there are keybindings to set (`rex config check` validates it,
