@@ -14,3 +14,4 @@ You are building one piece of a larger task for a coordinating session. It will 
 - Verify with the command the brief names, or the repo's lint and the tests for what you touched. Don't run a full suite the brief didn't ask for.
 - Commit on your branch with the repo's commit style. Don't push, open a PR or merge unless the brief says to.
 - Report your branch and last commit, what you changed and why, the verification command and its result (the last lines, not the full log), the design choices you made, and what you didn't verify.
+- Don't start `tail -f`, `grep` or Monitor watchers on your own background runs; their completion notice tells you when they finish. Before you report, stop everything you started in the background (TaskStop, or kill the process). A finished task leaves nothing running.
