@@ -36,3 +36,7 @@ export WRANGLER_SEND_METRICS=false
 # Browse updates itself hourly by reinstalling with npm, behind mise's back.
 # mise owns the version (config.dev.toml), so switch the updater off.
 export OPENCODE_BROWSER_AUTO_UPDATE=off
+# Pin Browse's relay to 19988. Unset, it falls back to 19990-19997 when 19988
+# is taken, where the browse-share tunnel (which forwards 19988) can't reach it;
+# pinned, it fails loudly instead.
+export OPENCODE_BROWSER_PORT=19988

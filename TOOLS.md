@@ -490,7 +490,9 @@ install it and `mise packages prune` on the laptop doesn't remove it:
 
 The `browse` CLI comes from mise (`npm:@opencode/browse`) on every mac.
 Browse updates itself hourly unless `OPENCODE_BROWSER_AUTO_UPDATE=off`, which
-`.zshenv` sets so mise keeps the version. On the browser host:
+`.zshenv` sets so mise keeps the version. `.zshenv` also pins the relay to
+port 19988 (`OPENCODE_BROWSER_PORT`), which the tunnel below depends on. On
+the browser host:
 
 1. In Helium, add the [iCloud Passwords](https://chromewebstore.google.com/detail/icloud-passwords/pejdijmoenmkgeppbflobdenhhabjlaj)
    and [Browse](https://chromewebstore.google.com/detail/mfnicocicmmlkpjnaffgihfjhdgjkdjg)
@@ -554,8 +556,8 @@ Caveats:
 
 - The agent host has the browser only while the laptop is awake and online.
 - Keep Browse on the same version on both machines (mise upgrades each on its
-  own). Never run `browse relay restart` on the agent host: it would restart
-  the laptop's relay through the tunnel.
+  own). Never run `browse restart` on the agent host: it would restart the
+  laptop's relay through the tunnel.
 - If the laptop's relay token changes, copy it again.
 - chrome-devtools doesn't go through the tunnel (Helium's debug port is
   random and bound to localhost), so the agent host has no chrome-devtools

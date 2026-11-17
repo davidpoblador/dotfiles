@@ -267,33 +267,31 @@ the tunnel, which is normal.
 
 [Browse](https://github.com/anomalyco/browse) drives Helium through its
 extension: real tabs, David's logins (iCloud Passwords and passkeys work
-there), and handoffs for login, 2FA or captchas. `execute` runs Playwright
-code; start each script from `await snapshot()` and act on its refs.
+there), and handoffs for login, 2FA or captchas. Its MCP server offers
+`execute` (Playwright-style code; start each script from `await snapshot()`
+and act on its refs), `status` and `tabs`. Tabs are the handle: every result
+starts with `tab: <id>`, and passing that back keeps you in the same tab.
 
-- Set an `allowedOrigins` list before `secrets.type` or reading untrusted
-  content, naming only the sites the task needs. If the task starts with a
-  login (handoff, "Continue with Google", SSO), open the session without one
-  and set it with `session_allowlist` once the tab is back on the target
-  site: sign-in flows hop through hosts nobody predicts (Google's goes via
-  `accounts.youtube.com`), and a blocked hop strands the login with the user
-  seeing only a page that won't load. Don't keep a standing list of identity
-  provider hosts; it goes stale.
-- A blocked hop is named in the execute result's `warnings` ("Domain
-  allowlist: ... is not in the allowed origins"), even when the error itself
-  just says "Target page closed". Check `warnings` before anything else, and
-  tell the user which host was blocked; widen the list only with their OK.
-  When the agent types the login password itself, the list has to exist
-  before sign-in, so expect this and add the hosts as they're named.
-- Read-only sessions can't open tabs, only watch existing ones, so they're
-  useless for starting a task.
-- A navigation that redirects (e.g. to a login page) can close the script's
-  page handle ("Target page closed"). Once `warnings` shows no allowlist
-  block, the tab survives: re-select it with `targetUrl` and carry on.
-- Delete your sessions when done.
+- For work that recurs, open a named tab (`tabs` action `new` with an `id`
+  such as `bank-statements`): later runs get the same tab back, it survives a
+  browser restart and it never closes when idle.
+- Give a tab an `allowedOrigins` list before reading untrusted content in it,
+  naming only the sites the task needs. The list is fixed when the tab opens,
+  so widening it means a new tab with the wider list, and only with David's
+  OK. If the task starts with a login (handoff, "Continue with Google", SSO),
+  log in from a tab without a list, then open the working tab with one: the
+  login lives in the browser, not the tab. Sign-in flows hop through hosts
+  nobody predicts (Google's goes via `accounts.youtube.com`), and a blocked hop
+  strands the login on a page that won't load. Don't keep a standing list of
+  identity provider hosts; it goes stale.
+- A navigation the list refuses fails with "browse blocked ... has a domain
+  allowlist", naming the host. Tell David which host it was.
+- Work only in tabs you opened or David lent you. Close yours when done,
+  except named tabs you mean to reuse.
 - On the agent host, Browse's relay at `127.0.0.1:19988` is a reverse ssh
-  tunnel to the laptop, so it works only while the laptop is awake. "browse
-  relay is not reachable" there means stop and report, not retry or
-  `browse serve`.
+  tunnel to the laptop, so it works only while the laptop is awake. "no relay
+  is running at 127.0.0.1:19988" there means stop and report, not retry,
+  `browse serve` or `browse restart`.
 
 ### Chrome DevTools MCP
 
