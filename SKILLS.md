@@ -31,16 +31,19 @@ to it through `~/.claude/skills/`, but **only if no plugin already provides it**
 All of it currently arrives as Claude Code plugins, declared in
 `base/.claude/settings.json`.
 
-`commit-commands`, `feature-dev`, `figma`, and the `clangd` and `typescript`
-LSP plugins are installed but set to `false` in `enabledPlugins`. An enabled
-plugin lists its skills and MCP instructions in every request, and these went
-unused (digs `agent-session-friction`; `/doctor` on 2026-11-18: figma alone was
-about 1.8k tokens a session for one use ever). `skills-mirror` skips them too,
-so Codex and pi don't see them.
+`commit-commands`, `feature-dev`, `figma`, `resend`, and the `clangd` and
+`typescript` LSP plugins are installed but set to `false` in `enabledPlugins`.
+An enabled plugin lists its skills and MCP instructions in every request, and
+these are unused in most repos (digs `agent-session-friction`; `/doctor` on
+2026-11-18: figma alone was about 1.8k tokens a session for one use ever).
+`skills-mirror` skips them too, so Codex and pi don't see them.
 
-Turn one on for one repo only, with `true` in that repo's
-`.claude/settings.local.json` (project settings beat user settings; the file is
-gitignored), then start a new session there. For figma:
+Turn one on for one repo only, with `true` in that repo's settings (project
+settings beat user settings), then start a new session there. Use the
+checked-in `.claude/settings.json` when everyone working in the repo needs it
+(a project template can ship it that way to every project made from it),
+or the gitignored `.claude/settings.local.json` for this machine only. For
+figma:
 
 ```json
 { "enabledPlugins": { "figma@claude-plugins-official": true } }

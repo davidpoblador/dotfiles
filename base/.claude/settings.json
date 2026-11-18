@@ -201,7 +201,7 @@
     "cloudflare@cloudflare": true,
     "figma@claude-plugins-official": false,
     "impeccable@impeccable": true,
-    "resend@resend-skills": true,
+    "resend@resend-skills": false,
     "vacant@alltuner": true,
     "selfmail@alltuner": true,
     "reference@alltuner-reference": true,
