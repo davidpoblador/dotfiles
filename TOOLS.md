@@ -488,7 +488,11 @@ install it and `mise packages prune` on the laptop doesn't remove it:
 "brew-cask:helium-browser" = "latest"
 ```
 
-The `browse` CLI comes from mise (`npm:@opencode/browse`) on every mac.
+The `browse` CLI comes from mise on every mac: `http:browse`, the native
+binary from npm's `@opencode/browse-darwin-arm64` package. The
+`@opencode/browse` package is only a Node launcher for that binary, and every
+agent session runs its own `browse mcp`, so installing the binary directly
+keeps Node out of each one (about 16 MB a session).
 Browse updates itself hourly unless `OPENCODE_BROWSER_AUTO_UPDATE=off`, which
 `.zshenv` sets so mise keeps the version. `.zshenv` also pins the relay to
 port 19988 (`OPENCODE_BROWSER_PORT`), which the tunnel below depends on. On

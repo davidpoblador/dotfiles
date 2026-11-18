@@ -15,9 +15,10 @@ gcloud = "latest"
 # exact version selects a beta; Renovate bumps it (see renovate.json).
 "npm:cf" = "1.0.0-beta.24"
 # Browse: MCP server + relay for the agent browser (Helium); see TOOLS.md.
-# First published 2026-10-30, inside the npm backend's 30-day minimum package
-# age; allow_low_downloads waives that check until it ages out (2026-11-29).
-"npm:@opencode/browse" = { version = "latest", allow_low_downloads = true }
+# The native binary straight from npm's darwin-arm64 package: @opencode/browse
+# itself is a Node launcher for it, which every agent session would run. npm's
+# publish dates keep mise's release-age wait in force.
+"http:browse" = { version = "latest", url = "https://registry.npmjs.org/@opencode/browse-darwin-arm64/-/browse-darwin-arm64-{{version}}.tgz", strip_components = 1, bin_path = "bin", version_list_url = "https://registry.npmjs.org/@opencode/browse-darwin-arm64", version_expr = "keys(fromJSON(body).versions) | sortVersions()", version_date_expr = "fromJSON(body).time" }
 # chrome-devtools CLI: DevTools on Helium on demand, one shared daemon; see TOOLS.md.
 "npm:chrome-devtools-mcp" = "latest"
 rust = "latest"
