@@ -31,8 +31,8 @@ to it through `~/.claude/skills/`, but **only if no plugin already provides it**
 All of it currently arrives as Claude Code plugins, declared in
 `base/.claude/settings.json`.
 
-`commit-commands`, `feature-dev`, `figma`, `resend`, and the `clangd` and
-`typescript` LSP plugins are installed but set to `false` in `enabledPlugins`.
+`ast-grep`, `commit-commands`, `feature-dev`, `figma`, `resend`, and the
+`clangd` and `typescript` LSP plugins are installed but set to `false` in `enabledPlugins`.
 An enabled plugin lists its skills and MCP instructions in every request, and
 these are unused in most repos (digs `agent-session-friction`; `/doctor` on
 2026-11-18: figma alone was about 1.8k tokens a session for one use ever).
@@ -119,8 +119,9 @@ npx skills add ast-grep/agent-skill
 ```
 
 Skills: `ast-grep`, `outline`. Neither covers rewriting code; that is
-`ast-grep-rewrite`, written here (below) as a complement rather than a fork,
-so the upstream search guidance keeps updating.
+`ast-grep-rewrite`, written here (below), which is self-contained for the
+patterns it needs. The plugin is off (see above): it went unused, and
+`ast-grep --help` covers search.
 
 ### astral-sh/claude-code-plugins — 3 skills
 
