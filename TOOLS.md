@@ -507,7 +507,7 @@ the browser host:
    browse pair
    ```
 3. In Helium, turn on remote debugging once at `chrome://inspect/#remote-debugging`
-   (for the chrome-devtools server below).
+   (for the chrome-devtools CLI below).
 
 Claude in Chrome stays off everywhere through `CLAUDE_CODE_ENABLE_CFC=0` in the
 tracked `settings.json` `env`; it overrides the machine-local "Enabled by
@@ -560,72 +560,52 @@ Caveats:
   laptop's relay through the tunnel.
 - If the laptop's relay token changes, copy it again.
 - chrome-devtools doesn't go through the tunnel (Helium's debug port is
-  random and bound to localhost), so the agent host has no chrome-devtools
-  server; that work happens on the browser host.
+  random and bound to localhost); that work happens on the browser host.
 
-#### Chrome DevTools MCP
+#### Chrome DevTools CLI
 
-It lives in `~/.claude.json` under `mcpServers`, which is machine-local and not
-tracked here, so reproduce it by hand on each machine:
-
-```jsonc
-"chrome-devtools": {
-  "type": "stdio",
-  "command": "npx",
-  "args": [
-    "-y", "chrome-devtools-mcp@latest",
-    "--autoConnect",                 // attach to the running Helium, don't launch one
-    "--userDataDir=/Users/<you>/Library/Application Support/net.imput.helium",
-    "--usageStatistics=false",       // Google telemetry, on by default
-    "--performanceCrux=false",       // stops trace URLs going to Google's CrUX API
-    "--redactNetworkHeaders",        // keeps auth headers out of the transcript
-    "--screenshotFormat=webp",       // ~3-5x smaller than the PNG default
-    "--screenshotMaxWidth=1280",
-    "--ignoreDefaultChromeArg=--enable-automation",
-    "--chromeArg=--disable-blink-features=AutomationControlled"
-  ]
-}
-```
-
-`npx`, not `bunx`: `bunx pkg@latest` resolves `latest` once and then serves that
-cached version forever, so the pin silently rots.
-
-`--autoConnect` needs Chromium 144+ with remote debugging enabled (step 3
-above). `--userDataDir` points it at Helium's profile, where it finds the
-running browser's `DevToolsActivePort`; it takes a literal absolute path. It
-attaches to the same Helium that Browse drives, so both stacks share state and
-there's only one window. The last two args only apply when the server launches
-a browser itself (stable Chrome, not Helium), so under `--autoConnect` they're
-inert; they're kept as a fallback for the launch path, where the `--chromeArg`
-is load-bearing for `navigator.webdriver`.
-
-#### Safari Technology Preview
-
-`safaridriver --mcp` exists only in Safari Technology Preview; stable Safari's
-`safaridriver` has no such flag. STP comes from the declared
-`brew-cask:safari-technology-preview`, which is a pkg installer rather than an
-app bundle, so it runs `/usr/sbin/installer` under `sudo` and prompts for a
-password. That means `mise bootstrap` cannot converge it over a plain ssh
-session (`sudo: a terminal is required to read the password`) — install it from
-a real terminal on the machine. Background maintenance never trips over this:
-`dotfiles-maintain` upgrades formulae only.
-
-Two steps follow the install. `--enable` also wants the password, so it is
-local-terminal only; the `add-json` works fine over ssh.
+mise installs `npm:chrome-devtools-mcp`, which ships the `chrome-devtools`
+command. It is a client for one background daemon per machine that starts on
+`chrome-devtools start` and runs until `chrome-devtools stop`, so nothing runs
+while no one uses it. It is not registered as an MCP server: every Claude
+process starts every user-scope server, and this one would sit idle in each.
 
 ```sh
-/Applications/Safari\ Technology\ Preview.app/Contents/MacOS/safaridriver --enable
-claude mcp add-json -s user safari-mcp-stp '{"type":"stdio","command":"/Applications/Safari Technology Preview.app/Contents/MacOS/safaridriver","args":["--mcp"]}'
+chrome-devtools start --autoConnect "--userDataDir=$HOME/Library/Application Support/net.imput.helium" --usageStatistics=false --performanceCrux=false --redactNetworkHeaders --screenshotFormat=webp --screenshotMaxWidth=1280
+chrome-devtools list_pages
+chrome-devtools stop
 ```
 
-`--enable` ticks "Enable Remote Automation" in the Develop menu, which is what
-lets later WebDriver sessions start without authenticating each time. STP's own
-`safaridriver` carries both `--enable` and `--mcp`; the system one at
-`/usr/bin/safaridriver` has `--enable` but no `--mcp`.
+- `--autoConnect` needs Chromium 144+ with remote debugging on (step 3 above).
+  `--userDataDir` points it at Helium's profile, where it finds the running
+  browser's `DevToolsActivePort`. It attaches to the Helium Browse drives, so
+  both share state and there's only one window.
+- `--usageStatistics=false` turns off Google's telemetry (on by default);
+  `--performanceCrux=false` stops trace URLs going to Google's CrUX API;
+  `--redactNetworkHeaders` keeps auth headers out of the transcript;
+  `webp` at 1280 px keeps screenshots about 3-5x smaller than the PNG default.
+- Always `start` first: a tool call with no daemon running silently starts one
+  with the defaults, a separate headless Chrome with a throwaway profile
+  (`chrome-devtools status` then shows `args=["--viaCli"]` alone).
 
-Upgrading STP in place is safe for the config: a server started after the pkg
-upgrade connects normally. Sessions holding an open safaridriver still need a
-restart to pick the new binary up.
+#### Safari
+
+Stock Safari's `/usr/bin/safaridriver` has the MCP server (`--mcp`) since
+Safari 27, so no Technology Preview is needed. The MCP server is on demand,
+not in user scope: every Claude process starts every user-scope server, and
+this one is rarely needed. Add it for one project folder (local scope, kept in
+`~/.claude.json`), from that folder:
+
+```sh
+claude mcp add-json -s local safari '{"type":"stdio","command":"/usr/bin/safaridriver","args":["--mcp"]}'
+```
+
+A running session doesn't pick up a server added this way; the next session
+started in that folder does. A leftover local entry is harmless.
+
+If a WebDriver session asks to authenticate each time, run
+`safaridriver --enable` once from a local terminal (it wants the password);
+it ticks "Enable Remote Automation" in Safari's Develop menu.
 
 ### Rex setup
 
@@ -747,6 +727,6 @@ server side and the key's creation are in that repo's README (`umami` section).
 claude mcp add-json -s user umami '{"type":"http","url":"https://alltuner-umami.long-python.ts.net/mcp","headersHelper":"umami-mcp-headers"}'
 ```
 
-The other servers worth having on every dev machine are `browse`,
-`chrome-devtools` and `safari-mcp-stp`; their entries and setup are in the
-browser automation sections above.
+The other server worth having on every dev machine is `browse`; its entry
+and setup, and the on-demand `chrome-devtools` CLI and `safari` server, are
+in the browser automation sections above.

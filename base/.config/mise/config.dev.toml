@@ -18,6 +18,8 @@ gcloud = "latest"
 # First published 2026-10-30, inside the npm backend's 30-day minimum package
 # age; allow_low_downloads waives that check until it ages out (2026-11-29).
 "npm:@opencode/browse" = { version = "latest", allow_low_downloads = true }
+# chrome-devtools CLI: DevTools on Helium on demand, one shared daemon; see TOOLS.md.
+"npm:chrome-devtools-mcp" = "latest"
 rust = "latest"
 mongosh = "latest"
 ty = "latest"
