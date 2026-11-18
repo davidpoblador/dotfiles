@@ -186,7 +186,7 @@ Inside a worktree, Claude Code refuses any Bash call it can't prove keeps git in
 
 ## Long-running operations
 
-- If a command runs longer than 5 minutes, stop it, capture logs, and check with me before retrying
+- If a command runs longer than 5 minutes, stop it, capture logs, and check with me before retrying. Test gates are exempt (`just test`, `just check`, `just deploy`, `just release-gates` and the like): they bound each test with their own timeout. For them count only the time a run holds its gate slot, never the time spent waiting for one.
 - Don't start `tail -f`, `grep` or Monitor watchers on your own background runs; the completion notice tells you when they finish. Stop every background command, watcher or monitor you started (TaskStop, or kill the process) once its work is done: a finished task leaves nothing running.
 
 ## Research
