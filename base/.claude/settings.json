@@ -101,6 +101,11 @@
   },
   "model": "opus[1m]",
   "enableAllProjectMcpServers": true,
+  "deniedMcpServers": [
+    { "serverName": "claude.ai Slack" },
+    { "serverName": "claude.ai Claude Docs" },
+    { "serverName": "claude.ai Google Calendar" }
+  ],
   "hooks": {
     "SessionStart": [
       {
