@@ -31,12 +31,23 @@ to it through `~/.claude/skills/`, but **only if no plugin already provides it**
 All of it currently arrives as Claude Code plugins, declared in
 `base/.claude/settings.json`.
 
-`commit-commands` and `resend` are installed but set to `false` in
-`enabledPlugins`. An enabled plugin lists its skills and MCP instructions in
-every request, and these went unused for 14 days (digs
-`agent-session-friction`). Turn one on for one repo with `true` in its
-`.claude/settings.local.json` (project settings beat user settings). `/plugin`
-turns it on everywhere, by writing this tracked file through its symlink. `skills-mirror` skips them too, so Codex and pi don't see them.
+`commit-commands`, `feature-dev`, `figma`, and the `clangd` and `typescript`
+LSP plugins are installed but set to `false` in `enabledPlugins`. An enabled
+plugin lists its skills and MCP instructions in every request, and these went
+unused (digs `agent-session-friction`; `/doctor` on 2026-11-18: figma alone was
+about 1.8k tokens a session for one use ever). `skills-mirror` skips them too,
+so Codex and pi don't see them.
+
+Turn one on for one repo only, with `true` in that repo's
+`.claude/settings.local.json` (project settings beat user settings; the file is
+gitignored), then start a new session there. For figma:
+
+```json
+{ "enabledPlugins": { "figma@claude-plugins-official": true } }
+```
+
+Merge that key into the file if it already exists. `/plugin` would turn it on
+everywhere instead, by writing this tracked file through its symlink.
 
 ### From the official marketplace — Claude Code only
 
