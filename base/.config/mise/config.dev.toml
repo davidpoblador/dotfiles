@@ -17,9 +17,7 @@ gcloud = "latest"
 # Browse: MCP server + relay for the agent browser (Helium); see TOOLS.md.
 # First published 2026-10-30, inside the npm backend's 30-day minimum package
 # age; allow_low_downloads waives that check until it ages out (2026-11-29).
-# Pinned to 0.1.1 (named tabs) until it clears mise's 24-hour release age on
-# 2026-11-18; back to "latest" after that.
-"npm:@opencode/browse" = { version = "0.1.1", allow_low_downloads = true }
+"npm:@opencode/browse" = { version = "latest", allow_low_downloads = true }
 rust = "latest"
 mongosh = "latest"
 ty = "latest"
