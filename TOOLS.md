@@ -734,3 +734,12 @@ claude mcp add-json -s user umami '{"type":"http","url":"https://alltuner-umami.
 The other server worth having on every dev machine is `browse`; its entry
 and setup, and the on-demand `chrome-devtools` CLI and `safari` server, are
 in the browser automation sections above.
+
+**Epidemic Sound** (music and sound effects search, downloads and voiceovers)
+is per project, not user scope: only a few repos use it. Add it from the repo
+that needs it (local scope, kept in `~/.claude.json`), then start a new session
+there and sign in through `/mcp` (OAuth; no key to store):
+
+```sh
+claude mcp add --transport http -s local epidemic-sound https://www.epidemicsound.com/a/mcp-service/mcp
+```
