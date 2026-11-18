@@ -261,8 +261,8 @@ the tunnel, which is normal.
 | stack | use it for |
 |---|---|
 | `browse` MCP (Helium) | driving pages, logged-in sessions, clicking and filling |
-| `chrome-devtools` MCP (Helium) | perf traces, heap snapshots, network and console inspection, device emulation |
-| `safari-mcp-stp` MCP | WebKit-specific checks |
+| `chrome-devtools` CLI (Helium) | perf traces, heap snapshots, network and console inspection, device emulation |
+| `safari` MCP, on demand | WebKit-specific checks |
 
 ### Browse (default)
 
@@ -296,17 +296,32 @@ starts with `tab: <id>`, and passing that back keeps you in the same tab.
   is running at 127.0.0.1:19988" there means stop and report, not retry,
   `browse serve` or `browse restart`.
 
-### Chrome DevTools MCP
+### Chrome DevTools
 
 For DevTools-grade work Browse doesn't cover, on the browser host only (the
-agent host has no chrome-devtools server; do that work from the laptop). It
-attaches to the running Helium (`--autoConnect` with Helium's profile), so
-both stacks share state.
-Its config is machine-local in `~/.claude.json`; the canonical entry and setup
-steps for both Helium stacks are in `TOOLS.md` in the dotfiles repo.
+agent host can't reach Helium's debug port; do that work from the laptop). Use
+the `chrome-devtools` command; there is no MCP server for it. Run this `start`
+at the beginning of every task, even if it ran before: another session may
+have stopped the daemon, and a tool call with no daemon silently launches a
+separate headless Chrome with a throwaway profile instead of attaching to
+Helium.
+
+```sh
+chrome-devtools start --autoConnect "--userDataDir=$HOME/Library/Application Support/net.imput.helium" --usageStatistics=false --performanceCrux=false --redactNetworkHeaders --screenshotFormat=webp --screenshotMaxWidth=1280
+```
+
+Then run its tools as commands (`chrome-devtools list_pages`,
+`chrome-devtools take_screenshot <page> --filePath out.webp`;
+`chrome-devtools --help` lists them). The daemon is shared by every session on
+the machine and attaches to the Helium Browse drives, so pages and state are
+shared too. Run `chrome-devtools stop` when done. If `chrome-devtools status`
+shows `args=["--viaCli"]` alone, it is that headless default: stop it and
+start again with the command above.
 
 ### Safari
 
-`safaridriver --mcp` exists only in Safari Technology Preview. Stable Safari's
-`safaridriver` has no `--mcp`, so the STP path in the config is required. Its
-install and the one-time `safaridriver --enable` are in `TOOLS.md` too.
+The `safari` MCP server (stock Safari's `safaridriver --mcp`) is not loaded by
+default. When a task needs WebKit checks, on the browser host only, add it for
+the project folder with the `claude mcp add-json -s local` command in
+`TOOLS.md`, then tell David it is available from the next session in that
+folder (a running session doesn't pick it up).
