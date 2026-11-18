@@ -274,8 +274,10 @@ and act on its refs), `status` and `tabs`. Tabs are the handle: every result
 starts with `tab: <id>`, and passing that back keeps you in the same tab.
 
 - For work that recurs, open a named tab (`tabs` action `new` with an `id`
-  such as `bank-statements`): later runs get the same tab back, it survives a
-  browser restart and it never closes when idle.
+  such as `bank-statements`, plus `keepOpen: true`): later runs get the same
+  tab back without it being navigated. Without `keepOpen` it closes when idle
+  like any other tab. A relay restart keeps it; a browser restart loses it, so
+  the next open is a fresh tab.
 - Give a tab an `allowedOrigins` list before reading untrusted content in it,
   naming only the sites the task needs. The list is fixed when the tab opens,
   so widening it means a new tab with the wider list, and only with David's
