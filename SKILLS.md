@@ -219,6 +219,7 @@ converges. They are Claude Code only (the dispatch skills drive `claude --bg`):
 | `dispatch` | Hands a piece of work to a detached background session homed in a chosen directory, so it runs outside the calling session's context |
 | `dig` | Starts an investigation in the research workbench at `~/repos/digs` as a background session. Declines to fire when the session is already inside that repo, where the repo's own instructions take over |
 | `dig-context` | The same, for a question that only makes sense given the conversation it came out of: writes that history to a `context.md` the session reads, copies into the dig and cites |
+| `browser-automation` | How to use Browse, the chrome-devtools CLI and Safari on the agent browser. The global CLAUDE.md keeps only the hard rules and points here, so the how-to loads only in sessions that touch a browser |
 | `ast-grep-rewrite` | Teaches structural rewrites with the ast-grep CLI (`run --rewrite -U`, YAML `fix:` and `transform`), checked with the formatter and type checker. Complements the upstream `ast-grep` skill, which covers search only |
 
 `dispatch`, `dig` and `dig-context` write the prompt to a file and launch it with `claude-bg-dispatch`; the
