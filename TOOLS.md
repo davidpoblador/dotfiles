@@ -727,9 +727,17 @@ entry would put the key in plaintext in `~/.claude.json`, so the entry uses
 server connects. That needs `~/repos/infrastructure` cloned on the machine. The
 server side and the key's creation are in that repo's README (`umami` section).
 
+It is per project, not user scope: only the repos that look at site analytics
+need it. A repo where everyone needs it checks in a `.mcp.json` with the entry
+below under `mcpServers` (project servers load without a prompt, since
+`enableAllProjectMcpServers` is on). For one machine only, add it with local
+scope from the repo:
+
 ```sh
-claude mcp add-json -s user umami '{"type":"http","url":"https://alltuner-umami.long-python.ts.net/mcp","headersHelper":"umami-mcp-headers"}'
+claude mcp add-json -s local umami '{"type":"http","url":"https://alltuner-umami.long-python.ts.net/mcp","headersHelper":"umami-mcp-headers"}'
 ```
+
+Either way, a new session in that repo picks it up; a running one doesn't.
 
 The other server worth having on every dev machine is `browse`; its entry
 and setup, and the on-demand `chrome-devtools` CLI and `safari` server, are
