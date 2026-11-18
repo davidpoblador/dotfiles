@@ -31,8 +31,8 @@ to it through `~/.claude/skills/`, but **only if no plugin already provides it**
 All of it currently arrives as Claude Code plugins, declared in
 `base/.claude/settings.json`.
 
-`ast-grep`, `commit-commands`, `feature-dev`, `figma`, `resend`, and the
-`clangd` and `typescript` LSP plugins are installed but set to `false` in `enabledPlugins`.
+`ast-grep`, `feature-dev`, `figma`, `resend`, and the `clangd` and
+`typescript` LSP plugins are installed but set to `false` in `enabledPlugins`.
 An enabled plugin lists its skills and MCP instructions in every request, and
 these are unused in most repos (digs `agent-session-friction`; `/doctor` on
 2026-11-18: figma alone was about 1.8k tokens a session for one use ever).
@@ -59,12 +59,15 @@ public `anthropics/claude-plugins-official` repo. Install from it only: the
 older `claude-code-plugins` marketplace (`anthropics/claude-code`) carries
 stale copies of the same plugins, and installing both loads them twice.
 
-Installed: `frontend-design`, `commit-commands`, `feature-dev`, `figma`, and
-the `clangd`, `gopls`, `rust-analyzer`, `swift` and `typescript` LSP plugins.
+Installed: `frontend-design`, `feature-dev`, `figma`, and the `clangd`,
+`gopls`, `rust-analyzer`, `swift` and `typescript` LSP plugins.
+
+`commit-commands` is not installed: `/ship` covers its commit-push-PR flow and
+also merges and returns to main, and its `/clean_gone` deletes branches without
+checking them for unpushed commits first.
 
 ```
 /plugin install frontend-design@claude-plugins-official
-/plugin install commit-commands@claude-plugins-official
 /plugin install feature-dev@claude-plugins-official
 /plugin install figma@claude-plugins-official
 ```
