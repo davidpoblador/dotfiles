@@ -49,6 +49,9 @@ A session in a repo is usually the only one working there, and it acts as the co
 - Write every brief so it stands on its own. Give the goal, the files to start from, what's decided and what's ruled out, the command or test that proves the work, and what to report back. A worker that can't check its own work needs a fix to its brief, not a bigger model.
 - Workers commit on their own branch. They don't push, open PRs or merge unless the brief says so. Review each diff yourself before it lands, and merge branches that are ready together as one batch.
 - When you delegate something, don't also do it yourself. Keep working on whatever doesn't depend on the result.
+- Any change that moves money or touches authorization or permissions gets an independent `reviewer` read before it lands, whatever the tests say. Review catches what tests written by the same hand miss.
+- Workers run only the browser or end-to-end tests for the area they touched. The full end-to-end run happens once, at deploy.
+- When a shared upstream (a template or base project this repo ports from) is about to ship something you need, ask upstream first and wait. Don't build an interim copy downstream: it has to be thrown away or reconciled when the real one lands.
 
 ### Picking the model (Claude Code)
 
@@ -75,12 +78,14 @@ Choose by how hard the work is and by what a mistake costs and how quickly it sh
 ## Test Driven Development (TDD)
 
 - TDD applies when the repo already has working test infrastructure. If the repo has no tests and no test framework, skip TDD and just make the change (see Testing).
-- When TDD does apply, follow it for every new feature or bugfix:
+- Test-first follows risk. Write the failing test first for core logic, anything that moves money, authorization and permissions, data migrations, state machines and concurrency:
     1. Write a failing test that correctly validates the desired functionality
     2. Run the test to confirm it fails as expected
     3. Write ONLY enough code to make the failing test pass
     4. Run the test to confirm success
     5. Refactor if needed while keeping tests green
+- Template, CSS, copy and layout changes don't need test-first. Cover them with a light check that the page renders, plus visual verification: screenshots, and browser checks such as no sideways scroll and no CSP or console errors.
+- For a logic bug, reproduce it as a failing test before fixing it.
 
 ## Writing code
 
@@ -130,7 +135,8 @@ Names and comments describe the code as it is now, in domain terms. No history (
 
 - Every test failure is yours to deal with, even when you didn't cause it (broken windows).
 - Never delete a test because it's failing; raise it with David.
-- Tests cover all functionality.
+- Tests cover the behaviour that matters (logic, data, permissions), not every rendered detail.
+- Never assert exact markup or class strings; assert behaviour and meaning.
 - Don't write tests that only exercise mocked behavior; if you find existing ones, warn David.
 - No mocks in end-to-end tests; they use real data and real APIs.
 - Read system and test output; logs often carry the critical clue.
