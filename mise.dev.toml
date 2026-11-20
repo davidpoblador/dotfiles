@@ -105,6 +105,7 @@
 "brew-cask:obsidian" = "latest"                      # knowledge base
 "brew-cask:raycast" = "latest"                       # launcher
 "brew-cask:responsively" = "latest"                  # multi-viewport browser for responsive dev
+"brew-cask:synology-drive" = "latest"               # Synology Drive Client: on-demand sync from the NAS in Finder
 "brew-cask:vlc" = "latest"                           # media player
 
 #
