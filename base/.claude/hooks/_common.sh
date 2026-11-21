@@ -238,6 +238,37 @@ remove_worktree_branch() {
 }
 
 
+# Print the lock state of worktree $wt_dir: "none", "live" (locked by a
+# Claude process that is still running), "stale" (locked by a Claude process
+# that has exited) or "other" (locked for any other reason, never touched).
+# Claude Code writes the reason as "claude <kind> <name> (pid N start <date>)"
+# with the start time in UTC; matching that start time, not just the pid,
+# keeps a recycled pid from passing for the original process.
+# $1: repo root  $2: worktree directory
+worktree_lock_state() {
+	local repo="$1" wt_dir="${2%/}" reason pid start running
+	reason=$(git -C "$repo" worktree list --porcelain 2>/dev/null | awk -v wt="$wt_dir" '
+		/^worktree / { cur = substr($0, 10) }
+		/^locked/    { if (cur == wt) { print (length($0) > 7 ? substr($0, 8) : "-"); exit } }
+	')
+	if [ -z "$reason" ]; then
+		echo none
+		return 0
+	fi
+	pid=$(sed -nE 's/^claude [a-z]+ .*\(pid ([0-9]+) start (.*)\)$/\1/p' <<< "$reason")
+	start=$(sed -nE 's/^claude [a-z]+ .*\(pid ([0-9]+) start (.*)\)$/\2/p' <<< "$reason" | tr -s ' ')
+	if [ -z "$pid" ]; then
+		echo other
+		return 0
+	fi
+	running=$(TZ=UTC ps -o lstart= -p "$pid" 2>/dev/null | tr -s ' ' | sed 's/^ //; s/ $//')
+	if [ -n "$running" ] && [ "$running" = "$start" ]; then
+		echo live
+	else
+		echo stale
+	fi
+}
+
 # Returns 0 (true) if any live Claude session has its cwd inside $wt_dir.
 # Reads ~/.claude/sessions/<PID>.json files (Claude writes one per running
 # session) and verifies the PID is alive — stale files survive crashes, so the
@@ -271,7 +302,8 @@ worktree_has_active_session() {
 #   - it was never pushed, has no unique commits beyond $base_ref, and was
 #     created more than 24 hours ago.
 # Worktrees with unpushed, unmerged unique commits, uncommitted or untracked
-# changes, or a live Claude session in them are always preserved.
+# changes, a live Claude session in them, or a lock held by a running process
+# are always preserved. A lock left by an exited Claude process is released.
 #
 # $1 repo            — repo root
 # $2 base_ref        — ref the unique-commit count is measured against,
@@ -283,7 +315,7 @@ clean_stale_worktrees() {
 	git -C "$repo" fetch origin --prune >"$OUT" 2>&1 || true
 
 	local stale_dir stale_name stale_branch upstream has_upstream should_clean reason
-	local merged_pr wt_created age_hours unique_commits
+	local merged_pr wt_created age_hours unique_commits lock_state
 	local removed=0 kept=0 scanned=0
 	# Enumerate worktrees authoritatively from git rather than globbing a fixed
 	# depth, so namespaced worktrees (.claude/worktrees/dig/<slug>) are visible
@@ -381,14 +413,28 @@ clean_stale_worktrees() {
 		fi
 
 		if [ "$should_clean" = true ]; then
+			lock_state=$(worktree_lock_state "$repo" "$stale_dir")
 			if worktree_has_active_session "$stale_dir"; then
 				log "⏭ Keeping worktree: $stale_name (live Claude session in this dir)"
+				kept=$((kept + 1))
+			elif [ "$lock_state" = "live" ]; then
+				log "⏭ Keeping worktree: $stale_name (locked by a running Claude process)"
+				kept=$((kept + 1))
+			elif [ "$lock_state" = "other" ]; then
+				log "⏭ Keeping worktree: $stale_name (locked, not by Claude)"
 				kept=$((kept + 1))
 			elif [ -n "$(git -C "$stale_dir" status --porcelain 2>/dev/null)" ]; then
 				log "⏭ Keeping worktree: $stale_name (uncommitted or untracked changes)"
 				kept=$((kept + 1))
 			else
 				log "→ Cleaning stale worktree: $stale_name ($reason)"
+				if [ "$lock_state" = "stale" ]; then
+					if is_dry_run; then
+						log "[dry-run] would unlock $stale_name (its Claude process has exited)"
+					else
+						git -C "$repo" worktree unlock "$stale_dir" >"$OUT" 2>&1 || true
+					fi
+				fi
 				remove_worktree_branch "$repo" "$stale_dir" "$stale_branch"
 				removed=$((removed + 1))
 			fi
