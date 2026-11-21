@@ -1,5 +1,5 @@
 # shellcheck shell=bash
-# ABOUTME: Shared helpers for the worktree hooks (tty resolution, OSC emission).
+# ABOUTME: Shared helpers for the session-start hook and worktree-sweep (logging, git checks).
 # ABOUTME: Sourced, not executed.
 #
 # Conventions:
@@ -16,9 +16,8 @@
 #                              the Claude TUI of the running session that
 #                              triggered the hook.
 #   HOOK_DRY_RUN=1          — log destructive operations as "[dry-run] would ..."
-#                              instead of executing them. Useful for debugging
-#                              the cleanup loop without nuking real worktrees:
-#                                  HOOK_DRY_RUN=1 echo "$payload" | worktree-remove.sh
+#                              instead of executing them:
+#                                  HOOK_DRY_RUN=1 worktree-sweep
 #   HOOK_LOG_MAX_BYTES=N    — rotate today's log when it exceeds N bytes
 #                              (default 5 MiB). Rotated files keep the
 #                              "worktree-hooks-*.log" name so the existing
@@ -78,16 +77,6 @@ rotate_log_if_oversized() {
 	fi
 }
 
-# Print the original repo's working-tree path, even when called from inside a
-# worktree. CLAUDE_PROJECT_DIR points at the worktree when Claude runs there,
-# but `git worktree list --porcelain` always returns the main worktree first.
-# Falls back to the input path if `git worktree list` returns nothing.
-# $1: a path inside the repo (typically $CLAUDE_PROJECT_DIR)
-resolve_repo_root() {
-	local from="$1" root
-	root=$(git -C "$from" worktree list --porcelain 2>/dev/null | head -1 | sed 's/^worktree //')
-	echo "${root:-$from}"
-}
 
 # Print every registered worktree as "<path>\t<branch>", one per line, with the
 # branch stripped of its refs/heads/ prefix (empty for detached/bare entries).
@@ -121,55 +110,6 @@ detect_default_branch() {
 	echo "$branch"
 }
 
-# Fast-forward $branch in $repo to origin's tip. Always safe to call: if the
-# working tree has uncommitted changes we reset only the index and preserve
-# every locally-edited file; we --hard reset only when the tree was already
-# clean. On a dirty tree we additionally sync forward the files the new
-# commits changed that had no local edits, so a just-merged PR's own files
-# don't linger as phantom "reversions" in the main checkout.
-# Logs progress through the caller's log() — caller is responsible for the
-# surrounding "✓ Fetching..." / "✓ up to date" announcements.
-# $1: repo root  $2: branch name (no refs/heads/ prefix)
-update_default_branch() {
-	local repo="$1" branch="$2" was_clean=false old_head new_head
-	if is_dry_run; then
-		log "[dry-run] would fetch + fast-forward $branch in $repo"
-		return 0
-	fi
-	if git -C "$repo" diff --quiet 2>/dev/null && git -C "$repo" diff --cached --quiet 2>/dev/null; then
-		was_clean=true
-	fi
-	old_head=$(git -C "$repo" rev-parse HEAD 2>/dev/null || true)
-	git -C "$repo" fetch origin "$branch" >"$OUT" 2>&1 || log "⚠ fetch failed, continuing with local $branch"
-	git -C "$repo" update-ref "refs/heads/$branch" "refs/remotes/origin/$branch" 2>"$OUT" \
-		|| log "⚠ update-ref failed, continuing with local $branch"
-	# update-ref moves the ref but leaves the index + working tree stale, so a
-	# reset is required to match. Only --hard when we know we won't lose work.
-	if [ "$was_clean" = true ]; then
-		git -C "$repo" reset --hard --quiet >"$OUT" 2>&1 || true
-	else
-		git -C "$repo" reset --quiet >"$OUT" 2>&1 || true
-		log "⚠ Working tree had local changes, preserved them (index reset only)"
-		# A mixed reset advances HEAD + index to the new tip but never touches
-		# the working tree, so files the new commits changed are left at their
-		# old content and surface as phantom "reversions" of the just-merged
-		# work. Sync exactly those files forward — but only the ones with no
-		# local edits, so genuine in-progress work stays untouched.
-		new_head=$(git -C "$repo" rev-parse HEAD 2>/dev/null || true)
-		if [ -n "$old_head" ] && [ -n "$new_head" ] && [ "$old_head" != "$new_head" ]; then
-			local f synced=0
-			while IFS= read -r f; do
-				[ -n "$f" ] || continue
-				# Clean relative to the old tip means the working copy was never
-				# edited locally; safe to fast-forward to the new index content.
-				if git -C "$repo" diff --quiet "$old_head" -- "$f" 2>/dev/null; then
-					git -C "$repo" checkout -- "$f" >"$OUT" 2>&1 && synced=$((synced + 1)) || true
-				fi
-			done < <(git -C "$repo" diff --name-only "$old_head" "$new_head" 2>/dev/null)
-			[ "$synced" -gt 0 ] && log "✓ Synced $synced cleanly-merged file(s) forward, preserved local edits"
-		fi
-	fi
-}
 
 # Print the unix timestamp of the oldest reflog entry for $branch — i.e. the
 # moment the branch was first written. Returns 0 if reflog is empty/missing.
@@ -297,37 +237,21 @@ remove_worktree_branch() {
 	fi
 }
 
-# Sanitize an absolute path the same way Claude does for project config dirs:
-# / -> -, . -> -. So /foo/.claude/worktrees/abc becomes
-# -foo--claude-worktrees-abc. Trailing slashes are stripped first so callers
-# can pass directories with or without one.
-# $1: absolute path
-sanitize_path() {
-	local p="${1%/}"
-	echo "$p" | sed 's|/|-|g; s|\.|-|g'
-}
 
 # Returns 0 (true) if any live Claude session has its cwd inside $wt_dir.
 # Reads ~/.claude/sessions/<PID>.json files (Claude writes one per running
 # session) and verifies the PID is alive — stale files survive crashes, so the
 # liveness check is required.
 #
-# When $exclude_session is non-empty, sessions with that sessionId are skipped.
-# Used by the primary remove path to avoid self-blocking on the very session
-# that triggered the ExitWorktree hook.
-#
-# $1: worktree directory  $2: optional sessionId to exclude
+# $1: worktree directory
 worktree_has_active_session() {
-	local wt_dir="${1%/}" exclude_session="${2:-}" sessions_dir="$HOME/.claude/sessions"
-	local f cwd pid sid
+	local wt_dir="${1%/}" sessions_dir="$HOME/.claude/sessions"
+	local f cwd pid
 	[ -d "$sessions_dir" ] || return 1
 	for f in "$sessions_dir"/*.json; do
 		[ -f "$f" ] || continue
-		IFS='|' read -r cwd pid sid < <(jq -r '"\(.cwd // "")|\(.pid // "")|\(.sessionId // "")"' "$f" 2>/dev/null) || continue
+		IFS='|' read -r cwd pid < <(jq -r '"\(.cwd // "")|\(.pid // "")"' "$f" 2>/dev/null) || continue
 		[ -n "$cwd" ] && [ -n "$pid" ] || continue
-		if [ -n "$exclude_session" ] && [ "$sid" = "$exclude_session" ]; then
-			continue
-		fi
 		case "$cwd" in
 			"$wt_dir"|"$wt_dir"/*) ;;
 			*) continue ;;
@@ -340,25 +264,20 @@ worktree_has_active_session() {
 # Iterate over $repo/.claude/worktrees/* and remove any that are stale.
 # A worktree is stale when:
 #   - its work is already in $base_ref (squash/rebase merged) or a merged PR
-#     exists for it — the same check the targeted remove path uses, so the
-#     sweep mops up merged worktrees the explicit removal skipped (remote branch
-#     lingering, or pushed under a de-prefixed head), OR
-#   - its branch had an upstream and the remote branch is now gone (and, if
-#     $require_pr=yes, a merged PR exists for it), OR
+#     exists for it (catches merged worktrees whose remote branch lingers, or
+#     that pushed under a de-prefixed head), OR
+#   - its branch had an upstream, the remote branch is now gone, and its
+#     commits are in $base_ref or a merged PR exists for it, OR
 #   - it was never pushed, has no unique commits beyond $base_ref, and was
 #     created more than 24 hours ago.
-# Worktrees with unpushed, unmerged unique commits are always preserved.
+# Worktrees with unpushed, unmerged unique commits, uncommitted or untracked
+# changes, or a live Claude session in them are always preserved.
 #
 # $1 repo            — repo root
-# $2 base_ref        — branch the unique-commit count is measured against,
-#                      typically DEFAULT_BRANCH or the just-computed BASE_REF
-# $3 skip_name       — worktree name to skip (the current/just-removed one)
-# $4 require_pr      — "yes" requires a merged PR before cleaning a worktree
-#                      whose remote branch is gone (defensive — guards against
-#                      remote branches deleted without merging); "no" trusts
-#                      the absent remote and cleans unconditionally
+# $2 base_ref        — ref the unique-commit count is measured against,
+#                      typically origin/<default>
 clean_stale_worktrees() {
-	local repo="$1" base_ref="$2" skip="$3" require_pr="$4"
+	local repo="$1" base_ref="$2"
 	local dir="$repo/.claude/worktrees"
 	[ -d "$dir" ] || return 0
 	git -C "$repo" fetch origin --prune >"$OUT" 2>&1 || true
@@ -376,7 +295,6 @@ clean_stale_worktrees() {
 		esac
 		[ -d "$stale_dir" ] && [ -n "$stale_branch" ] || continue
 		stale_name="${stale_dir#"$dir"/}"
-		[ "$stale_name" = "$skip" ] && continue
 		scanned=$((scanned + 1))
 
 		# A branch made with `git worktree add -b <name> origin/<default>`
@@ -427,12 +345,12 @@ clean_stale_worktrees() {
 			# very likely merged. Verify in this order:
 			#   1. git cherry — portable, catches squash/rebase merges
 			#   2. gh pr list — GitHub-only, catches edge cases (rare)
-			# When require_pr=no we trust an absent remote outright.
+			# A remote branch deleted without merging is never enough on its own.
 			if ! git -C "$repo" show-ref --verify --quiet "refs/remotes/origin/$stale_branch" 2>/dev/null; then
 				if branch_is_squash_merged_into "$repo" "$base_ref" "$stale_branch"; then
 					should_clean=true
 					reason="remote branch gone, all commits already in $base_ref"
-				elif [ "$require_pr" = "yes" ]; then
+				else
 					merged_pr=$(merged_pr_for_branch "$repo" "$stale_branch")
 					if [ -n "$merged_pr" ]; then
 						should_clean=true
@@ -440,9 +358,6 @@ clean_stale_worktrees() {
 					else
 						log "⏭ Keeping worktree: $stale_name (remote branch gone but no merge evidence)"
 					fi
-				else
-					should_clean=true
-					reason="remote branch gone"
 				fi
 			fi
 		elif [ "$should_clean" != true ]; then
@@ -468,6 +383,9 @@ clean_stale_worktrees() {
 		if [ "$should_clean" = true ]; then
 			if worktree_has_active_session "$stale_dir"; then
 				log "⏭ Keeping worktree: $stale_name (live Claude session in this dir)"
+				kept=$((kept + 1))
+			elif [ -n "$(git -C "$stale_dir" status --porcelain 2>/dev/null)" ]; then
+				log "⏭ Keeping worktree: $stale_name (uncommitted or untracked changes)"
 				kept=$((kept + 1))
 			else
 				log "→ Cleaning stale worktree: $stale_name ($reason)"

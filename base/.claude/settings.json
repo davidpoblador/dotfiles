@@ -173,16 +173,6 @@
           }
         ]
       }
-    ],
-    "WorktreeRemove": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/worktree-remove.sh"
-          }
-        ]
-      }
     ]
   },
   "worktree": {
