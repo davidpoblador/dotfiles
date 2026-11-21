@@ -1,0 +1,41 @@
+#!/bin/bash
+# ABOUTME: Removes merged or abandoned Claude worktrees under every ~/repos/*/.claude/worktrees,
+# ABOUTME: keeping any with unpushed work, uncommitted changes or a live session. Run by hand.
+#
+# HOOK_DRY_RUN=1 logs what it would remove without touching anything. The log
+# is /tmp/worktree-hooks-<date>.log, shared with the session-start hook.
+
+set -u
+PATH="$HOME/.local/bin:$HOME/.local/share/mise/shims:/opt/homebrew/bin:/usr/local/bin:$PATH"
+
+# The helpers live beside this script in the dotfiles repo (base/.claude/hooks);
+# resolve the symlink ~/.local/bin points through to find them.
+here=$(dirname "$(readlink -f "$0")")
+# shellcheck source=../../.claude/hooks/_common.sh
+source "$here/../../.claude/hooks/_common.sh"
+
+setup_logging "[sweep]"
+echo "" >> "$LOGFILE"
+if is_dry_run; then
+	log "--- worktree sweep (dry run) ---"
+else
+	log "--- worktree sweep ---"
+fi
+
+for repo in "$HOME"/repos/*/; do
+	repo="${repo%/}"
+	[ -d "$repo/.claude/worktrees" ] || continue
+	git -C "$repo" rev-parse --verify --quiet HEAD >/dev/null 2>&1 || continue
+	default=$(detect_default_branch "$repo")
+	if [ -z "$default" ]; then
+		log "⏭ $(basename "$repo"): no default branch, skipped"
+		continue
+	fi
+	# Measure against origin's tip: the main checkout's own branch may lag.
+	base="$default"
+	if git -C "$repo" show-ref --verify --quiet "refs/remotes/origin/$default"; then
+		base="origin/$default"
+	fi
+	log "repo $(basename "$repo") (against $base)"
+	clean_stale_worktrees "$repo" "$base"
+done

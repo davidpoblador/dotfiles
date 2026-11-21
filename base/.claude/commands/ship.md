@@ -27,5 +27,5 @@ Take the work on this branch all the way to a merged, cleaned-up state.
    - If the session entered an existing worktree with `EnterWorktree` `path`, call `ExitWorktree` with action `keep` (it won't remove a worktree it didn't create).
    - Otherwise switch the session to the main working tree (first entry of `git worktree list`).
    - Check `git worktree list`. If the worktree is still there, finish with `git worktree remove <path> && git branch -D <local-branch>`.
-   - In the main checkout, `git switch <default> && git pull --ff-only`. If files this PR changed show as uncommitted reversions, run `git checkout -- <paths>` on exactly those files (`git show --name-only <merge-sha>`) and leave every other uncommitted path alone.
+   - In the main checkout, `git switch <default> && git pull --ff-only`.
 9. Report the PR URL and confirm the main checkout is at the merged tip.

@@ -49,7 +49,7 @@ check_segment() {
 		for tok in "$@"; do
 			case "$tok" in
 			--delete-branch | -d | --delete-branch=true)
-				deny "Don't pass --delete-branch to gh pr merge: gh then checks out the default branch, which the main worktree already holds. GitHub auto-deletes the remote branch; the WorktreeRemove hook cleans up locally."
+				deny "Don't pass --delete-branch to gh pr merge: gh then checks out the default branch, which the main worktree already holds. GitHub auto-deletes the remote branch; /ship removes the local worktree and branch."
 				;;
 			esac
 		done
