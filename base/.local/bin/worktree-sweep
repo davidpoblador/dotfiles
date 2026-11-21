@@ -8,8 +8,11 @@
 set -u
 PATH="$HOME/.local/bin:$HOME/.local/share/mise/shims:/opt/homebrew/bin:/usr/local/bin:$PATH"
 
+# The helpers live beside this script in the dotfiles repo (base/.claude/hooks);
+# resolve the symlink ~/.local/bin points through to find them.
+here=$(dirname "$(readlink -f "$0")")
 # shellcheck source=../../.claude/hooks/_common.sh
-source "$HOME/.claude/hooks/_common.sh"
+source "$here/../../.claude/hooks/_common.sh"
 
 setup_logging "[sweep]"
 echo "" >> "$LOGFILE"
