@@ -65,6 +65,7 @@ Choose by how hard the work is and by what a mistake costs and how quickly it sh
 | A second-opinion review of a diff, given the code but not your conclusion | `reviewer` | sonnet | medium |
 | Migrations, performance work, concurrency, cross-cutting or ambiguous changes, anything where a subtle mistake is expensive, or work where sonnet fell short | `engineer` | opus | medium, then high |
 | The most ambitious work only: major refactors and migrations across a codebase, architecture that sets direction, deep research, or work where `engineer` at high fell short | `architect` | fable | medium, then high |
+| Building a reusable helper tool (the `toolsmith` plugin's agent, where it's enabled) | `toolsmith:toolsmith` | sonnet | default |
 
 - Ask David before every fable spawn, including `architect`, a `model: fable` override and a fable fork. Say why `engineer` at high isn't enough and roughly what the work involves. His yes covers that one task only.
 - A clear spec doesn't make something Sonnet work on its own. A migration with a crisp spec still belongs on `engineer`.
