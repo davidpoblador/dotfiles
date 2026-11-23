@@ -202,7 +202,8 @@
     "reference@alltuner-reference": true,
     "fleet@alltuner-infrastructure": true,
     "i-have-adhd@i-have-adhd": true,
-    "brand@alltuner-presence": true
+    "brand@alltuner-presence": true,
+    "toolsmith@prime-radiant-marketplace": true
   },
   "extraKnownMarketplaces": {
     "astral-sh": {
@@ -267,6 +268,12 @@
       "source": {
         "source": "github",
         "repo": "resend/resend-skills"
+      }
+    },
+    "prime-radiant-marketplace": {
+      "source": {
+        "source": "github",
+        "repo": "prime-radiant-inc/prime-radiant-marketplace"
       }
     },
     "alltuner-presence": {

@@ -186,6 +186,23 @@ deploy skill, from the infrastructure repo:
 /plugin install fleet@alltuner-infrastructure
 ```
 
+### prime-radiant-inc/toolsmith — 1 skill, 1 agent
+
+```
+/plugin marketplace add prime-radiant-inc/prime-radiant-marketplace
+/plugin install toolsmith@prime-radiant-marketplace
+```
+
+A `toolsmith` agent that builds, tests and catalogs reusable helper scripts in
+a local git repo (`~/.local/share/toolsmith/tools`, never pushed, so each
+machine grows its own catalog), plus a SessionStart/SubagentStart hook that
+tells every session to check the catalog and call the agent instead of
+writing a one-off tool. Enabled everywhere except the digs workbench, whose
+checked-in `.claude/settings.json` turns it off: there the saved script is
+the deliverable (digs `toolsmith` dig). Its tools skip our conventions (no
+ABOUTME, plain `python3`) because the agent doesn't read CLAUDE.md; promote
+one that proves itself into `base/.local/bin` by hand.
+
 ### ayghri/i-have-adhd — 1 skill
 
 ```
