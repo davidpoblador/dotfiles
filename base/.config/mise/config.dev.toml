@@ -13,7 +13,7 @@ pi = "latest"
 gcloud = "latest"
 # mise leaves prereleases out of both "latest" and prefix matching, so only an
 # exact version selects a beta; Renovate bumps it (see renovate.json).
-"npm:cf" = "1.0.0-rc.2"
+"npm:cf" = "1.0.0-rc.4"
 # Browse: MCP server + relay for the agent browser (Helium); see TOOLS.md.
 # The native binary straight from npm's darwin-arm64 package: @opencode/browse
 # itself is a Node launcher for it, which every agent session would run. npm's
