@@ -342,8 +342,10 @@ if command -v go >/dev/null 2>&1; then
   go telemetry off 2>/dev/null || true
 fi
 
-# ~/.ssh must not be group/world accessible; repo symlinks do not carry that
-chmod 700 "$HOME/.ssh" 2>/dev/null || true
+# ~/.ssh must not be group/world accessible; repo symlinks do not carry that.
+# sockets/ holds the ControlPath multiplexing sockets (dev/.ssh/config)
+mkdir -p "$HOME/.ssh/sockets"
+chmod 700 "$HOME/.ssh" "$HOME/.ssh/sockets" 2>/dev/null || true
 
 # Stamp for .zlogin's "Last sync" freshness line
 touch "${XDG_CACHE_HOME:-$HOME/.cache}/dotfiles_last_apply"
