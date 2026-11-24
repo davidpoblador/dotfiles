@@ -15,6 +15,13 @@ description: Commit, push, open a PR, squash-merge it, then return to an updated
 
 Take the work on this branch all the way to a merged, cleaned-up state.
 
+If the arguments name a PR (a number or URL, usually a worker's PR), land that PR instead and skip steps 1-6:
+
+- `gh pr view <n> --json state,mergeable,headRefName,isDraft`: it must be open, not a draft, and mergeable. If it conflicts or is behind, stop and report: its worker merges `origin/<default>` into the branch (never rebase a reviewed branch).
+- `gh pr merge <n> --squash` (never `--delete-branch`), then confirm with `gh pr view <n>` that it is `MERGED`.
+- If a worktree under `.claude/worktrees/` holds the PR's branch, `git worktree remove <path>` and `git branch -D <branch>`.
+- In the main checkout, `git pull --ff-only`. Report the PR URL and the new tip.
+
 1. Scan the diff for secrets (`sk-`, `ghp_`, `gho_`, `AKIA`, `Bearer`, passwords, private hostnames/IPs, SSH keys, `.env` contents). If anything matches, stop and report it instead of committing. Take extra care when `gh repo view --json visibility` says the repo is public.
 2. If on the default branch, create a feature branch first.
 3. Commit any uncommitted changes. Follow the repo's own commit-message conventions when its instructions define them; otherwise use a concise, lowercase, imperative subject.
