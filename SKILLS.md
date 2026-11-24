@@ -26,6 +26,28 @@ Claude Code is the exception: it loads plugins directly. A skill can be given
 to it through `~/.claude/skills/`, but **only if no plugin already provides it**
 — otherwise it loads twice and burns context in every session.
 
+### Synced from claude.ai
+
+A session signed in with claude.ai also loads what's turned on for the
+account. Its skills land in `~/.claude/skills/synced/`, listed as
+`anthropic-skills:<name>` (some are always on, such as `pdf` and `xlsx`), and
+its plugins as `<name>@synced`. Neither goes through `enabledPlugins`, and
+`skills-mirror` passes neither to Codex or pi.
+
+- **Skills** ignore plugin toggles; `skillOverrides` in
+  `base/.claude/settings.json` turns off the ones that are claude.ai-only or
+  clash with our rules, and lists the file-format ones by name only.
+  `chrome-browser` and `google-workspace` stay in full.
+- **Plugins** don't sync (`syncClaudeAiPlugins: false`), so turning one on for
+  claude.ai chat never adds to every terminal session. `enabledPlugins` is the
+  only way a plugin reaches Claude Code.
+- **Connectors** (Gmail, Drive, Sheets) are separate from both and still sync
+  as `claude.ai <Name>` MCP servers; `deniedMcpServers` blocks the unwanted
+  ones by name.
+
+Check with `/skills` (section "claude.ai sync") and `claude plugin list`.
+Background: digs `claude-ai-plugins`.
+
 ## What is installed
 
 All of it currently arrives as Claude Code plugins, declared in
