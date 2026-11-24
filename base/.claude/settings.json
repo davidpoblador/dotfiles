@@ -301,6 +301,19 @@
     }
   },
   "tui": "default",
+  "syncClaudeAiPlugins": false,
+  "skillOverrides": {
+    "anthropic-skills:docs": "off",
+    "anthropic-skills:morning": "off",
+    "anthropic-skills:import-memory": "off",
+    "anthropic-skills:built-in-browser": "off",
+    "anthropic-skills:deep-research": "off",
+    "anthropic-skills:pptx": "name-only",
+    "anthropic-skills:docx": "name-only",
+    "anthropic-skills:xlsx": "name-only",
+    "anthropic-skills:pdf": "name-only",
+    "anthropic-skills:skill-creator": "name-only"
+  },
   "voice": {
     "enabled": true,
     "mode": "tap"
