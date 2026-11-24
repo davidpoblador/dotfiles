@@ -62,7 +62,7 @@ stale copies of the same plugins, and installing both loads them twice.
 Installed: `frontend-design`, `feature-dev`, `figma`, and the `clangd`,
 `gopls`, `rust-analyzer`, `swift` and `typescript` LSP plugins.
 
-`commit-commands` is not installed: `/ship` covers its commit-push-PR flow and
+`commit-commands` is not installed: `/land` covers its commit-push-PR flow and
 also merges and returns to main, and its `/clean_gone` deletes branches without
 checking them for unpushed commits first.
 

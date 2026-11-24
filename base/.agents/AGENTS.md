@@ -129,7 +129,7 @@ Names and comments describe the code as it is now, in domain terms. No history (
 - Never skip or disable a pre-commit hook.
 - Run `git status` before any `git add -A`, so stray files don't get committed.
 - Don't rebase a branch that has been pushed and reviewed without David's say-so.
-- Ship with the `/ship` command (other agents: follow the steps in `~/.claude/commands/ship.md`): it rebases, pushes, opens the PR, squash-merges without `--delete-branch`, and returns the session to an up-to-date main checkout. Do that last step without being asked after any merge, and don't leave the session parked in a merged worktree.
+- Ship with the `/land` command (other agents: follow the steps in `~/.claude/commands/land.md`): it rebases, pushes, opens the PR, squash-merges without `--delete-branch`, and returns the session to an up-to-date main checkout. Do that last step without being asked after any merge, and don't leave the session parked in a merged worktree.
 - Never `git checkout .` or `git reset --hard` to tidy up the main checkout: it can hold uncommitted work that isn't yours.
 - Stale worktrees (merged, or abandoned with no work in them) pile up under `.claude/worktrees/`. David clears them with `worktree-sweep` (`HOOK_DRY_RUN=1` first to preview); don't delete other sessions' worktrees by hand.
 
