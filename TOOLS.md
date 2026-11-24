@@ -174,8 +174,8 @@ shows up here, and that is a different problem with a different answer.
 
 ### Installed outside Homebrew and mise
 
-Most of these have their own installer wired into a `run_` script or `.zshrc`;
-Rex is a plain manual download.
+Most of these have their own installer wired into the bootstrap task or
+`.zshrc`; Rex is a plain manual download.
 
 | Tool | Install method | Description |
 |---|---|---|
@@ -734,7 +734,7 @@ below under `mcpServers` (project servers load without a prompt, since
 scope from the repo:
 
 ```sh
-claude mcp add-json -s local umami '{"type":"http","url":"https://alltuner-umami.long-python.ts.net/mcp","headersHelper":"umami-mcp-headers"}'
+claude mcp add-json -s local umami '{"type":"http","url":"https://<umami-host>.<tailnet>.ts.net/mcp","headersHelper":"umami-mcp-headers"}'
 ```
 
 Either way, a new session in that repo picks it up; a running one doesn't.
