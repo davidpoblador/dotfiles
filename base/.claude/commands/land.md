@@ -1,6 +1,6 @@
 ---
 allowed-tools: Bash(git status:*), Bash(git diff:*), Bash(git branch:*), Bash(git switch:*), Bash(git add:*), Bash(git commit:*), Bash(git push:*), Bash(git pull:*), Bash(git fetch:*), Bash(git rebase:*), Bash(git log:*), Bash(git show:*), Bash(git checkout -- :*), Bash(git worktree:*), Bash(git symbolic-ref:*), Bash(gh pr create:*), Bash(gh pr merge:*), Bash(gh pr view:*), Bash(gh repo view:*), Bash(grep:*), ExitWorktree
-description: Commit, push, open a PR, squash-merge it, then return to an updated main checkout
+description: Commit, push, open a PR, squash-merge it, then return to an updated main checkout. This is what David means by "ship" or "ship it"; use it instead of the built-in /ship
 ---
 
 ## Context
