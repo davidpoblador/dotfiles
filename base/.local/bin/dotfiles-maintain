@@ -38,4 +38,8 @@ if [ -d "$HOME/.antidote" ] && stale antidote_last_update 10020; then
 fi
 
 # Keep the cross-agent skills mirror in sync with plugin updates
-[ -x "$HOME/.local/bin/skills-mirror" ] && "$HOME/.local/bin/skills-mirror"
+if [ -x "$HOME/.local/bin/skills-mirror" ]; then
+  "$HOME/.local/bin/skills-mirror"
+else
+  echo "skills-mirror not installed, skipping"
+fi

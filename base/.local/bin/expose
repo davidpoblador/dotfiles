@@ -92,7 +92,7 @@ fi
 
 # ---- config ----
 CFG=${EXPOSE_CONFIG:-${XDG_CONFIG_HOME:-$HOME/.config}/expose.env}
-[[ -f $CFG ]] || die "no config at $CFG (see expose/etc/expose.env.example)"
+[[ -f $CFG ]] || die "no config at $CFG (it must set EXPOSE_SERVER, EXPOSE_PORT and EXPOSE_DOMAIN)"
 # shellcheck disable=SC1090
 source "$CFG"
 : "${EXPOSE_SERVER:?missing in $CFG}"

@@ -54,10 +54,6 @@ setup_logging() {
 		# shellcheck disable=SC2317,SC2329
 		log() { echo "$(date '+%Y-%m-%d %H:%M:%S') $LOG_TAG $*" >> "$LOGFILE"; }
 	fi
-	# Always file-only, even under HOOK_DEBUG — for payload dumps and other
-	# noise we never want on the tty.
-	# shellcheck disable=SC2317,SC2329
-	log_quiet() { echo "$(date '+%Y-%m-%d %H:%M:%S') $LOG_TAG $*" >> "$LOGFILE"; }
 }
 
 # True when HOOK_DRY_RUN=1. Used by destructive helpers to short-circuit.

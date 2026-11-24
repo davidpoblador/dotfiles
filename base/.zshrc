@@ -42,12 +42,6 @@ fi
 # Utility Functions                                       #
 ###########################################################
 
-add_to_path() {
-  if [[ ":$PATH:" != *":$1:"* ]]; then
-    PATH="$1:${PATH}"
-  fi
-}
-
 command_exists() {
   command -v "$1" &>/dev/null
 }
