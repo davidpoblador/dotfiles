@@ -194,14 +194,30 @@ deploy skill, from the infrastructure repo:
 ```
 
 A `toolsmith` agent that builds, tests and catalogs reusable helper scripts in
-a local git repo (`~/.local/share/toolsmith/tools`, never pushed, so each
-machine grows its own catalog), plus a SessionStart/SubagentStart hook that
+a git repo at `~/.local/share/toolsmith/tools`, plus a SessionStart/SubagentStart hook that
 tells every session to check the catalog and call the agent instead of
 writing a one-off tool. Enabled everywhere except the digs workbench, whose
 checked-in `.claude/settings.json` turns it off: there the saved script is
 the deliverable (digs `toolsmith` dig). Its tools skip our conventions (no
 ABOUTME, plain `python3`) because the agent doesn't read CLAUDE.md; promote
 one that proves itself into `base/.local/bin` by hand.
+
+The catalog is shared between the Macs through a private GitHub repo cloned
+at `~/repos/toolsmith`, with Toolsmith's fixed path linked to it. Toolsmith
+commits but never pushes, so sync by hand during maintenance. The clone opts
+out of the PR rule (Toolsmith commits straight to `main`):
+
+```sh
+gh repo clone <owner>/toolsmith ~/repos/toolsmith
+mkdir -p ~/.local/share/toolsmith
+ln -s ~/repos/toolsmith ~/.local/share/toolsmith/tools
+git -C ~/repos/toolsmith config pr-flow.directPush true
+git -C ~/repos/toolsmith pull --rebase
+git -C ~/repos/toolsmith push
+```
+
+Project catalogs are keyed by the repo's name and full path, which match
+across the Macs because every repo lives at `~/repos/<name>`.
 
 ### ayghri/i-have-adhd — 1 skill
 
