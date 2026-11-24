@@ -174,8 +174,8 @@ shows up here, and that is a different problem with a different answer.
 
 ### Installed outside Homebrew and mise
 
-Most of these have their own installer wired into a `run_` script or `.zshrc`;
-Rex is a plain manual download.
+Most of these have their own installer wired into the bootstrap task or
+`.zshrc`; Rex is a plain manual download.
 
 | Tool | Install method | Description |
 |---|---|---|

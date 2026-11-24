@@ -6,7 +6,7 @@ Personal dotfiles managed with [mise](https://mise.jdx.dev/) (`mise bootstrap` +
 
 | Path | What |
 |---|---|
-| `base/` | Dotfiles for **every** machine, mirroring their paths under `~` (one `symlink-each` entry in `mise.toml`: each file is individually symlinked, unmanaged files coexist) |
+| `base/` | Dotfiles for **every** machine, mirroring their paths under `~` (`symlink-each` entries in `mise.toml`, one per subtree: each file is individually symlinked, unmanaged files coexist) |
 | `dev/` | Dotfiles deployed to **dev machines (macs) only**, via per-directory entries in `mise.dev.toml` |
 | `mise.toml` | Bootstrap config for all machines: dotfiles mapping, repos, macOS defaults, launchd/systemd units, the imperative bootstrap task |
 | `mise.dev.toml` | Dev-only additions, loaded when `MISE_ENV=dev`: brew/cask/mas packages, dev dotfile trees |

@@ -6,11 +6,6 @@
 - Add `jobs` module (shows background job count)
 - Add `zig` language module (already in mise, missing from prompt)
 
-## Atuin
-
-- Try enabling sync (self-hosted or atuin.sh) for cross-machine history
-  (config is explicitly local-only today; see the comment in atuin/config.toml)
-
 ## Bat
 
 - Configure as MANPAGER for syntax-highlighted man pages
