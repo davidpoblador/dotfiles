@@ -13,7 +13,6 @@
     "allow": [
       "Skill(frontend-design:frontend-design)",
       "Bash(cf dns records:*)",
-      "Bash(curl:*)",
       "Bash(djlint:*)",
       "Bash(docker build:*)",
       "Bash(gh api:*)",
@@ -37,7 +36,6 @@
       "Bash(mkdir:*)",
       "Bash(msgattrib:*)",
       "Bash(msgfmt:*)",
-      "Bash(nc:*)",
       "Bash(bun:*)",
       "Bash(python:*)",
       "Bash(ruff:*)",
