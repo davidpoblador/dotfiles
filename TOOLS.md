@@ -734,7 +734,7 @@ below under `mcpServers` (project servers load without a prompt, since
 scope from the repo:
 
 ```sh
-claude mcp add-json -s local umami '{"type":"http","url":"https://alltuner-umami.long-python.ts.net/mcp","headersHelper":"umami-mcp-headers"}'
+claude mcp add-json -s local umami '{"type":"http","url":"https://<umami-host>.<tailnet>.ts.net/mcp","headersHelper":"umami-mcp-headers"}'
 ```
 
 Either way, a new session in that repo picks it up; a running one doesn't.
