@@ -1,5 +1,5 @@
 #!/bin/bash
-# ABOUTME: Removes merged or abandoned Claude worktrees under every ~/repos/*/.claude/worktrees,
+# ABOUTME: Removes merged or abandoned Claude worktrees under ~/repos/[<group>/]<repo>/.claude/worktrees,
 # ABOUTME: keeping any with unpushed work, uncommitted changes or a live session. Run by hand.
 #
 # HOOK_DRY_RUN=1 logs what it would remove without touching anything. The log
@@ -22,13 +22,21 @@ else
 	log "--- worktree sweep ---"
 fi
 
-for repo in "$HOME"/repos/*/; do
+# Main checkouts at ~/repos/<repo> and ~/repos/<group>/<repo>. Only a .git
+# directory marks a main checkout (a worktree has a .git file), the glob skips
+# dot directories such as .claude, and node_modules is never a project.
+for repo in "$HOME"/repos/*/ "$HOME"/repos/*/*/; do
 	repo="${repo%/}"
+	case "$repo" in
+		*/node_modules) continue ;;
+	esac
+	[ -d "$repo/.git" ] || continue
 	[ -d "$repo/.claude/worktrees" ] || continue
+	name="${repo#"$HOME"/repos/}"
 	git -C "$repo" rev-parse --verify --quiet HEAD >/dev/null 2>&1 || continue
 	default=$(detect_default_branch "$repo")
 	if [ -z "$default" ]; then
-		log "⏭ $(basename "$repo"): no default branch, skipped"
+		log "⏭ $name: no default branch, skipped"
 		continue
 	fi
 	# Measure against origin's tip: the main checkout's own branch may lag.
@@ -36,6 +44,6 @@ for repo in "$HOME"/repos/*/; do
 	if git -C "$repo" show-ref --verify --quiet "refs/remotes/origin/$default"; then
 		base="origin/$default"
 	fi
-	log "repo $(basename "$repo") (against $base)"
+	log "repo $name (against $base)"
 	clean_stale_worktrees "$repo" "$base"
 done
