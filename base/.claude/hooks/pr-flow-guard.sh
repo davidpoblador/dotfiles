@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 # ABOUTME: PreToolUse(Bash) hook: denies pushes to main/master and
 # ABOUTME: `gh pr merge --delete-branch`, keeping every change on the PR flow.
+#
+# Two pushes to main stay allowed: the first push to a remote with no branches
+# yet (there is nothing to open a PR against), and any push from a repo opted
+# out with `git config pr-flow.directPush true`, for repos written by tools
+# rather than reviewed (the toolsmith catalog). The opt-out is per clone.
 set -uo pipefail
 # Commands are split into words below; never glob-expand them.
 set -f
@@ -18,6 +23,16 @@ deny() {
 }
 
 is_protected() { case "$1" in main | master) return 0 ;; *) return 1 ;; esac; }
+
+# True when a push to main from repo $1 to remote $2 is one of the exceptions.
+direct_push_allowed() {
+	local dir="$1" remote="${2:-origin}"
+	[ "$(git -C "$dir" config --bool pr-flow.directPush 2>/dev/null)" = true ] && return 0
+	# An empty remote has no branch to open a PR against. ls-remote exits 2
+	# only when the remote answered with no refs at all; errors exit 128.
+	git -C "$dir" ls-remote --exit-code "$remote" >/dev/null 2>&1
+	[ $? -eq 2 ]
+}
 
 # Tokens arrive unexpanded, so a leading ~ is resolved here.
 expand_home() {
@@ -83,7 +98,8 @@ check_segment() {
 	current=$(git -C "$dir" branch --show-current 2>/dev/null)
 	if [ "${#positional[@]}" -le 1 ]; then
 		# No refspec: push.default=simple pushes the current branch.
-		is_protected "$current" && deny "Direct push of $current is blocked: every change goes through a PR. Push a feature branch instead."
+		is_protected "$current" && ! direct_push_allowed "$dir" "${positional[0]:-}" &&
+			deny "Direct push of $current is blocked: every change goes through a PR. Push a feature branch instead."
 		return 0
 	fi
 	for tok in "${positional[@]:1}"; do
@@ -91,7 +107,8 @@ check_segment() {
 		dst="${dst##*:}"
 		dst="${dst#refs/heads/}"
 		[ "$dst" = HEAD ] && dst="$current"
-		is_protected "$dst" && deny "Direct push to $dst is blocked: every change goes through a PR. Push a feature branch instead."
+		is_protected "$dst" && ! direct_push_allowed "$dir" "${positional[0]}" &&
+			deny "Direct push to $dst is blocked: every change goes through a PR. Push a feature branch instead."
 	done
 	return 0
 }
