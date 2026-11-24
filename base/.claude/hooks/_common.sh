@@ -140,23 +140,45 @@ unique_commits_against() {
 	git -C "$repo" rev-list --count "$base".."$branch" 2>/dev/null || echo 0
 }
 
-# Print the merged-PR number for $branch, or empty if none. Squash merges
-# produce different commit SHAs, so a "0 unique commits" check alone can
-# miss merged work — this is the secondary check.
+# Returns 0 (true) if merged PR $pr, whose head commit was $oid, contains
+# commit $tip: $tip is $oid itself or an ancestor of it, so nothing reachable
+# from $tip is missing from what was merged. If $oid isn't in the local object
+# store, fetch the PR's head ref (GitHub keeps refs/pull/<n>/head after the
+# branch is deleted). Returns 1 on any failure, so unverifiable means "keep".
+# $1: repo root  $2: local tip commit  $3: PR number  $4: PR head commit
+tip_in_pr_head() {
+	local repo="$1" tip="$2" pr="$3" oid="$4"
+	[[ $pr =~ ^[0-9]+$ ]] && [[ $oid =~ ^[0-9a-f]{40}$ ]] || return 1
+	[ "$tip" = "$oid" ] && return 0
+	if ! git -C "$repo" cat-file -e "$oid^{commit}" 2>/dev/null; then
+		git -C "$repo" fetch --quiet origin "refs/pull/$pr/head" >"$OUT" 2>&1 || return 1
+		git -C "$repo" cat-file -e "$oid^{commit}" 2>/dev/null || return 1
+	fi
+	git -C "$repo" merge-base --is-ancestor "$tip" "$oid" 2>/dev/null
+}
+
+# Print the number of a merged PR that contains $branch's local tip, or empty
+# if none. Squash merges produce different commit SHAs, so a "0 unique
+# commits" check alone can miss merged work — this is the secondary check.
 #
 # The PR head normally matches the local branch name. Branches pushed under a
-# name without the worktree tool's "worktree-" prefix are matched too. Either
-# lookup only ever confirms a genuinely merged PR, so it never loosens the
-# safety guard.
+# name without the worktree tool's "worktree-" prefix are matched too. A name
+# match alone proves nothing: a branch name can be reused (a resumed dig gets
+# a new worktree with the old name) and carry unpushed work the merged PR
+# never saw. So a PR only counts when its head commit (headRefOid) is the
+# local tip or descends from it; see tip_in_pr_head.
 # $1: repo root  $2: branch name
 merged_pr_for_branch() {
-	local repo="$1" branch="$2" head pr
+	local repo="$1" branch="$2" tip head pr oid
+	tip=$(git -C "$repo" rev-parse --verify --quiet "refs/heads/$branch^{commit}" 2>/dev/null) || return 0
 	for head in "$branch" "${branch#worktree-}"; do
-		pr=$(project_gh "$repo" pr list --head "$head" --state merged --json number --jq '.[0].number' 2>/dev/null || true)
-		if [ -n "$pr" ]; then
-			echo "$pr"
-			return 0
-		fi
+		while read -r pr oid; do
+			if tip_in_pr_head "$repo" "$tip" "$pr" "$oid"; then
+				echo "$pr"
+				return 0
+			fi
+		done < <(project_gh "$repo" pr list --head "$head" --state merged --json number,headRefOid \
+			--jq '.[] | "\(.number) \(.headRefOid)"' 2>/dev/null || true)
 		[ "$branch" = "${branch#worktree-}" ] && break
 	done
 	# Always succeed: callers run under `set -e` and use this in bare
@@ -291,10 +313,10 @@ worktree_has_active_session() {
 # Iterate over $repo/.claude/worktrees/* and remove any that are stale.
 # A worktree is stale when:
 #   - its work is already in $base_ref (squash/rebase merged) or a merged PR
-#     exists for it (catches merged worktrees whose remote branch lingers, or
-#     that pushed under a de-prefixed head), OR
+#     contains its local tip (catches merged worktrees whose remote branch
+#     lingers, or that pushed under a de-prefixed head), OR
 #   - its branch had an upstream, the remote branch is now gone, and its
-#     commits are in $base_ref or a merged PR exists for it, OR
+#     commits are in $base_ref or a merged PR contains its local tip, OR
 #   - it was never pushed, has no unique commits beyond $base_ref, and was
 #     created more than 24 hours ago.
 # Worktrees with unpushed, unmerged unique commits, uncommitted or untracked
@@ -345,7 +367,8 @@ clean_stale_worktrees() {
 
 		# Primary check, mirroring the targeted remove path: if the branch's
 		# work is already in $base_ref (squash/rebase merged) or a merged PR
-		# exists, it's safe to clean regardless of upstream/remote state. This
+		# contains its local tip, it's safe to clean regardless of
+		# upstream/remote state. This
 		# catches merged worktrees that linger because their remote branch was
 		# never deleted, or because they pushed under a de-prefixed head, so the
 		# upstream/age heuristics below never opened the gate. Guard on
@@ -372,7 +395,8 @@ clean_stale_worktrees() {
 			# Pushed at some point. If the remote branch is gone, the work is
 			# very likely merged. Verify in this order:
 			#   1. git cherry — portable, catches squash/rebase merges
-			#   2. gh pr list — GitHub-only, catches edge cases (rare)
+			#   2. gh pr list — GitHub-only, a merged PR whose head contains
+			#      the local tip
 			# A remote branch deleted without merging is never enough on its own.
 			if ! git -C "$repo" show-ref --verify --quiet "refs/remotes/origin/$stale_branch" 2>/dev/null; then
 				if branch_is_squash_merged_into "$repo" "$base_ref" "$stale_branch"; then
