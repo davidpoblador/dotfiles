@@ -42,12 +42,17 @@ When asked to do something, just do it, including the obvious follow-up actions 
 
 ## Coordinating and delegating
 
-A session in a repo is usually the only one working there, and it acts as the coordinator. It scopes the work, splits it, hands the pieces to subagents, reviews what comes back, and lands it. Keep design decisions, judgment calls and the review of every diff in your own context. Hand off reading, running commands and well-scoped building. Your context is the most expensive one in the session, so spend it on decisions.
+A session in a repo is usually the only one working there, and it acts as the coordinator. It scopes the work, splits it, hands the pieces to subagents, reviews what comes back, and decides what lands. Keep design decisions, judgment calls and the review of every diff in your own context. Hand off reading, running commands, building, testing and landing. Your context is the most expensive one in the session, so spend it on decisions, and stay free to take worker reports and David's answers.
 
+- In a repo where work is delegated, the coordinator doesn't edit project files, run gates or the browser, or merge PRs itself. Those block the session while workers wait on it.
+- Every worker, the lander included, works in its own worktree under `.claude/worktrees/`, branched from `origin`'s default branch. Nothing new happens in the main checkout.
+- Run whatever slow commands the coordinator still needs (gates, deploys, `gh pr checks`) in the background.
+- While workers are running, ask David questions as plain text at the end of a turn, not with AskUserQuestion: an open question freezes the session and holds back every worker's report. Use AskUserQuestion when nothing is in flight.
 - Fan out only when the pieces are independent, meaning separate files, modules or issues that can each be verified on their own. Launch them in a single turn so they run in parallel, each building in its own worktree.
 - Don't fan out a chain of dependent steps, or work that fits easily in one context. Planning and merging cost more than they save there, so do it yourself.
 - Write every brief so it stands on its own. Give the goal, the files to start from, what's decided and what's ruled out, the command or test that proves the work, and what to report back. A worker that can't check its own work needs a fix to its brief, not a bigger model.
-- Workers commit on their own branch. They don't push, open PRs or merge unless the brief says so. Review each diff yourself before it lands, and merge branches that are ready together as one batch.
+- Workers own their piece up to an open PR: commit on their own branch, run lint and the tests they touched, push, open the PR, and report a short summary. They never merge. Review each PR's diff (or a `reviewer` read of it) before approving it to land.
+- Approved PRs land one at a time. Where the repo ships a `lander` agent in `.claude/agents/`, it does the merging and the repo's own rules (gates, deploys, ports) decide the rest; elsewhere, land with `/land`, slow steps in the background.
 - When you delegate something, don't also do it yourself. Keep working on whatever doesn't depend on the result.
 - Any change that moves money or touches authorization or permissions gets an independent `reviewer` read before it lands, whatever the tests say. Review catches what tests written by the same hand miss.
 - Workers run only the browser or end-to-end tests for the area they touched. The full end-to-end run happens once, at deploy.
