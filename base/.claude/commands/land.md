@@ -25,6 +25,7 @@ Take the work on this branch all the way to a merged, cleaned-up state.
 8. Return the session to an up-to-date main checkout:
    - If this session created the worktree (EnterWorktree), confirm with `gh pr view` that the PR is `MERGED` and the tree is clean. Then call `ExitWorktree` with action `remove` and `discard_changes: true`. Squash merges look unmerged by ancestry, so the first attempt without it is refused.
    - If the session entered an existing worktree with `EnterWorktree` `path`, call `ExitWorktree` with action `keep` (it won't remove a worktree it didn't create).
+   - If `ExitWorktree` says there is no active `EnterWorktree` session, it changed nothing: the worktree came from `git worktree add`, a subagent or an earlier run of a resumed session. Continue with the next step.
    - Otherwise switch the session to the main working tree (first entry of `git worktree list`).
    - Check `git worktree list`. If the worktree is still there, finish with `git worktree remove <path> && git branch -D <local-branch>`.
    - In the main checkout, `git switch <default> && git pull --ff-only`.
