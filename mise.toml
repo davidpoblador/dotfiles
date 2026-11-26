@@ -342,6 +342,17 @@ if command -v go >/dev/null 2>&1; then
   go telemetry off 2>/dev/null || true
 fi
 
+# terminal-browser's agent skill. Its links point into the versioned Caskroom
+# path, so re-running setup after a cask upgrade repoints them. A recorded
+# "yes" makes setup skip its prompt.
+if command -v terminal-browser >/dev/null 2>&1; then
+  TB_STATE="${XDG_STATE_HOME:-$HOME/.local/state}/terminal-browser"
+  mkdir -p "$TB_STATE"
+  [ -s "$TB_STATE/skills-choice" ] || echo yes > "$TB_STATE/skills-choice"
+  terminal-browser setup </dev/null >/dev/null 2>&1 ||
+    echo "[bootstrap] terminal-browser setup failed"
+fi
+
 # Claude Code: turn off the ← shortcut that backgrounds a session. Stray presses
 # left idle background copies holding Remote Control; /bg does it on purpose.
 # The key is global config, which settings.json ignores, so it goes in

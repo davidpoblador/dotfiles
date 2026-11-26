@@ -111,7 +111,7 @@ brew:<name>` (or `brew-cask:`) after checking `brew info <name>`; remove with
 | obsidian | Markdown-based knowledge base |
 | raycast | Launcher / Spotlight replacement |
 | responsively | Multi-viewport browser for responsive dev |
-| terminal-browser | Chromium in a terminal pane over kitty graphics (works in Rex). Once per Mac, run `terminal-browser setup` and answer `y` to link its agent skill |
+| terminal-browser | Chromium in a terminal pane over kitty graphics (works in Rex). `mise bootstrap` links its agent skill (and repoints the links after a cask upgrade) |
 | vlc | Media player |
 
 

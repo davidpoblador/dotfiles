@@ -290,11 +290,11 @@ session that held it ends, what was tried and ruled out is gone. So the default
 is to dispatch immediately and let it read, and the exception is to spend real
 time writing down only what would otherwise be lost.
 
-terminal-browser links its own agent skill, outside this repo: `terminal-browser
-setup` answered `y` symlinks it into `~/.claude/skills`, `~/.agents/skills` and
-the other agents' skill dirs, and records the choice in
-`~/.local/state/terminal-browser/skills-choice`. skills-mirror leaves those links
-alone. Browse on Helium stays the agents' browser for driving pages.
+terminal-browser links its own agent skill, outside this repo. `mise bootstrap`
+records `yes` in `~/.local/state/terminal-browser/skills-choice` and runs
+`terminal-browser setup`, which symlinks the skill into `~/.claude/skills`,
+`~/.agents/skills` and the other agents' skill dirs. skills-mirror leaves those
+links alone. Browse on Helium stays the agents' browser for driving pages.
 
 ## Documented, not installed by default
 
