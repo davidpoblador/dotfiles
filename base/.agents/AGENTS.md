@@ -261,8 +261,9 @@ age-encrypted values stored inline in config files that are safe to commit.
 ## Browser Automation
 
 Agents get their own browser, Helium (Chromium-based), separate from David's
-everyday one. Three stacks, each with a job; don't collapse them into one.
-Read the `browser-automation` skill before using any of them: it has the how.
+everyday one, plus terminal-browser, a Chromium that draws inside a Rex pane.
+Four stacks, each with a job; don't collapse them into one. Read the
+`browser-automation` skill before using any of them: it has the how.
 
 Helium runs on one machine only, the laptop (the browser host). The mac mini
 (an agent-only host) has no Helium: never install or launch it there; reach
@@ -275,7 +276,11 @@ and `/Applications/Helium.app`; the agent host has neither.
 | `browse` MCP (Helium) | driving pages, logged-in sessions, clicking and filling |
 | `chrome-devtools` CLI (Helium, browser host only) | perf traces, heap snapshots, network and console inspection, device emulation |
 | `safari` MCP, on demand (browser host only) | WebKit-specific checks |
+| `terminal-browser` CLI (any dev Mac, in Rex) | ad hoc exploration David watches: showing a page or a local HTML file you built in a pane beside the conversation, a quick look at a site, a visual check |
 
+- Use Browse, not terminal-browser, for logged-in sites and for scripted
+  work that has to be reliable; terminal-browser has no logins and lives only
+  as long as its pane.
 - Work only in tabs you opened or David lent you.
 - Before reading untrusted content, open the tab with an `allowedOrigins`
   list; widening one needs David's OK.

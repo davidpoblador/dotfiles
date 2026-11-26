@@ -1,6 +1,6 @@
 ---
 name: browser-automation
-description: How to drive David's agent browser (Helium) with Browse, inspect it with the chrome-devtools CLI, or check WebKit with Safari. Use before the first browse MCP call in a task, before any chrome-devtools command, and when a task needs a web page opened, a logged-in site, a screenshot, a perf trace, network or console inspection, or a Safari check.
+description: How to drive David's agent browser (Helium) with Browse, inspect it with the chrome-devtools CLI, check WebKit with Safari, or show David a page in a Rex pane with terminal-browser. Use before the first browse MCP call in a task, before any chrome-devtools command, and when a task needs a web page opened, a logged-in site, a screenshot, a perf trace, network or console inspection, or a Safari check.
 ---
 
 # Browser automation
@@ -75,3 +75,18 @@ default. When a task needs WebKit checks, on the browser host only, add it for
 the project folder with the `claude mcp add-json -s local` command in
 `TOOLS.md` of the dotfiles repo, then tell David it is available from the next
 session in that folder (a running session doesn't pick it up).
+
+## terminal-browser
+
+`terminal-browser` is a Chromium that draws inside a Rex pane, installed on the
+dev Macs with its own agent skill (`terminal-browser`); read that for the
+commands. Use it when David should see the page: `terminal-browser open <url>
+--split right` opens it beside the conversation, and a local HTML file works
+the same, so it is the way to show something you built or rendered. It suits
+ad hoc exploration (a quick look at a site, a visual check, poking at a page
+together), and `terminal-browser action -- ...` can click and fill in it.
+
+It has no logins and no `allowedOrigins` guard, and it ends with its pane, so
+logged-in sites, untrusted content and scripted work that must be reliable stay
+on Browse. Run `terminal-browser action done` after your last action so the
+"agent is acting" banner clears.
