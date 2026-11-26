@@ -290,6 +290,11 @@ session that held it ends, what was tried and ruled out is gone. So the default
 is to dispatch immediately and let it read, and the exception is to spend real
 time writing down only what would otherwise be lost.
 
+terminal-browser's agent skill is deliberately not installed: agents browse
+with Browse on Helium. `terminal-browser setup` answered `n` records that in
+`~/.local/state/terminal-browser/skills-choice` (`no`), which stops it linking
+the skill on later launches.
+
 ## Documented, not installed by default
 
 Useful, deliberately not enabled. Install when a project needs them, then
