@@ -342,6 +342,18 @@ if command -v go >/dev/null 2>&1; then
   go telemetry off 2>/dev/null || true
 fi
 
+# Claude Code: turn off the ← shortcut that backgrounds a session. Stray presses
+# left idle background copies holding Remote Control; /bg does it on purpose.
+# The key is global config, which settings.json ignores, so it goes in
+# ~/.claude.json (cat > keeps the file in place).
+if command -v jq >/dev/null 2>&1 && [ -f "$HOME/.claude.json" ] &&
+   [ "$(jq '.leftArrowOpensAgents' "$HOME/.claude.json")" != "false" ]; then
+  tmp=$(mktemp) &&
+    jq '.leftArrowOpensAgents = false' "$HOME/.claude.json" > "$tmp" &&
+    cat "$tmp" > "$HOME/.claude.json"
+  rm -f "$tmp"
+fi
+
 # ~/.ssh must not be group/world accessible; repo symlinks do not carry that.
 # sockets/ holds the ControlPath multiplexing sockets (dev/.ssh/config)
 mkdir -p "$HOME/.ssh/sockets"
