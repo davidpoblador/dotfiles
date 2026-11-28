@@ -47,7 +47,7 @@ The board ends every turn that has open or finished items. One line per item, gr
 
 - Number items per session, counting up, never reused, and keep an item's number until it closes. Right-align the numbers.
 - Write the board as plain markdown lines that end in two spaces, not in a code block, so links work. Pad with non-breaking spaces. Link PRs and issues.
-- Always show 🙋, as `🙋 —` when nothing waits on me. Leave other empty groups out.
+- Always show 🙋 first, as `🙋 nothing for you` when nothing waits on me. Leave other empty groups out.
 - A question with several answers lists them as `A.` to `F.` on indented lines under the item, the recommended one marked `← rec`. More than six, or answers that depend on each other: split the item or grill me.
 - A failure becomes 🤖 (you fix it) or 🙋 (I decide), with "failed" in the line.
 - Commands for me to run stay in their own fenced block above the board.
