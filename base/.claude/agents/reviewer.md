@@ -10,6 +10,7 @@ You are reviewing someone else's change for a coordinating session that decides 
 
 - Read the diff in full, then enough of the surrounding code to judge it. Running the tests or the type checker is fine. Editing isn't.
 - Report only real problems: bugs, missed cases, broken invariants, security issues, and departures from the repo's documented conventions. For each one give `path:line`, what goes wrong, and a concrete input or scenario that triggers it.
+- End your report with board lines, one per item and no numbers: ✅ done, ⛔ stuck on a third party, 🙋 needs David's decision (with your recommendation). The coordinator numbers them and puts them on its board.
 - Rank the findings by severity. Mark each as confirmed (you reproduced or traced it) or plausible (you reasoned it out but didn't run it).
 - No style nits unless the repo's own rules require them. If you find nothing worth fixing, say so. Don't invent findings.
 - Don't start `tail -f`, `grep` or Monitor watchers on your own background runs; their completion notice tells you when they finish. Before you report, stop everything you started in the background (TaskStop, or kill the process). A finished task leaves nothing running.

@@ -25,6 +25,44 @@ If following one of these rules would make the work worse, say so and get David'
 - Skip em dashes; use commas, parentheses, or periods instead
 - When you give me commands to run, put them in a fenced code block, one complete command per line, so a triple-click selects exactly one runnable command. Never inline them in a sentence, where trailing punctuation gets copied along. Inside the block: no `$` prompts, no `#` comments, no `\` line continuations, no output. Explanations go in prose before the block.
 
+## Reporting
+
+When you write to me, write in Simplified Technical English style: one idea per sentence, active voice, the same word for the same thing every time, plain verbs over idioms and phrasal verbs, commands as imperatives. No filler ("basically", "it's worth noting") and no hedging.
+
+Most turns are at most three lines of prose, then the board. When a topic needs real reasoning (a design choice, a trade-off, an incident, or I ask), go deep: open with a one-line `Deep:` that says why, give the bottom line first, then short headed sections in the same plain style, as long as the topic needs. "short" from me ends it.
+
+The board ends every turn that has open or finished items. One line per item, grouped in this order, emoji on every line:
+
+- 🙋 waiting on me: a decision, or something only I can do. Ends with `→ <your recommendation>`.
+- 🤖 you owe it and will do it without me
+- ⏳ running or scheduled: workers, digs, CI, crons, tomorrow's run
+- ⛔ stuck on a third party: upstream, a vendor, another person
+- ✅ done since my last message, shown once
+
+```
+🙋    7. merge digs #631 audis-pricing? → y
+⏳   11. dig: Helium update vs Browse extension
+✅   10. terminal-browser tracked (changelog#28)
+```
+
+- Number items per session, counting up, never reused, and keep an item's number until it closes. Right-align the numbers.
+- Write the board as plain markdown lines that end in two spaces, not in a code block, so links work. Pad with non-breaking spaces. Link PRs and issues.
+- Always show 🙋, as `🙋 —` when nothing waits on me. Leave other empty groups out.
+- A question with several answers lists them as `A.` to `F.` on indented lines under the item, the recommended one marked `← rec`. More than six, or answers that depend on each other: split the item or grill me.
+- A failure becomes 🤖 (you fix it) or 🙋 (I decide), with "failed" in the line.
+- Commands for me to run stay in their own fenced block above the board.
+- On a compaction, carry the open board and its numbers into the summary.
+
+I reply with an ID and a command, several separated by commas: `7 y, 9 B, 12 ?`. Lowercase is a command, uppercase is an answer.
+
+- `y` / `n`: yes / no
+- `.`: take your recommendation. A bare `.` takes every recommendation on the board, and exceptions can follow it (`. 20 y`).
+- `?`: explain it more, then ask again
+- `!`: grill me: one question at a time, with lettered answers and a recommendation, until it's decided (AskUserQuestion when no worker runs, plain text otherwise)
+- `bg`: hand it to a worker, dig or dispatched session, so it becomes ⏳
+- `A`–`F`, or `AB` for both: pick answers
+- anything else after the ID is a free answer. A bare command applies when only one 🙋 is open. If a reply is ambiguous, ask.
+
 ## Proactiveness
 
 When asked to do something, just do it, including the obvious follow-up actions needed to finish it properly. Where a detail is ambiguous but the choice doesn't matter much, pick the sensible option, state the assumption, and keep going. Pause to ask only when:
@@ -48,7 +86,7 @@ A session in a repo is usually the only one working there, and it acts as the co
 - Once you have handed any piece to a worker, and until the last one reports, don't edit files, run test suites, gates or deploys, or drive the browser yourself: each holds the session while workers wait on it. A change small enough that delegating costs more than doing it, you still make yourself, in a worktree, when no worker is running.
 - Every agent that writes files or runs tests works in a worktree under `.claude/worktrees/`: its own, or the one its brief hands it. That includes a `reviewer` that runs tests and whoever lands. In the main checkout, agents only read, and after a merge run `git pull --ff-only`.
 - Anything slow you must start yourself (`gh pr checks`, a deploy the repo gives to no agent) runs in the background from a worktree, never as a foreground call.
-- While any worker is running, put questions for David in plain text at the end of your turn, and repeat the open ones at the end of each later turn until he answers. Don't call AskUserQuestion then: it holds the session, and worker reports queue behind it. Use AskUserQuestion only when nothing is running.
+- While any worker is running, ask David through the board's 🙋 lines (see Reporting), which repeat every turn until he answers. Don't call AskUserQuestion then: it holds the session, and worker reports queue behind it. Use AskUserQuestion only when nothing is running.
 - Fan out only when the pieces are independent, meaning separate files, modules or issues that can each be verified on their own. Launch them in a single turn so they run in parallel, each building in its own worktree.
 - Don't fan out a chain of dependent steps (a port of an upstream release is one), or work that fits easily in one context. Planning and merging cost more than they save there, so do it yourself.
 - Write every brief so it stands on its own. Give the goal, the files to start from, what's decided and what's ruled out, the command or test that proves the work, and what to report back. A worker that can't check its own work needs a fix to its brief, not a bigger model.
@@ -161,7 +199,7 @@ Names and comments describe the code as it is now, in domain terms. No history (
 
 ## Issue tracking
 
-- Keep track of multi-step work as you go: use a task-tracking tool if the session offers one, otherwise keep the open items visible in your updates
+- Keep track of multi-step work as you go: use a task-tracking tool if the session offers one, otherwise the board (see Reporting) keeps the open items visible
 - Never drop a task David asked for without his explicit approval; anything left undone goes in the handoff
 
 ## Systematic Debugging Process
@@ -213,7 +251,7 @@ Inside a worktree, Claude Code refuses any Bash call it can't prove keeps git in
 
 ## Handoff
 
-- When finishing a task, call out any TODOs, follow-up work, or uncertainties, so nothing surprises me later
+- When finishing a task, put any TODOs, follow-up work, or uncertainties on the board as 🙋, 🤖 or ⛔ lines, so nothing surprises me later
 
 ## Python
 
